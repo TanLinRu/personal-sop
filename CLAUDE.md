@@ -73,13 +73,36 @@ None exist in this project.
 
 ## Key Files
 
-- `SOP流程设计思想.md` - Main design document (Chinese, ~1000 lines)
+- `SOP流程设计思想.md` - Main design document (Chinese, ~1200 lines)
 - `CLAUDE.md` - This file
+- `.claude/skills/sop-*/SKILL.md` - Implemented SOP skills (6 files)
+
+## Implemented SOP Skills
+
+| Skill | Location | Steps |
+|-------|----------|-------|
+| sop-bug-fix | `.claude/skills/sop-bug-fix/SKILL.md` | 5 steps |
+| sop-code-review | `.claude/skills/sop-code-review/SKILL.md` | 5 steps |
+| sop-library-research | `.claude/skills/sop-library-research/SKILL.md` | 5 steps |
+| sop-onboarding | `.claude/skills/sop-onboarding/SKILL.md` | 5 steps |
+| sop-incident-response | `.claude/skills/sop-incident-response/SKILL.md` | 6 steps |
+| sop-scaffold | `.claude/skills/sop-scaffold/SKILL.md` | 6 steps |
 
 ## Usage Notes
 
 When working on related projects:
 - This design can be used as a template for creating new SOP skills
-- SOP skills should be deployed to `.claude/skills/sop-*/skill.md`
+- SOP skills should be deployed to `.claude/skills/sop-*/SKILL.md`
 - Status documents output to `.sop/output/` directory
 - Review existing ECC skills at `everything-claude-code/.agents/skills/` before implementing new SOPs
+
+## Trigger Commands
+
+```
+/sop bug-fix         # 标准 Bug 修复流程
+/sop code-review     # 标准代码审查流程
+/sop library-research # 标准技术调研流程
+/sop onboarding      # 标准项目入职流程
+/sop incident-response # 标准线上问题响应流程
+/sop scaffold        # 前后端脚手架生成流程
+```
