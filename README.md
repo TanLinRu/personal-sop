@@ -1,46 +1,226 @@
-# Personal SOP
+# Game Risk Control - 游戏风控系统
 
-AI Agent 工作流标准操作程序设计文档。
+游戏账号安全风控后端服务，提供注册、登录、支付、反作弊、内容风控等检测能力。
 
-## 项目概述
+## 技术栈
 
-本项目设计了一套基于 AI Agent 的 SOP（标准操作程序）系统，用于标准化软件开发常见工作流程。通过编排现有 ECC Skills，实现端到端的自动化处理。
+| 组件 | 版本 |
+|------|------|
+| JDK | 21 |
+| Spring Boot | 2.7.18 |
+| MyBatis-Plus | 3.5.3 |
+| LiteFlow | 2.15.3 |
+| Knife4j | 4.3.0 |
+| MySQL | 8.0 |
+| Redis | 7.4 |
+| Kafka | 4.0 |
 
-## 核心 SOP
-
-| SOP | 用途 |
-|-----|------|
-| Bug Fix | 标准 Bug 修复流程 |
-| Code Review | 代码审查流程 |
-| Library Research | 技术调研流程 |
-| Onboarding | 项目入职流程 |
-| Incident Response | 线上故障处理 |
-| Scaffold | 项目脚手架生成 |
-
-## 关键文件
-
-- `SOP流程设计思想.md` — 核心设计文档
-- `CLAUDE.md` — Claude Code 使用指南
-- `AGENTS.md` — OpenCode 使用指南
-
-## 架构
+## 项目结构
 
 ```
-SOP → 编排现有 ECC Skills → 产出状态文档
+personal-sop/
+├── backend/                  # Spring Boot后端
+│   └── src/main/java/com/gamerisk/
+│       ├── controller/        # API控制器
+│       ├── service/        # 业务逻辑
+│       ├── entity/         # 数据实体
+│       └── config/        # 配置类
+├── frontend/               # Vue 3前端
+│   └── src/
+│       ├── views/        # 页面视图
+│       ├── components/   # 组件
+│       └── stores/       # 状态管理
+├── .claude/skills/        # SOP Skills (15个)
+│   ├── sop-testing/       # 测试执行
+│   ├── sop-deployment/    # 部署发布
+│   ├── sop-api-design/    # API设计
+│   ├── sop-database-design/# 数据库设计
+│   └── dr-jskill/        # Java项目工具
+├── docker-compose-dev.yml # 开发环境
+└── AGENTS.md            # 项目指南
 ```
 
-每个 SOP 会调用专门的 Agent 完成子任务：
-- Explore Agent → 搜索分析
-- General Agent → 通用执行
-- Plan Agent → 架构设计
+## 快速开始
 
-状态文档输出至 `.sop/output/`
+### 1. 启动后端
 
-## 使用方式
+```powershell
+.\run-compile.ps1
+cd backend; mvn spring-boot:run
+```
 
-Claude Code: `/sop <name>`
+服务启动后访问: http://localhost:8080
 
-## 平台支持
+### 2. API文档
 
-- Claude Code (`.claude/skills/sop-*/`)
-- OpenCode (`.opencode/skills/sop-*/`)
+- Knife4j: http://localhost:8080/doc.html
+- Swagger: http://localhost:8080/swagger-ui.html
+
+### 3. 健康检查
+
+```bash
+curl http://localhost:8080/actuator/health
+```
+
+## API接口
+
+### Windows curl测试命令
+
+```powershell
+# 使用 --data-binary 避免JSON解析错误
+curl -X POST http://localhost:8080/api/risk/register/check -H "Content-Type: application/json" --data-binary @request.json
+```
+
+### API端点
+
+| 模块 | 端点 | 说明 |
+|------|------|------|
+| 注册 | POST /api/risk/register/check | 设备指纹/虚拟号检测 |
+| 登录 | POST /api/risk/login/check | 异地/暴力破解检测 |
+| 支付 | POST /api/risk/payment/check | 欺诈/洗钱检测 |
+| 反作弊 | POST /api/risk/anticheat/check | 行为分析/速度检测 |
+| 内容 | POST /api/risk/content/check | 敏感词/广告检测 |
+
+## 风控规则
+
+### 注册风控
+- IP注册次数过多 → +40分
+- 设备注册次数过多 → +30分
+- 虚拟运营商号段(170/171/178) → +25分
+- 代理IP → +35分
+- 阈值: 70分
+
+### 登录风控
+- 登录失败多次 → +15分/次
+- 可疑IP段(10.0./172.16.) → +30分
+- 账户锁定 → 100分
+- 阈值: 70分
+
+### 支付风控
+- 单笔>5000 → +40分
+- 日累计>10000 → +35分
+- 高风险卡bin → +25分
+- 高风险国家(KP/IR/SY) → +30分
+- 新用户 → +15分
+- 阈值: 75分
+
+### 反作弊
+- 移动速度异常(speed>2.5) → 60-90分
+- 瞬移(distance/time>50) → 70-95分
+- 命中率>95% → +50分
+- 反应时间<50ms → +40分
+- 脚本行为(点击间隔<100ms) → +40分
+- 阈值: 80分
+
+### 内容风控
+- 敏感词(+25分): 作弊/外挂/脚本/黑号/代练
+- 广告词(+20分): QQ群/微信群/低价
+- 违法词(+40分): 枪/毒品/赌博
+- URL(+30分)
+- 联系方式(+25分)
+- 阈值: 75分
+
+## 测试用例
+
+### Windows curl (必须使用 --data-binary)
+```powershell
+# 注册
+curl -X POST http://localhost:8080/api/risk/register/check -H "Content-Type: application/json" --data-binary @test.json
+
+# 反作弊 - 高速检测
+curl -X POST http://localhost:8080/api/risk/anticheat/check -H "Content-Type: application/json" --data-binary @anticheat.json
+```
+
+### 测试JSON文件示例
+```json
+// test.json
+{"userId":"test001","userIp":"192.168.1.100","deviceId":"device123","phone":"13800138000"}
+
+// anticheat.json
+{"userId":"hacker","userIp":"1.1.1.1","deviceId":"dev1","behaviorType":"MOVE_SPEED","gameData":{"speed":10.0}}
+```
+
+## 响应示例
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "id": null,
+    "eventType": "REGISTER",
+    "userId": "test001",
+    "userIp": "192.168.1.100",
+    "deviceId": "device123",
+    "riskLevel": 30,
+    "riskScore": "0",
+    "decision": "ALLOW",
+    "details": null,
+    "createTime": "2026-04-19T18:30:47.2574348"
+  }
+}
+```
+
+### Decision说明
+- `ALLOW` - 允许通过
+- `REVIEW` - 需要人工审核
+- `BLOCK` - 阻止操作
+
+### RiskLevel说明
+- 0-29: LOW - 低风险
+- 30-59: MEDIUM - 中风险
+- 60-89: HIGH - 高风险
+- 90+: CRITICAL - 严重风险
+
+## 数据库
+
+### 初始化
+```bash
+mysql -u root -p gamerisk < backend/src/main/resources/init.sql
+```
+
+### 表结构
+- `sys_user` - 系统用户
+- `risk_event` - 风控事件记录
+
+## 前端
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+前端访问: http://localhost:5173
+
+## SOP Skills
+
+项目包含15个标准化流程Skill，位置：`.claude/skills/`
+
+| 分类 | Skill | 用途 |
+|------|-------|------|
+| 流程 | sop-testing | 测试执行 |
+| 流程 | sop-deployment | 部署发布 |
+| 流程 | sop-api-design | API设计 |
+| 流程 | sop-database-design | 数据库设计 |
+| 流程 | sop-code-review | 代码审查 |
+| 流程 | sop-bug-fix | Bug修复 |
+| 流程 | sop-incident-response | 线上响应 |
+| 工具 | dr-jskill | Java项目生成 |
+| 工具 | frontend-design | 前端设计 |
+| 工具 | tailwind-design-system | Tailwind CSS |
+
+使用示例：
+```
+/sop testing        # 执行测试流程
+/sop bug-fix       # 修复Bug流程
+/sop api-design   # 设计API
+```
+
+## 常见问题
+
+| 问题 | 解决 |
+|------|------|
+| 编译失败 | 运行 `.\run-compile.ps1` |
+| 400 Bad Request | 使用 `--data-binary @file.json` |
+| curl JSON错误 | Windows必须用 `--data-binary` |
