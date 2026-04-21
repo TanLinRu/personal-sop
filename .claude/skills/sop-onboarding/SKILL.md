@@ -1,7 +1,7 @@
 ---
 name: sop-onboarding
-description: 标准项目入职流程 - 配置→拉取→测试→探索→任务
-version: 1.0.0
+description: 标准项目入职流程 - 配置→拉取→测试→探索→任务（含JDTLS导航）
+version: 1.1.0
 triggers:
   - "入职"
   - "熟悉项目"
@@ -32,7 +32,7 @@ permissions:
 
 ## 流程步骤
 
-### 步骤一：环境配置（Setup）
+### 步骤一：环境配置（Setup）⭐ [CONFIRM_REQUIRED]
 
 **目标**：搭建开发环境，安装依赖
 
@@ -94,7 +94,7 @@ npm install
 
 ---
 
-### 步骤二：代码拉取（Clone）
+### 步骤二：代码拉取（Clone） [AUTO]
 
 **目标**：拉取代码，了解项目结构
 
@@ -309,7 +309,7 @@ ls src/main/resources/
 
 ---
 
-### 步骤五：小任务（Task）
+### 步骤五：小任务（Task）⭐ [CONFIRM_REQUIRED]
 
 **目标**：通过小任务上手项目
 
@@ -392,11 +392,35 @@ git push -u origin feature/my-task
 
 | 技能 | 用途 |
 |------|------|
+| dr-jskill | JDK 21 + Spring Boot 项目环境配置 |
 | java-build | 构建配置 |
 | java-testing | 测试执行 |
 | codebase-onboarding | 项目入职导览 |
 | code-tour | 代码导览 |
 | java-review | 代码审查反馈 |
+
+## JDTLS 代码导航（Java 项目）⭐
+
+新项目如使用 dr-jskill 生成，默认包含 JDTLS 配置：
+
+**安装 JDTLS（只需一次）**：
+```bash
+# macOS
+brew install jdtls
+
+# Linux
+# 参考 .claude/skills/dr-jskill/references/JDTLS.md
+```
+
+**AI 工作流中的使用**：
+| 任务 | 使用 |
+|------|------|
+| 查找类/方法定义 | `lsp goToDefinition` |
+| 查找引用 | `lsp findReferences` |
+| 查看类型/文档 | `lsp hover` |
+| 重命名 | `lsp rename` |
+
+**优先级**：`lsp` → `grep` with `.java` glob → `view`
 
 ## 触发命令
 

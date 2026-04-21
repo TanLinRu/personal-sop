@@ -1,7 +1,7 @@
 ---
 name: sop-code-review
-description: 标准代码审查流程 - 理解→格式→测试→安全→反馈
-version: 1.0.0
+description: 标准代码审查流程 - 理解→格式→测试→安全→反馈（含Lombok规范）
+version: 1.2.0
 triggers:
   - "审查代码"
   - "代码审查"
@@ -13,6 +13,48 @@ permissions:
   write: allow
   bash: allow
   web: allow
+
+# 多agent并发配置 ⭐
+execution:
+  mode: parallel  # sequential | parallel | hybrid
+  timeout: 300000 # 单任务超时(毫秒)
+
+# 并行任务定义 (使用真实ECC Agent)
+parallel_tasks:
+  - name: 格式检查
+    description: 检查代码格式和规范
+    agent: code-reviewer
+    depends_on: []
+
+  - name: 安全评估
+    description: 扫描安全漏洞和权限问题
+    agent: security-scan
+    depends_on: []
+
+  - name: 性能分析
+    description: 分析代码性能问题和潜在风险
+    agent: java-reviewer
+    depends_on: []
+
+# 结果聚合规则
+aggregation:
+  strategy: merge  # merge | first | all
+  output_format: markdown
+
+# ECC Agent 列表 (已集成到 OpenCode)
+available_agents:
+  code-reviewer:
+    description: 通用代码审查
+    tools: [read, bash]
+    use: 格式检查、代码规范
+  security-scan:
+    description: 安全漏洞扫描
+    tools: [read, write, edit, bash]
+    use: 安全评估、权限检查
+  java-reviewer:
+    description: Java/Spring Boot 专家审查
+    tools: [read, bash]
+    use: 性能分析、代码逻辑审查
 ---
 
 # SOP Code Review - 标准代码审查流程
@@ -29,9 +71,53 @@ permissions:
 - 重构代码审查
 - 新人代码审查
 
+## 多agent并行执行 ⭐
+
+### 执行模式
+
+| 模式 | 说明 | 适用场景 |
+|------|------|----------|
+| `parallel` | 格式检查、安全评估、性能分析 **并行执行** | 代码审查（推荐） |
+| `sequential` | 按顺序执行各步骤 | 需要前置依赖的审查 |
+
+### 并行任务执行
+
+```bash
+# 使用 Agent 工具并行执行多个审查任务
+Agent(
+  subagent_type="everything-claude-code:code-reviewer",
+  prompt="执行代码格式审查，检查以下内容：..."
+)
+
+Agent(
+  subagent_type="everything-claude-code:security-reviewer",
+  prompt="执行安全扫描，检查以下内容：..."
+)
+
+Agent(
+  subagent_type="everything-claude-code:java-reviewer",
+  prompt="执行性能分析，检查以下内容：..."
+)
+```
+
+### 执行流程
+
+```
+1. 理解变更 (Understand)
+       ↓
+2. 并行执行三个审查任务:
+   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+   │  格式检查   │  │  安全评估   │  │  性能分析   │
+   │(code-review)│  │(security)   │  │(java-review)│
+   └──────┬──────┘  └──────┬──────┘  └──────┬──────┘
+          └────────────────┼────────────────┘
+                           ↓
+3. 聚合结果 → 反馈 (Feedback)
+```
+
 ## 流程步骤
 
-### 步骤一：理解变更（Understand）
+### 步骤一：理解变更（Understand）⭐ [CONFIRM_REQUIRED]
 
 **目标**：理解变更意图和内容
 
@@ -80,14 +166,113 @@ gh pr view <pr_number> --json title,body,files
 
 ---
 
-### 步骤二：格式检查（Format）
+### 步骤二：格式检查（Format） [AUTO]
 
-**目标**：检查代码格式和风格
+**目标**：检查代码格式、Lombok使用规范
 
 **执行内容**：
 1. 运行格式化工具
 2. 运行 Linter 检查代码问题
 3. 检查命名规范是否符合项目约定
+4. **检查 Lombok 使用规范**
+5. **并行执行三个审查任务**
+
+**ECC Agent 并行执行**：
+```python
+# 并行启动三个审查任务
+format_task = task(
+  subagent_type="code-reviewer",
+  prompt="执行代码格式审查，检查缩进、命名、导入排序"
+)
+
+security_task = task(
+  subagent_type="security-scan",
+  prompt="执行安全扫描，检查SQL注入、XSS、权限问题"
+)
+
+performance_task = task(
+  subagent_type="java-reviewer",
+  prompt="分析代码性能问题和潜在风险"
+)
+
+# 并行执行
+results = await gather(format_task, security_task, performance_task)
+```
+
+**Lombok 使用规范检查** ⭐：全面使用，统一规范
+
+| 场景 | 推荐用法 | 注意事项 |
+|------|----------|----------|
+| **Entity/PO** | `@Getter @Setter @NoArgsConstructor @AllArgsConstructor` | 手动重写 equals/hashCode，基于业务ID |
+| **DTO/VO/Request/Response** | `@Data @Builder` | 直接使用，简洁方便 |
+| **工具类** | 不用 Lombok | 用 static 方法 |
+| **枚举** | 不用 Lombok | 手动实现 |
+
+**统一规范说明**：
+- 全面使用 Lombok，无需纠结是否使用
+- Entity 使用 `@Getter/@Setter` 而非 `@Data`（避免自动生成的 equals/hashCode 导致 JPA 问题）
+- DTO/VO 使用 `@Data @Builder`（需要全部字段的 get/set 和 builder 模式）
+- 手动重写 equals/hashCode 是为了避免级联比较问题，这是 Entity 层的必要实践
+
+**正确示例**：
+```java
+// Entity - 使用 lombok 但手动控制 equals/hashCode
+@Entity
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@Table(name = "user")
+public class User {
+    @Id @GeneratedValue
+    private Long id;
+    private String username;
+
+    // 手动重写，仅基于业务ID
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id != null && id.equals(user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+}
+
+// DTO - 直接使用 @Data @Builder
+@Data @Builder
+public class UserDTO {
+    private String username;
+    private String nickname;
+}
+
+// Response
+@Data
+public class UserResponse {
+    private Long id;
+    private String username;
+}
+```
+
+**检查要点**：
+- [ ] Entity 是否手动重写了 equals/hashCode（基于业务ID）
+- [ ] DTO/VO 是否使用了 @Data @Builder
+- [ ] 是否避免了不必要的 lombok 注解（如 @Log4j 用于非日志类）
+
+**IDE 快捷键检查清单**：
+
+| 快捷键 | 功能 | 检查点 |
+|--------|------|--------|
+| `Ctrl+Shift+O` (IDEA) | 优化import | 无冗余import |
+| `Ctrl+Alt+L` (IDEA) | 格式化代码 | 缩进/空格/换行 |
+| `Ctrl+Shift+T` | 定位测试类 | 是否有对应测试 |
+| `Ctrl+H` | 查看类继承 | 确认父类正确 |
+| `Ctrl+Alt+U` | 查看类图 | 依赖关系正确 |
+| `F2` / `Shift+F2` | 跳转错误/警告 | 逐个修复 |
+| `Ctrl+F` | 查找 | 确认关键逻辑 |
+| `Ctrl+R` | 替换 | 批量重命名 |
 
 **输出**：
 ```markdown
@@ -136,7 +321,7 @@ mvn spotbugs:check
 
 ---
 
-### 步骤三：运行测试（Test）
+### 步骤三：运行测试（Test） [AUTO]
 
 **目标**：验证测试通过，确认变更不会破坏现有功能
 
@@ -187,7 +372,7 @@ mvn jacoco:report
 
 ---
 
-### 步骤四：安全评估（Security）
+### 步骤四：安全评估（Security） [AUTO]
 
 **目标**：评估代码安全性
 
@@ -241,7 +426,7 @@ mvn org.owasp:dependency-check-maven:check
 
 ---
 
-### 步骤五：反馈（Feedback）
+### 步骤五：反馈（Feedback）⭐ [CONFIRM_REQUIRED]
 
 **目标**：给出具体、可操作的反馈
 
@@ -304,6 +489,47 @@ status: pending
 | java-testing | 测试执行 |
 | security-review | 安全审查 |
 | java-review | 生成审查意见 |
+
+## 多agent执行参考
+
+### 并行执行示例
+
+```python
+# 使用 Claude Code Agent 并行执行
+from anthropic import Anthropic
+
+# 并行启动三个审查任务
+tasks = [
+    Agent(subagent_type="everything-claude-code:code-reviewer", prompt="审查代码格式..."),
+    Agent(subagent_type="everything-claude-code:security-reviewer", prompt="扫描安全漏洞..."),
+    Agent(subagent_type="everything-claude-code:java-reviewer", prompt="分析性能问题..."),
+]
+
+# 等待所有任务完成
+results = await asyncio.gather(*tasks)
+
+# 聚合结果
+aggregated_result = merge_results(results)
+```
+
+### OpenCode 适配
+
+```python
+# OpenCode 使用不同的 agent 名称
+opencode_tasks = [
+    Agent(subagent_type="code_review", prompt="审查代码格式..."),
+    Agent(subagent_type="security_scan", prompt="扫描安全漏洞..."),
+    Agent(subagent_type="java_review", prompt="分析性能问题..."),
+]
+```
+
+### 结果聚合
+
+| 策略 | 说明 | 适用场景 |
+|------|------|----------|
+| `merge` | 合并所有结果到一个报告 | 代码审查（推荐） |
+| `first` | 返回第一个成功的结果 | 快速检查 |
+| `all` | 返回所有结果数组 | 需要分别处理 |
 
 ## 触发命令
 

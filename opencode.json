@@ -1,0 +1,100 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "anthropic/claude-sonnet-4-5",
+  "small_model": "anthropic/claude-haiku-4-5",
+  "default_agent": "build",
+  "instructions": [
+    "AGENTS.md",
+    ".claude/skills/sop-testing/SKILL.md",
+    ".claude/skills/sop-bug-fix/SKILL.md",
+    ".claude/skills/sop-code-review/SKILL.md",
+    ".claude/skills/sop-deployment/SKILL.md"
+  ],
+  "mcpServers": {
+    "contextgraph": {
+      "command": "python",
+      "args": ["-m", "contextgraph.mcp_server", "--local"],
+      "description": "Shared memory bus for coding agents - checkpoint, resume, knowledge sharing"
+    }
+  },
+  "agent": {
+    "build": {
+      "description": "Primary coding agent for game risk control system development",
+      "mode": "primary",
+      "model": "anthropic/claude-sonnet-4-5",
+      "tools": {
+        "write": true,
+        "edit": true,
+        "bash": true,
+        "read": true,
+        "task": true
+      }
+    },
+    "java_review": {
+      "description": "Expert Java and Spring Boot code reviewer for game risk control system",
+      "mode": "subagent",
+      "model": "anthropic/claude-opus-4-5",
+      "prompt": "You are an expert Java code reviewer specializing in Spring Boot 2.7, MyBatis-Plus, and game risk control systems. Review the code for quality, security, and maintainability.",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "code_review": {
+      "description": "General code review specialist",
+      "mode": "subagent",
+      "model": "anthropic/claude-sonnet-4-5",
+      "prompt": "You are an expert code reviewer. Review code for quality, security, and maintainability.",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "security_scan": {
+      "description": "Security vulnerability detection specialist",
+      "mode": "subagent",
+      "model": "anthropic/claude-opus-4-5",
+      "prompt": "You are a security specialist. Scan for common vulnerabilities in the code.",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": true,
+        "edit": true
+      }
+    },
+    "search_first": {
+      "description": "Research and code search specialist",
+      "mode": "subagent",
+      "model": "anthropic/claude-sonnet-4-5",
+      "prompt": "You are a research specialist. Search for relevant code and documentation before making changes.",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    }
+  },
+  "command": {
+    "/sop testing": {
+      "description": "Execute standard testing workflow",
+      "template": "Please execute the testing SOP workflow for this project.\n\n$ARGUMENTS"
+    },
+    "/sop bug-fix": {
+      "description": "Execute bug fix workflow with parallel agents",
+      "template": "Please execute the bug fix SOP workflow.\n\n$ARGUMENTS"
+    },
+    "/sop code-review": {
+      "description": "Execute code review workflow",
+      "template": "Please execute the code review SOP workflow.\n\n$ARGUMENTS"
+    },
+    "/sop deployment": {
+      "description": "Execute deployment workflow",
+      "template": "Please execute the deployment SOP workflow.\n\n$ARGUMENTS"
+    }
+  }
+}

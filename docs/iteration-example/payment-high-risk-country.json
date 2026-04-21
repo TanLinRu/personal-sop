@@ -1,0 +1,8 @@
+{
+  "userId": "user_12345",
+  "userIp": "192.168.1.100",
+  "deviceId": "device_abc123",
+  "amount": 1000,
+  "cardBin": "4532123456789012",
+  "cardCountry": "KP"
+}

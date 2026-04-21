@@ -1,7 +1,7 @@
 ---
 name: sop-library-research
 description: 标准技术调研流程 - 搜索→验证→兼容→风险→总结
-version: 1.0.0
+version: 1.1.0
 triggers:
   - "技术调研"
   - "技术选型"
@@ -14,6 +14,43 @@ permissions:
   write: allow
   bash: allow
   web: allow
+
+# 多agent并发配置 ⭐
+execution:
+  mode: parallel  # sequential | parallel | hybrid
+  timeout: 300000 # 单任务超时(毫秒)
+
+# 并行任务定义
+parallel_tasks:
+  - name: 文档搜索
+    description: 搜索官方文档和技术文章
+    agent: everything-claude-code:search-first
+    opencode_agent: search_first
+    depends_on: []
+
+  - name: 示例验证
+    description: 创建最小示例验证功能
+    agent: everything-claude-code:architect
+    opencode_agent: architect
+    depends_on: []
+
+  - name: 风险评估
+    description: 评估安全风险和维护状态
+    agent: everything-claude-code:security-reviewer
+    opencode_agent: security_scan
+    depends_on: []
+
+# 结果聚合规则
+aggregation:
+  strategy: merge
+  output_format: markdown
+
+# Claude Code / OpenCode Agent 映射表
+agent_mapping:
+  search-first: search_first
+  architect: architect
+  security-reviewer: security_scan
+  docs-lookup: docs_lookup
 ---
 
 # SOP Library Research - 标准技术调研流程
@@ -30,16 +67,130 @@ permissions:
 - 框架升级（Django 2.x→4.x、Vue 2→3）
 - 学习新技术
 
+## 多agent并行执行 ⭐
+
+### 执行模式
+
+| 模式 | 说明 | 适用场景 |
+|------|------|----------|
+| `parallel` | 文档搜索、示例验证、风险评估并行 | 技术调研（推荐） |
+| `sequential` | 按顺序执行 | 需要前置依赖 |
+
+### 并行任务执行
+
+```bash
+# 并行执行技术调研的三个任务
+Agent(
+  subagent_type="everything-claude-code:search-first",
+  prompt="搜索[技术名称]的官方文档和最佳实践..."
+)
+
+Agent(
+  subagent_type="everything-claude-code:architect",
+  prompt="分析[技术名称]的架构设计，评估与现有系统兼容性..."
+)
+
+Agent(
+  subagent_type="everything-claude-code:security-reviewer",
+  prompt="评估[技术名称]的安全风险和维护状态..."
+)
+```
+
+### 执行流程
+
+```
+1. 业务分析 (Business Analysis)
+       ↓
+2. 并行执行三个调研任务:
+   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+   │  文档搜索   │  │  示例验证   │  │  风险评估   │
+   │(search-first)│ │ (architect) │  │(security)   │
+   └──────┬──────┘  └──────┬──────┘  └──────┬──────┘
+          └────────────────┼────────────────┘
+                           ↓
+3. 聚合结果 → 总结 (Summary)
+```
+
 ## 流程步骤
+
+### 步骤零：业务分析 ⭐ [CONFIRM_REQUIRED]
+
+**目标**：理解业务背景，确保技术选型服务于业务目标
+
+**执行内容**：
+1. 明确业务目标和核心需求
+2. 分析竞品功能差异（了解业内最佳实践）
+3. 梳理用户旅程和关键用例
+4. 确保技术选型支撑业务场景
+
+**为什么需要业务分析**：
+- 避免技术导向而非业务导向的选型
+- 通过竞品分析了解行业标准功能
+- 确保技术方案能覆盖核心业务场景
+
+**输出**：
+```markdown
+---
+sop: library-research
+step: 0_business
+status: in_progress
+---
+
+## 业务分析
+
+### 业务背景
+- **业务场景**：例如游戏风控、电商支付、内容审核
+- **目标用户**：B端商家/C端用户/内部运营
+- **核心价值**：解决什么问题，带来什么价值
+
+### 竞品分析（了解行业标准）
+| 竞品 | 核心功能 | 优势 | 不足 | 定价模式 |
+|------|----------|------|------|----------|
+| 竞品A | 功能1、功能2 | 优势1 | 不足1 | 按量/包年 |
+| 竞品B | 功能1、功能3 | 优势2 | 不足2 | 按量/包年 |
+| 自建 | 定制化 | 灵活 | 需要投入 | 人力成本 |
+
+**调研竞品**：
+- 行业头部产品（网易易盾、腾讯ACE、数美科技等）
+- 开源方案（Apache Flink CEP、Drools、LiteFlow等）
+- 自建方案（定制化程度）
+
+### 用户旅程
+```
+用户入口 → 核心流程 → 风控检测 → 决策 → 结果 → 反馈
+```
+
+### 关键业务用例
+| 用例 | 描述 | 核心指标 |
+|------|------|----------|
+| 用例1 | 注册风控：批量注册、虚拟号检测 | TPR>95%, FPR<1% |
+| 用例2 | 登录风控：异地登录、暴力破解 | 延迟<50ms |
+| 用例3 | 支付风控：充值欺诈、洗钱检测 | 召回率>95% |
+
+### 技术选型约束
+- 业务指标要求：
+- 延迟要求：
+- 成本约束：
+- 团队技术栈：
+
+### 业务分析结论
+- [ ] 已明确核心业务场景
+- [ ] 已了解竞品功能差异
+- [ ] 已梳理关键用例
+- [ ] 技术选型需支撑以上需求
+```
+
+---
 
 ### 步骤一：搜索文档（Search）
 
 **目标**：搜索官方文档和示例，了解库的基本信息
 
 **执行内容**：
-1. 使用 documentation-lookup 或 Context7 MCP 搜索相关文档
-2. 使用 WebSearch 进行社区调研
-3. 收集官方信息（网站、版本、Stars、更新日期）
+1. **确认业务需求**（基于步骤零的业务分析）
+2. 使用 documentation-lookup 或 Context7 MCP 搜索相关文档
+3. 使用 WebSearch 进行社区调研
+4. 收集官方信息（网站、版本、Stars、更新日期）
 
 **输出**：
 ```markdown
@@ -270,7 +421,7 @@ mvn org.owasp:dependency-check-maven:check
 
 ---
 
-### 步骤五：总结（Summary）
+### 步骤五：总结（Summary）⭐ [CONFIRM_REQUIRED]
 
 **目标**：汇总调研结果，给出决策建议
 
@@ -289,10 +440,20 @@ status: pending
 
 ## 调研结论
 
-### 决策建议
+### 决策建议（强制输出）
 - [ ] 推荐使用
 - [ ] 谨慎使用
 - [ ] 不推荐使用
+
+### 决策理由（必须3条以内）
+1.
+2.
+3.
+
+### 风险评估
+- 维护风险: 低/中/高
+- 学习成本: 低/中/高
+- 集成复杂度: 低/中/高
 
 ### 优缺点分析
 **优点**:
@@ -301,16 +462,18 @@ status: pending
 **缺点**:
 1.
 
-### 使用建议
+### 使用建议（强制输出）
 - 适用场景:
 - 不适用场景:
 - 注意事项:
+- **替代方案**:
 
-### 后续行动
+### 后续行动（强制输出）
 - [ ] 进行 PoC 验证
 - [ ] 制定迁移计划
 - [ ] 安排技术分享
 - [ ] 观望后续发展
+- **立即执行**:（如需立即行动则填写）
 
 ### 调研信息
 - 调研人:
@@ -339,6 +502,43 @@ status: pending
 | java-testing | 示例验证 |
 | security-review | 安全风险评估 |
 | architecture-decision-records | 架构兼容性评估 |
+
+## 多agent执行参考
+
+### 并行执行示例
+
+```python
+# 并行执行技术调研任务
+tasks = [
+    Agent(subagent_type="everything-claude-code:search-first",
+          prompt="搜索[技术名称]的官方文档和最佳实践..."),
+    Agent(subagent_type="everything-claude-code:architect",
+          prompt="分析[技术名称]的架构设计，评估与现有系统兼容性..."),
+    Agent(subagent_type="everything-claude-code:security-reviewer",
+          prompt="评估[技术名称]的安全风险和维护状态..."),
+]
+
+# 等待所有任务完成
+results = await asyncio.gather(*tasks)
+```
+
+### OpenCode 适配
+
+```python
+opencode_tasks = [
+    Agent(subagent_type="search_first", prompt="搜索文档..."),
+    Agent(subagent_type="architect", prompt="分析架构..."),
+    Agent(subagent_type="security_scan", prompt="评估风险..."),
+]
+```
+
+### 结果聚合
+
+| 策略 | 说明 |
+|------|------|
+| `merge` | 合并所有调研结果到一个报告 |
+| `first` | 返回第一个成功的结果 |
+| `all` | 返回所有结果数组 |
 
 ## 触发命令
 

@@ -1,7 +1,7 @@
 ---
 name: sop-incident-response
 description: 标准线上问题响应流程 - 收集→复现→定位→修复→验证→报告
-version: 1.0.0
+version: 1.1.0
 triggers:
   - "线上问题"
   - "故障"
@@ -16,6 +16,43 @@ permissions:
   write: allow
   bash: allow
   web: allow
+
+# 多agent并发配置 ⭐
+execution:
+  mode: hybrid  # sequential | parallel | hybrid (收集+复现可并行,修复需串行)
+  timeout: 600000 # 单任务超时(毫秒)
+
+# 并行任务定义
+parallel_tasks:
+  - name: 日志收集
+    description: 收集告警和错误日志
+    agent: everything-claude-code:search-first
+    opencode_agent: search_first
+    depends_on: []
+
+  - name: 代码分析
+    description: 分析相关代码定位问题
+    agent: everything-claude-code:java-reviewer
+    opencode_agent: java_review
+    depends_on: []
+
+  - name: 监控分析
+    description: 分析监控指标和趋势
+    agent: everything-claude-code:search-first
+    opencode_agent: search_first
+    depends_on: []
+
+# 结果聚合规则
+aggregation:
+  strategy: merge
+  output_format: markdown
+
+# Claude Code / OpenCode Agent 映射表
+agent_mapping:
+  search-first: search_first
+  java-reviewer: java_review
+  security-reviewer: security_scan
+  build-error-resolver: build_check
 ---
 
 # SOP Incident Response - 标准线上问题响应流程
@@ -32,16 +69,80 @@ permissions:
 - 重大事件响应
 - 故障演练
 
+## 多agent并行执行 ⭐
+
+### 执行模式
+
+| 模式 | 说明 | 适用场景 |
+|------|------|----------|
+| `hybrid` | 收集+复现并行，修复串行 | 故障响应（推荐） |
+| `parallel` | 所有任务并行 | 多团队协作 |
+| `sequential` | 按顺序执行 | 简单问题 |
+
+### 并行任务执行
+
+```bash
+# 并行执行信息收集和初步分析
+Agent(
+  subagent_type="everything-claude-code:search-first",
+  prompt="搜索最近30分钟的错误日志和告警信息..."
+)
+
+Agent(
+  subagent_type="everything-claude-code:java-reviewer",
+  prompt="分析相关代码，识别潜在问题..."
+)
+
+Agent(
+  subagent_type="everything-claude-code:search-first",
+  prompt="查询监控指标，分析性能趋势..."
+)
+```
+
+### 执行流程
+
+```
+1. 收集信息 (Collect)
+   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+   │  日志收集   │  │  代码分析   │  │  监控分析   │
+   └──────┬──────┘  └──────┬──────┘  └──────┬──────┘
+          └────────────────┼────────────────┘
+                           ↓
+2. 复现问题 (Reproduce) - 串行
+3. 定位根因 (Locate) - 串行
+4. 制定修复 (Fix) - 串行
+5. 验证修复 (Verify) - 串行
+6. 编写报告 (Report) - 串行
+```
+
 ## 流程步骤
 
-### 步骤一：收集信息（Collect）
+### 步骤一：收集信息（Collect）⭐含告警阈值
 
 **目标**：收集告警和错误信息，初步了解问题
 
 **执行内容**：
 1. 搜索相关日志和告警信息
 2. 收集告警详情、错误堆栈、影响范围
-3. 确定问题优先级和影响程度
+3. **根据告警阈值判断是否需要升级**
+4. 确定问题优先级和影响程度
+
+**告警分级标准**：
+| 级别 | 定义 | 响应时间 | 示例 |
+|------|------|----------|------|
+| P0 | 核心服务不可用 | 5分钟 | 数据库宕机、服务完全不可用 |
+| P1 | 主要功能受损 | 15分钟 | 支付失败、登录异常 |
+| P2 | 次要功能异常 | 1小时 | 页面加载慢、某些功能超时 |
+| P3 | 轻微问题 | 4小时 | 日志告警、非核心功能异常 |
+
+**告警阈值参考**：
+| 指标 | P0 阈值 | P1 阈值 | P2 阈值 |
+|------|---------|---------|---------|
+| 错误率 | >10% | >5% | >1% |
+| 响应时间(P99) | >5000ms | >2000ms | >1000ms |
+| CPU使用率 | >90% | >80% | >70% |
+| 内存使用率 | >90% | >80% | >70% |
+| QPS降级 | >50% | >30% | >10% |
 
 **输出**：
 ```markdown
@@ -107,7 +208,7 @@ df -h
 
 ---
 
-### 步骤二：复现问题（Reproduce）
+### 步骤二：复现问题（Reproduce）⭐ [CONFIRM_REQUIRED]
 
 **目标**：尝试在测试环境复现问题
 
@@ -357,7 +458,7 @@ curl http://localhost:8080/actuator/health
 
 ---
 
-### 步骤六：编写报告（Report）
+### 步骤六：编写报告（Report）⭐含复盘模板
 
 **目标**：编写事故报告，总结经验教训
 
@@ -365,6 +466,96 @@ curl http://localhost:8080/actuator/health
 1. 整理完整的时间线
 2. 分析根因和教训
 3. 提出改进建议
+4. **产出结构化复盘文档**
+
+**复盘模板（必须输出）**：
+```markdown
+---
+sop: incident-response
+step: 6_report
+status: completed
+---
+
+# 事故复盘报告
+
+## 1. 基本信息
+
+| 字段 | 内容 |
+|------|------|
+| 事故编号 | INC-YYYYMMDD-NNN |
+| 事故级别 | P0/P1/P2/P3 |
+| 开始时间 | YYYY-MM-DD HH:mm:ss |
+| 恢复时间 | YYYY-MM-DD HH:mm:ss |
+| 影响时长 | XX分钟 |
+| 影响范围 | 服务/用户/金额 |
+| 报告人 | |
+| 审核人 | |
+
+## 2. 时间线
+
+| 时间点 | 操作 | 操作人 |
+|--------|------|--------|
+| HH:mm | 告警触发 | 系统 |
+| HH:mm | 值班响应 | XXX |
+| HH:mm | 开始排查 | XXX |
+| HH:mm | 定位根因 | XXX |
+| HH:mm | 实施修复 | XXX |
+| HH:mm | 验证通过 | XXX |
+| HH:mm | 恢复服务 | XXX |
+
+## 3. 根因分析（5Why分析法）
+
+**问题描述**：
+
+**Why 1**: 为什么会发生？
+**Why 2**: 为什么会这样？
+**Why 3**: 为什么会到这步？
+**Why 4**: 为什么会忽略？
+**Why 5**: 根本原因是什么？
+
+**根本原因**：
+
+## 4. 处理过程
+
+### 4.1 应急处理
+- 临时方案：
+- 实施过程：
+
+### 4.2 彻底修复
+- 修复方案：
+- 实施过程：
+
+## 5. 经验教训
+
+### 5.1 做得好（Keep）
+1.
+
+### 5.2 需要改进（Improve）
+1.
+
+### 5.3 行动计划（Action Items）
+
+| 序号 | 问题 | 改进措施 | 负责人 | 截止日期 | 状态 |
+|------|------|----------|--------|----------|------|
+| 1 | 监控告警延迟 | 优化告警阈值和通道 | | | 待处理 |
+| 2 | 缺少熔断机制 | 添加Sentinel熔断 | | | 待处理 |
+| 3 | 回滚预案不熟悉 | 完善回滚手册并演练 | | | 待处理 |
+
+## 6. 附件
+
+- [ ] 相关日志
+- [ ] 监控截图
+- [ ] 代码变更
+- [ ] 沟通记录
+
+## 7. 结论签名
+
+| 角色 | 签名 | 日期 |
+|------|------|------|
+| 报告人 | | |
+| 审核人 | | |
+| 技术负责人 | | |
+```
 
 **输出**：
 ```markdown
@@ -440,6 +631,42 @@ status: pending
 | java-review | 代码分析 |
 | java-testing | 测试验证 |
 | security-review | 安全事件审查 |
+
+## 多agent执行参考
+
+### 并行执行示例
+
+```python
+# 并行执行信息收集和代码分析
+tasks = [
+    Agent(subagent_type="everything-claude-code:search-first",
+          prompt="搜索最近30分钟关于[错误关键词]的错误日志..."),
+    Agent(subagent_type="everything-claude-code:java-reviewer",
+          prompt="分析相关代码，找出潜在问题..."),
+    Agent(subagent_type="everything-claude-code:search-first",
+          prompt="查询Prometheus监控指标，分析性能趋势..."),
+]
+
+# 等待所有任务完成
+results = await asyncio.gather(*tasks)
+```
+
+### OpenCode 适配
+
+```python
+opencode_tasks = [
+    Agent(subagent_type="search_first", prompt="搜索日志..."),
+    Agent(subagent_type="java_review", prompt="分析代码..."),
+]
+```
+
+### 结果聚合
+
+| 策略 | 说明 |
+|------|------|
+| `merge` | 合并所有分析结果到一个报告 |
+| `first` | 返回第一个成功的结果 |
+| `all` | 返回所有结果数组 |
 
 ## 触发命令
 

@@ -217,6 +217,24 @@ npm run dev
 /sop api-design   # 设计API
 ```
 
+## ECC Agents
+
+项目支持调用 AI Agent 进行并行代码审查和业务分析：
+
+| Agent | 用途 |
+|-------|------|
+| code-reviewer | 代码格式和规范审查 |
+| java-reviewer | Java/Spring Boot 专家分析 |
+| security-scan | 安全漏洞扫描 |
+| java-build-resolver | 构建错误修复 |
+
+并行执行示例：
+```
+# 并行调用多个 Agent
+/search [关键词]    # 搜索相关代码
+/review [文件]      # 代码审查
+```
+
 ## 常见问题
 
 | 问题 | 解决 |
@@ -224,3 +242,42 @@ npm run dev
 | 编译失败 | 运行 `.\run-compile.ps1` |
 | 400 Bad Request | 使用 `--data-binary @file.json` |
 | curl JSON错误 | Windows必须用 `--data-binary` |
+
+## 基础设施服务
+
+```powershell
+# 启动所有基础设施
+docker compose -f docker-compose-dev.yml up -d
+```
+
+| 服务 | 端口 | 账号 |
+|------|------|------|
+| MySQL | 3306 | root/(空密码) |
+| Redis | 6379 | - |
+| Kafka | 9092 | - |
+| ClickHouse | 8123 | default/(空密码) |
+
+## 配置说明
+
+### 数据库配置
+
+`backend/src/main/resources/application.yml` 中的数据库密码需要自行配置：
+
+```yaml
+spring:
+  datasource:
+    password: your_password_here  # 修改为你的MySQL密码
+```
+
+### 注意事项
+
+- 提交代码前请确保 `application.yml` 不包含敏感密码
+- 本地开发时可复制 `application.yml` 为 `application-local.yml` 并配置个人密码
+- 已配置 `.gitignore` 忽略 `application-local.yml`
+
+## 迭代文档
+
+项目包含完整的 SOP 迭代流程示例：
+
+- [SOP 迭代流程测试用例](./docs/iteration-example/SOP-ITERATION-TEST.md)
+- [测试数据](./docs/iteration-example/payment-high-risk-country.json)
