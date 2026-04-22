@@ -267,7 +267,7 @@ status: in_progress
 - 操作系统:
 
 ### 最小示例代码
-```java
+​```java
 // 核心功能示例
 ```
 
@@ -285,7 +285,7 @@ status: in_progress
 ```
 
 **命令参考**：
-```bash
+​```bash
 # 创建测试项目
 mvn archetype:generate -DgroupId=com.test -DartifactId=library-test
 

@@ -1,478 +1,538 @@
----
-name: sop-knowledge
-description: 技术框架学习SOP - 快速掌握框架正确用法，避免常见错误，沉淀技术知识
-version: 1.0.0
-triggers:
-  - "学习框架"
-  - "技术入门"
-  - "框架调研"
-  - "快速开始"
-  - "/sop knowledge"
-permissions:
-  task: allow
-  read: allow
-  write: allow
-  bash: allow
-  web: allow
----
-
-# SOP Knowledge - 技术框架学习SOP
-
-## 概述
-
-本 SOP 提供标准化的技术框架学习流程，帮助快速掌握框架的正确用法，避免常见错误。学习结果沉淀为文档，供团队复用。
-
-## 使用场景
-
-- 学习新的框架/库（LiteFlow、Drools、Spring Cloud等）
-- 快速掌握框架的Hello World用法
-- 避免框架使用中的常见错误
-- 沉淀技术知识，形成团队资产
-
-## 流程步骤
-
-### 步骤一：确认学习目标（Clarify）⭐ [CONFIRM_REQUIRED]
-
-**目标**：明确要学习的框架和学习深度
-
-**执行内容**：
-1. 确认框架名称和版本
-2. 明确学习目标（快速入门 / 深入理解 / 生产使用）
-3. 确认学习资源来源
-
-**输出**：
-```markdown
----
-sop: knowledge
-step: 1_clarify
-status: in_progress
----
-
-## 学习目标
-
-### 框架信息
-- **框架名称**:
-- **版本**:
-- **官网**:
-
-### 学习目标
-- [ ] 快速入门（Hello World）
-- [ ] 核心概念理解
-- [ ] 生产环境使用
-- [ ] 深度定制开发
-```
-
----
-
-### 步骤二：查找官方文档（Search） [AUTO]
-
-**目标**：获取权威的官方文档和示例
-
-**执行内容**：
-1. **优先检查 common-mistakes 知识库**
-2. 访问官方网站获取文档
-3. 查找Hello World示例
-4. 确认最新稳定版本
-
-**知识库检查命令**：
-```bash
-# 检查是否有该框架的常见错误记录
-ls .sop/output/common-mistakes/
-cat .sop/output/common-mistakes/[框架名]_CommonMistakes.md
-```
-
-**输出**：
-```markdown
----
-sop: knowledge
-step: 2_search
-status: in_progress
----
-
-## 知识库检查
-
-### 常见错误记录
-- [ ] 存在：`.sop/output/common-mistakes/[框架名]_CommonMistakes.md`
-- [ ] 不存在，需要新建
-
-### 官方文档
-
-### 资源链接
-| 资源 | 链接 | 说明 |
-|------|------|------|
-| 官方文档 |  | |
-| Hello World |  |  |
-| API Reference |  |  |
-
-### 版本信息
-- 最新稳定版本:
-- 发布日期:
-- 兼容性:
-```
-
----
-
-### 步骤三：最小示例验证（Verify）
-
-**目标**：运行最小示例，确认环境可用
-
-**执行内容**：
-1. 创建最小项目
-2. 复制官方Hello World示例
-3. 运行验证
-
-**输出**：
-```markdown
----
-sop: knowledge
-step: 3_verify
-status: in_progress
----
-
-## 最小示例验证
-
-### 环境信息
-- JDK版本:
-- 构建工具:
-- 操作系统:
-
-### 示例代码
-```java
-// 最小示例代码
-```
-
-### 验证结果
-| 步骤 | 状态 |
-|------|------|
-| 项目创建 | ✅/❌ |
-| 依赖添加 | ✅/❌ |
-| 编译 | ✅/❌ |
-| 运行 | ✅/❌ |
-```
-
----
-
-### 步骤四：核心API学习（Learn）
-
-**目标**：掌握框架的核心API和使用方式
-
-**执行内容**：
-1. 学习核心类和方法
-2. 验证API调用方式
-3. 记录关键发现
-
-**输出**：
-```markdown
----
-sop: knowledge
-step: 4_learn
-status: in_progress
----
-
-## 核心API
-
-### 关键类/方法
-| 类/方法 | 用途 | 示例 |
-|--------|------|------|
-| 核心类1 | 功能描述 | 代码示例 |
-| 核心方法 | 功能描述 | 代码示例 |
-
-### 重要概念
-- 概念1: 说明
-- 概念2: 说明
-```
-
----
-
-### 步骤五：常见错误总结（Common Mistakes）⭐重点步骤
-
-**目标**：总结常见错误，避免踩坑（关键步骤！）
-
-**执行内容**：
-1. 搜索官方issues/GitHub问题
-2. 分析常见错误模式
-3. 记录正确用法
-4. **产出到 common-mistakes 知识库**
-
-**错误沉淀机制**：
-- 所有错误必须记录到 `.sop/output/common-mistakes/[框架名]_CommonMistakes.md`
-- 后续学习同一框架时自动检查并提示
-- 格式：❌ 错误代码 + ✅ 正确代码 + 错误原因
-
-**输出**：
-```markdown
----
-sop: knowledge
-step: 5_common_mistakes
-status: in_progress
----
-
-## 常见错误
-
-### ❌ 错误理解
-```
-// 错误的代码示例
-```
-
-### ✅ 正确理解
-```
-// 正确的代码示例
-```
-
-### 错误原因分析
-1. 错误原因1
-2. 错误原因2
-
-### 关键区别
-| 错误用法 | 正确用法 |
-|----------|----------|
-| this.getParam() | 直接在process()中写业务逻辑 |
-| this.getData() | 通过FlowExecutor传入上下文 |
-| 直接获取参数 | 参数由调用方通过上下文传入 |
-
-### 错误沉淀状态
-- [ ] 已记录到 common-mistakes 知识库
-- [ ] 错误代码已验证
-- [ ] 正确用法已验证
-```
-
----
-
-### 步骤六：实战示例（Example）
-
-**目标**：创建实战示例，加深理解
-
-**执行内容**：
-1. 创建贴近业务的示例
-2. 验证完整流程
-3. 记录关键代码
-
-**输出**：
-```markdown
----
-sop: knowledge
-step: 6_example
-status: in_progress
----
-
-## 实战示例
-
-### 场景描述
-业务场景说明
-
-### 完整代码
-```java
-// 完整示例代码
-```
-
-### 执行流程
-1. 步骤1
-2. 步骤2
-3. 步骤3
-```
-
----
-
-### 步骤七：文档沉淀（Document）⭐ [CONFIRM_REQUIRED]
-
-**目标**：生成可复用的技术文档
-
-**执行内容**：
-1. 整理学习笔记
-2. 生成快速入门指南
-3. **产出到 common-mistakes 知识库（必须）**
-4. 更新AGENTS.md
-
-**输出位置**：
-| 文档类型 | 输出路径 |
-|----------|----------|
-| 快速入门 | `.sop/output/[框架名]_QuickStart.md` |
-| **常见错误（必须）** | `.sop/output/common-mistakes/[框架名]_CommonMistakes.md` |
-| API速查 | `.sop/output/[框架名]_APICheatSheet.md` |
-
-**输出**：
-```markdown
----
-sop: knowledge
-step: 7_document
-status: completed
----
-
-## 学习成果
-
-### 文档列表
-- 快速入门指南: `.sop/output/[框架名]_QuickStart.md`
-- 常见错误总结: `.sop/output/common-mistakes/[框架名]_CommonMistakes.md`
-- API速查: `.sop/output/[框架名]_APICheatSheet.md`
-
-### 关键发现
-1. 发现1
-2. 发现2
-
-### 后续行动
-- [ ] 分享给团队
-- [ ] 实际项目中使用
-- [ ] 深入学习
-- [ ] common-mistakes 已更新
-```
-
----
-
-## 框架特定指南
-
-### LiteFlow 快速要点
-
-**正确理解**：
-- 组件继承`NodeComponent`，只写`process()`方法
-- 不要尝试在组件内获取参数（没有getParam/getData）
-- 通过`FlowExecutor`执行链，参数通过上下文传递
-- 配置文件位置：`resources/config/flow.xml`
-- 使用`DefaultContext`传递数据
-
-**最小示例**：
-```java
-@LiteflowComponent("a")
-public class ACmp extends NodeComponent {
-    @Override
-    public void process() {
-        DefaultContext ctx = this.getContextBean(DefaultContext.class);
-        String input = (String) ctx.getData("input");
-        ctx.setData("output", input.toUpperCase());
-    }
-}
-```
-
-**配置文件**：
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<flow>
-    <chain name="chain1">
-        THEN(a, b, c);
-    </chain>
-</flow>
-```
-
-**执行方式**：
-```java
-@Resource
-private FlowExecutor flowExecutor;
-
-public void test() {
-    DefaultContext context = new DefaultContext();
-    context.setData("input", "hello");
-    flowExecutor.execute2Resp("chain1", context, DefaultContext.class);
-    String result = (String) context.getData("output");
-}
-```
-
----
-
-### Drools 快速要点
-
-**核心概念**：
-- KieServices: 规则引擎入口
-- KieContainer: 加载规则包
-- KieSession: 执行规则会话
-- KIE module (.kjars): 规则文件打包
-
-**Maven依赖**：
-```xml
-<dependency>
-    <groupId>org.drools</groupId>
-    <artifactId>drools-core</artifactId>
-    <version>8.40.0.Final</version>
-</dependency>
-<dependency>
-    <groupId>org.drools</groupId>
-    <artifactId>drools-compiler</artifactId>
-    <version>8.40.0.Final</version>
-</dependency>
-```
-
-**最小示例**：
-```java
-KieServices ks = KieServices.Factory.get();
-KieContainer kc = ks.getKieClasspathContainer();
-KieSession ksession = kc.newKieSession("ksession-rules");
-ksession.insert(new Fact());
-ksession.fireAllRules();
-```
-
-**规则文件(.drl)**：
-```drools
-rule " Hello World "
-    when
-        $f: Fact(value > 10)
-    then
-        System.out.println("Fact value: " + $f.getValue());
-end
-```
-
-**注意**：
-- 需要JDK 17+
-- 规则文件放在`src/main/resources/rules/`
-- 需要在`kmodule.xml`中注册规则包
-
----
-
-### Flask ML API 快速要点
-
-**场景**：独立ML模型服务（推荐与主业务分离部署）
-
-**最小示例**：
-```python
-from flask import Flask, request, jsonify
-import joblib
-
-app = Flask(__name__)
-model = joblib.load('model.pkl')
-
-@app.route('/predict', methods=['POST'])
-def predict():
-    data = request.json
-    features = data['features']
-    prediction = model.predict([features])
-    return jsonify({'prediction': prediction.tolist()})
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
-```
-
-**启动**：
-```bash
-pip install flask scikit-learn joblib
-flask run --port 5000
-```
-
-**调用**：
-```bash
-curl -X POST http://localhost:5000/predict \
-     -H "Content-Type: application/json" \
-     -d '{"features": [1.0, 2.0, 3.0]}'
-```
-
-**优点**：
-- 独立部署，不影响主业务
-- 支持模型热更新
-- 可用Python生态（scikit-learn, TensorFlow, PyTorch）
-
----
-
-## 常见框架学习清单
-
-| 框架 | 快速入门文档 | 常见错误 | 适用场景 |
-|------|-------------|----------|----------|
-| LiteFlow | LiteFlow_QuickStart.md | 组件内获取参数 | 轻量级规则引擎 |
-| Drools | - | DRL语法 | 复杂企业规则 |
-| Flask ML | - | - | Python模型服务 |
-| MyBatis-Plus | AGENTS.md | 版本冲突 | ORM持久层 |
-| Knife4j | AGENTS.md | namespace | API文档 |
-
----
-
-## 输出位置
-
-所有学习成果输出到：
-- `.sop/output/` - 学习文档
-- `.claude/skills/sop-knowledge/` - SOP Skill
-- `AGENTS.md` - 更新项目配置
+- ---
+  name: sop-knowledge
+  description: 领域知识管理与规范沉淀 - 项目前的知识准备
+  version: 2.0.0
+  triggers:
+    - "/sop knowledge"
+    - "领域知识"
+    - "知识沉淀"
+    - "行业规范"
+    - "调研"
+    - "研究"
+  permissions:
+      task:
+      explore: allow
+      general: allow
+      read:
+      - "."
+      - ".sop/**"
+      - ".claude/**"
+      write:
+      - ".sop/knowledge/**"
+      - ".sop/output/**"
+      - ".sop/state/**"
+      bash: allow
+  execution:
+      mode: async
+      checkpoint_dir: .sop/state
+      state_file: .sop/state/knowledge-{id}.json
+  ---
+
+  # SOP Knowledge - 领域知识管理与规范沉淀
+
+  > 在项目实现前，系统化收集和沉淀领域知识，确保 PRD 符合业内最佳实践
+
+  ## 概述
+
+  本 SOP 提供领域知识管理框架，用于：
+  1. **项目前调研**：系统化收集领域知识
+  2. **知识沉淀**：将调研结果结构化存储
+  3. **规范对齐**：确保 PRD 符合行业标准
+  4. **经验复用**：团队知识资产化
+
+  ## 与其他 SOP 的关系
+
+  | 前置 SOP      | 用途                     |
+  | ------------- | ------------------------ |
+  | sop-knowledge | 收集领域知识（前置步骤） |
+  | sop-prd       | 生成 PRD（依赖知识输出） |
+  | sop-scaffold  | 生成脚手架（依赖 PRD）   |
+
+  ---
+
+  ## Step 1: 识别知识需求 (IDENTIFY)
+
+  ### 执行指令
+
+  分析用户输入，识别需要研究的知识领域：
+
+  ```agent
+  # 1. 解析业务领域
+  # 2. 确定知识类别
+  # 3. 列出需要调研的点
+  ```
+
+  ### 知识领域分类
+
+  | 业务领域 | 知识类别                     | 关键知识要点                     |
+  | -------- | ---------------------------- | -------------------------------- |
+  | 游戏风控 | 安全合规、性能优化、MLOps    | 外挂检测算法、特征工程、风控指标 |
+  | 电商     | 交易安全、供应链、推荐系统   | 订单履约、库存管理、推荐算法     |
+  | 金融风控 | 合规监管、信贷风控、反欺诈   | 巴塞尔协议、评分卡模型、实时决策 |
+  | 教育     | 课程设计、学习分析、合规     | 学情分析、个性化推荐、内容审核   |
+  | 医疗     | 隐私合规、诊疗规范、数据安全 | HIPAA/PIPL、临床决策支持         |
+
+  ### AskUserQuestion 示例
+
+  ```javascript
+  AskUserQuestion({
+    question: "您希望重点研究哪些方面的知识？",
+    header: "知识重点",
+    options: [
+      { label: "行业最佳实践", description: "了解业界标准做法" },
+      { label: "技术实现方案", description: "了解技术选型和架构" },
+      { label: "合规与安全", description: "了解法律法规和安全要求" },
+      { label: "竞品分析", description: "了解竞争对手方案" },
+      { label: "默认全部(推荐)", description: "自动收集所有方面的知识" }
+    ],
+    multiSelect: true
+  })
+  ```
+
+  > **自动模式**：选择"默认全部"将自动执行所有知识收集，无需分步确认
+
+  ---
+
+  ## Step 2: 知识收集 (RESEARCH)
+
+  ### 执行指令
+
+  ```agent
+  # 1. WebSearch 搜索行业资料
+  # 2. 探索代码库（如有相关代码）
+  # 3. 整理发现
+  ```
+
+  ### 知识收集清单
+
+  #### 2.1 行业标准与最佳实践
+
+  | 维度     | 调研问题                   | 信息来源           |
+  | -------- | -------------------------- | ------------------ |
+  | 行业报告 | 该领域的主流趋势是什么？   | 行业报告、白皮书   |
+  | 标准规范 | 有什么行业标准需要遵守？   | 官方文档、协会网站 |
+  | 最佳实践 | 一线公司的标准做法是什么？ | 技术博客、会议演讲 |
+  | 常见模式 | 成熟的架构模式有哪些？     | 开源项目、技术文档 |
+
+  #### 2.2 合规与安全
+
+  | 维度     | 调研问题                   | 信息来源           |
+  | -------- | -------------------------- | ------------------ |
+  | 法律法规 | 需要遵守哪些法律法规？     | 法律条文、解读文章 |
+  | 认证标准 | 需要通过哪些认证？         | 认证机构官网       |
+  | 数据隐私 | 数据采集和使用有什么限制？ | 隐私政策、合规指南 |
+  | 安全要求 | 有什么安全合规要求？       | 安全标准、等保文档 |
+
+  #### 2.3 技术方案
+
+  | 维度     | 调研问题                   | 信息来源             |
+  | -------- | -------------------------- | -------------------- |
+  | 技术栈   | 主流技术选型是什么？       | 开源项目、技术社区   |
+  | 架构模式 | 成熟的架构方案有哪些？     | 架构书籍、技术博客   |
+  | 性能基准 | 性能指标的行业标准是什么？ | 基准测试、技术大会   |
+  | 成本参考 | 成本结构和优化方向？       | 供应商报价、案例分析 |
+
+  #### 2.4 竞品分析
+
+  | 维度     | 调研问题             | 信息来源           |
+  | -------- | -------------------- | ------------------ |
+  | 市场玩家 | 主要竞争对手有哪些？ | 市场报告、公司官网 |
+  | 产品功能 | 竞品核心功能是什么？ | 产品体验、行业分析 |
+  | 技术特点 | 技术实现有什么亮点？ | 技术博客、专利申请 |
+  | 定价策略 | 商业模式和定价？     | 官网、价格页       |
+
+  ---
+
+  ## Step 3: 知识结构化 (STRUCTURE)
+
+  ### 执行指令
+
+  将收集的知识结构化，输出标准格式：
+
+  ```agent
+  # 生成知识文档
+  Write(
+    file_path=".sop/knowledge/{domain}-{date}.md",
+    content="{{knowledge_document}}"
+  )
+  ```
+
+  ### 知识文档模板
+
+  ```markdown
+  ---
+  knowledge_id: {domain}-{date}
+  domain: {业务领域}
+  type: industry_knowledge | technical_spec | compliance_guide | competitor_analysis
+  version: 1.0.0
+  created_at: {date}
+  ---
+  
+  # {业务领域} 领域知识
+  
+  ## 1. 行业概览
+  
+  ### 1.1 市场背景
+  {市场规模、发展趋势、主要玩家}
+  
+  ### 1.2 行业挑战
+  - 挑战1：{描述}
+  - 挑战2：{描述}
+  
+  ### 1.3 发展机遇
+  - 机遇1：{描述}
+  - 机遇2：{描述}
+  
+  ---
+  
+  ## 2. 最佳实践
+  
+  ### 2.1 主流架构模式
+  | 模式 | 描述 | 适用场景 | 优缺点 |
+  |------|------|----------|--------|
+  | 模式A | {描述} | {场景} | 优点/缺点 |
+  
+  ### 2.2 技术选型建议
+  | 组件 | 推荐方案 | 替代方案 | 选型理由 |
+  |------|----------|----------|----------|
+  | 存储 | | | |
+  | 计算 | | | |
+  | 消息 | | | |
+  
+  ### 2.3 性能基准
+  | 指标 | 行业标准 | 优秀水平 |
+  |------|----------|----------|
+  | 延迟 | <100ms | <50ms |
+  | 吞吐 | >1000 QPS | >5000 QPS |
+  
+  ---
+  
+  ## 3. 合规与安全
+  
+  ### 3.1 法律法规
+  | 法规 | 适用范围 | 核心要求 |
+  |------|----------|----------|
+  | PIPL | 中国境内 | 数据本地化、用户授权 |
+  | GDPR | 欧盟 | 数据删除权、可携带权 |
+  
+  ### 3.2 安全标准
+  | 标准 | 适用场景 | 要求等级 |
+  |------|----------|----------|
+  | 等保三级 | 金融、医疗 | 强制 |
+  
+  ### 3.3 隐私保护
+  | 措施 | 说明 |
+  |------|------|
+  | 数据脱敏 | {具体方案} |
+  | 访问控制 | {具体方案} |
+  | 审计日志 | {具体方案} |
+  
+  ---
+  
+  ## 4. 竞品分析
+  
+  ### 4.1 竞品对比
+  | 竞品 | 核心功能 | 技术特点 | 定价 |
+  |------|----------|----------|------|
+  | 竞品A | 功能1、功能2 | 特点1 | $XX/月 |
+  | 竞品B | 功能1、功能3 | 特点2 | $XX/月 |
+  
+  ### 4.2 差异化机会
+  - 机会1：{描述}
+  - 机会2：{描述}
+  
+  ---
+  
+  ## 5. 关键知识要点
+  
+  ### 5.1 必须了解的概念
+  | 概念 | 定义 | 业务价值 |
+  |------|------|----------|
+  | 概念A | {定义} | {价值} |
+  
+  ### 5.2 常见陷阱
+  | 陷阱 | 描述 | 规避方案 |
+  |------|------|----------|
+  | 陷阱A | {描述} | {方案} |
+  
+  ### 5.3 经验总结
+  - 经验1：{描述}
+  - 经验2：{描述}
+  
+  ---
+  
+  ## 6. 参考资源
+  
+  | 资源 | 链接 | 用途 |
+  |------|------|------|
+  | 资源1 | {链接} | {用途} |
+  
+  ---
+  
+  **文档状态**: DRAFT
+  **下次更新**: {日期}
+  **维护人**: {角色}
+  ```
+
+  ---
+
+  ## Step 4: 生成配套规范 (GENERATE)
+
+  ### 执行指令
+
+  基于知识收集，生成可直接引用的规范文档：
+
+  ```agent
+  # 生成配套规范
+  Write(
+    file_path=".sop/knowledge/{domain}-spec-{date}.md",
+    content="{{spec_document}}"
+  )
+  ```
+
+  ### 规范文档类型
+
+  #### 4.1 特征字典（如涉及 ML）
+
+  ```markdown
+  # {业务领域} 特征字典
+  
+  ## 特征列表
+  
+  | 特征名 | 类型 | 计算方式 | 数据来源 | 更新频率 | 重要性 |
+  |--------|------|----------|----------|----------|--------|
+  | feature_1 | 数值 | sum(行为) | 行为日志 | 实时 | 高 |
+  
+  ## 在线/离线一致性
+  
+  | 特征 | 在线计算 | 离线计算 | 一致性校验 |
+  |------|----------|----------|------------|
+  | feature_1 | Flink窗口 | Spark ETL | 每日对比 |
+  
+  ## 特征版本
+  
+  | 版本 | 上线时间 | 变更内容 |
+  |------|----------|----------|
+  | v1.0 | 2026-01-01 | 初始版本 |
+  ```
+
+  #### 4.2 MLOps 流水线设计
+
+  ```markdown
+  # MLOps 流水线设计
+  
+  ## 流水线阶段
+  
+  | 阶段 | 工具 | 输入 | 输出 | 质量门禁 |
+  |------|------|------|------|----------|
+  | 数据准备 | Airflow | 原始数据 | 标注数据 | 数据质量检查 |
+  | 特征工程 | Feast | 标注数据 | 特征向量 | 特征分布检查 |
+  | 模型训练 | PyTorch | 特征向量 | 模型文件 | 交叉验证AUC>0.9 |
+  | 模型评估 | MLflow | 模型文件 | 评估报告 | F1>0.85 |
+  | 模型部署 | Triton | 模型文件 | 在线服务 | 影子模式验证 |
+  | 效果监控 | Prometheus | 预测日志 | 监控仪表盘 | 指标波动<10% |
+  
+  ## 自动化策略
+  
+  - 触发条件：每日增量数据 or 指标下降
+  - 回滚策略：保留最近3个版本，快速回滚
+  - 告警阈值：准确率下降>5%触发告警
+  ```
+
+  #### 4.3 数据安全与隐私合规
+
+  ```markdown
+  # 数据安全与隐私合规评估
+  
+  ## 数据分类
+  
+  | 类别 | 敏感度 | 示例 | 保护措施 |
+  |------|--------|------|----------|
+  | 高度敏感 | PII | 用户ID、支付信息 | 加密存储、访问审计 |
+  | 中度敏感 | 行为 | 浏览记录、搜索词 | 脱敏处理 |
+  | 低度敏感 | 统计 | 聚合指标 | 访问控制 |
+  
+  ## 合规清单
+  
+  | 法规 | 要求 | 当前状态 | 待处理 |
+  |------|------|----------|--------|
+  | PIPL 第24条 | 自动化决策说明 | 待实现 | 开发申诉接口 |
+  
+  ## 数据生命周期
+  
+  | 阶段 | 保留期限 | 处理方式 |
+  |------|----------|----------|
+  | 原始日志 | 90天 | 自动归档 |
+  | 特征向量 | 180天 | 脱敏后保留 |
+  | 模型文件 | 永久 | 永久保留 |
+  ```
+
+  ---
+
+  ## Step 5: 输出与衔接 (OUTPUT)
+
+  ### 执行指令
+
+  生成知识库索引，并衔接 PRD 生成：
+
+  ```markdown
+  ## 知识收集完成
+  
+  ### 输出文件
+  
+  1. **领域知识**: `.sop/knowledge/{domain}-{date}.md`
+  2. **规范文档**: `.sop/knowledge/{domain}-spec-{date}.md`
+  
+  ### 知识要点摘要
+  
+  **行业趋势**:
+  - 趋势1：{描述}
+  
+  **技术要点**:
+  - 要点1：{描述}
+  
+  **合规要求**:
+  - 要求1：{描述}
+  
+  ### 衔接下一步
+  
+  ✅ 知识已准备好，可以生成高质量 PRD
+  
+  运行 `/sop prd {业务名称}` 开始生成 PRD
+  （系统将自动引用已收集的领域知识）
+  ```
+
+  ### 状态文档
+
+  ```markdown
+  ---
+  sop: knowledge
+  step: 5_output
+  status: completed
+  ---
+  
+  ## 知识管理完成
+  
+  ### 输出文件
+  
+  - `.sop/knowledge/{domain}-{date}.md` - 领域知识
+  - `.sop/knowledge/{domain}-spec-{date}.md` - 规范文档
+  
+  ### 完成条件
+  - [x] 行业知识已收集
+  - [x] 合规要求已梳理
+  - [x] 技术方案已调研
+  - [x] 竞品分析已完成
+  - [x] 规范文档已生成
+  ```
+
+  ---
+
+  ## 输出目录
+
+  ```
+  .sop/knowledge/
+  ├── prd-game-risk-20260421.md        # PRD文档
+  ├── prd-game-risk-ml-20260421.md     # ML增强版PRD
+  ├── knowledge-game-risk-20260421.md  # 领域知识
+  ├── knowledge-game-risk-spec-20260421.md  # 规范文档
+  ```
+
+  ## 自动执行模式
+
+  > v2.0.0 新增：支持完全自动化执行
+
+  ### 断点续传
+
+  ```bash
+  # 检查是否有未完成的知识收集任务
+  ls .sop/state/knowledge-*.json
+  ```
+
+  ### 自动保存状态
+
+  每个步骤完成后自动保存状态到 `.sop/state/knowledge-{id}.json`
+
+  ### 减少阻塞
+
+  - 知识重点选择添加"默认全部"选项
+  - 自动执行所有知识收集，无需分步确认
+
+  ---
+
+  ## 触发命令
+
+  ```
+  /sop knowledge
+  ```
+
+  或描述：
+  - "研究游戏风控领域知识"
+  - "帮我调研电商行业规范"
+  - "收集金融风控合规要求"
+
+  ---
+
+  ## 典型使用流程
+
+  ```
+  用户: "我要做一个游戏风控系统"
+  
+  SOP响应:
+  1. /sop knowledge 游戏风控
+     → 收集领域知识（行业趋势、技术方案、合规要求）
+     → 生成知识文档
+  
+  2. /sop prd 游戏风控系统
+     → 基于已有知识生成高质量 PRD
+     → 自动引用行业最佳实践
+  ```
+
+  ---
+
+  ## 测试示例
+
+  ### 示例 1：完整调研
+
+  **用户输入**：
+  ```
+  /sop knowledge 游戏风控 - 重点研究MLOps和合规要求
+  ```
+
+  **SOP 响应**：
+  1. 识别知识需求：游戏风控 + MLOps + 合规
+  2. 收集行业知识（网易易盾、腾讯云风控方案）
+  3. 调研 MLOps 最佳实践（MLflow、Triton、Feature Store）
+  4. 梳理合规要求（PIPL、数据脱敏、审计日志）
+  5. 生成知识文档 + MLOps 规范 + 合规评估
+
+  ### 示例 2：快速调研
+
+  **用户输入**：
+  ```
+  /sop knowledge 电商
+  ```
+
+  **SOP 响应**：
+  1. 识别知识需求：电商基础
+  2. 收集行业标准知识
+  3. 生成简化版知识文档
+
+  ---
+
+  ## 与 PRD SOP 的衔接
+
+  | 知识类型     | PRD引用方式                    |
+  | ------------ | ------------------------------ |
+  | 行业最佳实践 | 作为"竞品分析"和"技术方案"参考 |
+  | 合规要求     | 直接写入"非功能需求"的合规章节 |
+  | 技术指标     | 作为"性能要求"的基准参考       |
+  | 规范文档     | 作为技术实现的详细约束         |
+
+  ---
+
+  ## 参考
+
+  - [MLOps 最佳实践](https://mlops.org/) - MLOps.org
+  - [Feature Store](https://www.feast.dev/) - Feast 官方文档
+  - [隐私合规指南](https://www.pipc.org.cn/) - PIPL 官方

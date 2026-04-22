@@ -1,7 +1,8 @@
 ---
+​---
 name: sop-code-review
-description: 标准代码审查流程 - 理解→格式→测试→安全→反馈（含Lombok规范）
-version: 1.2.0
+description: 标准代码审查流程 - 理解→格式→测试→安全→反馈（含多Agent并行）
+version: 1.4.0
 triggers:
   - "审查代码"
   - "代码审查"
@@ -16,10 +17,10 @@ permissions:
 
 # 多agent并发配置 ⭐
 execution:
-  mode: parallel  # sequential | parallel | hybrid
-  timeout: 300000 # 单任务超时(毫秒)
+  mode: parallel
+  timeout: 300000
 
-# 并行任务定义 (使用真实ECC Agent)
+# 并行任务定义
 parallel_tasks:
   - name: 格式检查
     description: 检查代码格式和规范
@@ -28,7 +29,7 @@ parallel_tasks:
 
   - name: 安全评估
     description: 扫描安全漏洞和权限问题
-    agent: security-scan
+    agent: security-reviewer
     depends_on: []
 
   - name: 性能分析
@@ -36,25 +37,206 @@ parallel_tasks:
     agent: java-reviewer
     depends_on: []
 
-# 结果聚合规则
 aggregation:
-  strategy: merge  # merge | first | all
+  strategy: merge
   output_format: markdown
 
-# ECC Agent 列表 (已集成到 OpenCode)
 available_agents:
   code-reviewer:
     description: 通用代码审查
     tools: [read, bash]
-    use: 格式检查、代码规范
-  security-scan:
+  security-reviewer:
     description: 安全漏洞扫描
     tools: [read, write, edit, bash]
-    use: 安全评估、权限检查
   java-reviewer:
     description: Java/Spring Boot 专家审查
     tools: [read, bash]
-    use: 性能分析、代码逻辑审查
+​---
+
+# SOP Code Review - 标准代码审查流程
+
+## 概述
+
+本 SOP 提供标准化的代码审查流程，确保每次审查都覆盖关键维度：理解变更、格式检查、测试验证、安全评估、反馈输出。
+
+## 使用场景
+
+- PR 审查
+- 代码合并前的自检
+- 技术债清理
+- 重构代码审查
+- 新人代码审查
+
+## 执行流程
+
+```
+1. 理解变更 (Understand)
+       ↓
+2. 并行执行三个审查任务:
+   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+   │  格式检查   │  │  安全评估   │  │  性能分析   │
+   │(code-review)│  │(security)   │  │(java-review)│
+   └──────┬──────┘  └──────┬──────┘  └──────┬──────┘
+          └────────────────┼────────────────┘
+                           ↓
+3. 聚合结果 → 反馈 (Feedback)
+```
+
+### 一、配置 Agent（opencode.json）
+
+首先需要在 `opencode.json` 中配置 agent：
+
+```json
+{
+  "model": "opencode/minimax-m2.5-free",
+  "agent": {
+    "code-reviewer": {
+      "description": "通用代码审查",
+      "mode": "subagent",
+      "model": "opencode/minimax-m2.5-free",
+      "tools": { "read": true, "bash": true }
+    },
+    "security-reviewer": {
+      "description": "安全漏洞扫描",
+      "mode": "subagent",
+      "model": "opencode/minimax-m2.5-free",
+      "tools": { "read": true, "bash": true }
+    },
+    "java-reviewer": {
+      "description": "Java/Spring Boot 专家审查",
+      "mode": "subagent",
+      "model": "opencode/minimax-m2.5-free",
+      "tools": { "read": true, "bash": true }
+    }
+  }
+}
+```
+
+### 二、实际调用示例
+
+```python
+# 并行调用三个 agent
+await task(
+  subagent_type="code-reviewer",
+  prompt="审查目录：E:\\project\\ai\\personal-sop-master\\ecommerce\n检查：缩进、命名、导入排序、Lombok规范"
+)
+
+await task(
+  subagent_type="security-reviewer",
+  prompt="审查目录：E:\\project\\ai\\personal-sop-master\\ecommerce\n检查：SQL注入、XSS、权限、硬编码密码"
+)
+
+await task(
+  subagent_type="java-reviewer",
+  prompt="审查目录：E:\\project\\ai\\personal-sop-master\\ecommerce\n检查：事务管理、readOnly、异常处理"
+)
+```
+
+## 流程步骤
+
+### 步骤一：理解变更（Understand）⭐ [CONFIRM_REQUIRED]
+
+**输出**：
+```markdown
+​---
+sop: code-review
+step: 1_understand
+status: in_progress
+​---
+
+## 变更概述
+
+### 基本信息
+- **PR 标题**:
+- **变更类型**: 功能新增 / Bug 修复 / 重构 / 性能优化
+- **影响模块**:
+
+### 影响范围评估
+- [ ] 仅影响单个模块
+- [ ] 影响多个模块
+```
+
+​---
+
+### 步骤二：并行审查（Parallel Review） [AUTO]
+
+并行执行三个 agent：
+
+```python
+# 1. 格式检查
+task(
+  subagent_type="code-reviewer",
+  prompt="审查目录：{path}\n检查：缩进、命名、导入排序、Lombok规范"
+)
+
+# 2. 安全评估
+task(
+  subagent_type="security-reviewer",
+  prompt="审查目录：{path}\n检查：SQL注入、XSS、权限、硬编码密码"
+)
+
+# 3. 性能分析
+task(
+  subagent_type="java-reviewer",
+  prompt="审查目录：{path}\n检查：事务管理、readOnly、异常处理"
+)
+```
+
+**输出**：
+```markdown
+​---
+sop: code-review
+step: 2_parallel
+status: in_progress
+​---
+
+## 并行审查结果
+
+| Agent | 检查内容 | 状态 |
+|-------|---------|------|
+| code-reviewer | 格式检查 | ✅ 完成 |
+| security-reviewer | 安全扫描 | ✅ 完成 |
+| java-reviewer | 性能分析 | ✅ 完成 |
+```
+
+​---
+
+### 步骤三：运行测试（Test） [AUTO]
+
+```bash
+mvn test
+```
+
+​---
+
+### 步骤四：反馈（Feedback）⭐ [CONFIRM_REQUIRED]
+
+**输出**：
+```markdown
+​---
+sop: code-review
+step: 4_feedback
+status: pending
+​---
+
+## 审查反馈
+
+| 严重程度 | 数量 | 状态 |
+|----------|------|------|
+| CRITICAL | 0 | pass |
+| HIGH | N | warn |
+| MEDIUM | N | info |
+
+### 审查结论
+- [ ] 批准合并
+- [ ] 需要修改后重审
+```
+
+## 触发命令
+
+```
+/sop code-review
+```
 ---
 
 # SOP Code Review - 标准代码审查流程
