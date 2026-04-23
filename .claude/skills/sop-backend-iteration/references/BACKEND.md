@@ -1,68 +1,70 @@
-# BACKEND.md - 后端迭代规范
+# BACKEND.md - 后端架构规范 (v2.0)
 
-## 技术栈
-
-| 组件 | 版本 | 说明 |
-|------|------|------|
-| Spring Boot | 3.x | 需 jakarta.* |
-| JDK | 21 | Virtual Threads |
-| MyBatis-Plus | 3.5.x | ORM |
-| MySQL | 8.0 | 主数据库 |
-| Redis | 7 | 缓存 |
-
-## 关键约束
-
-### 必须遵守
-
-- **无 Lombok** - 使用原生 getter/setter 或 record
-- **jakarta.*** - 非 javax.* (Spring Boot 3)
-- **SecurityFilterChain** - 非 WebSecurityConfigurerAdapter
-- **构造函数注入** - 非 @Autowired 字段注入
-
-### 检查点
-
-- [ ] javax → jakarta 替换
-- [ ] @Data → @Getter/@Setter (Entity)
-- [ ] @AllArgsConstructor → 显式构造函数
-- [ ] WebSecurityConfigurerAdapter → SecurityFilterChain
-- [ ] MyBatis-Plus 配置正确
-
-## 分层规范
+## 流程图
 
 ```
-src/main/java/com/{package}/
-├── controller/      # REST API
-├── service/         # 业务逻辑
-├── mapper/          # MyBatis Mapper
-├── entity/          # JPA Entity
-├── dto/             # Data Transfer Object
-├── config/          # 配置类
-└── exception/      # 异常处理
+需求确认 → 依赖查询 → 调研(3) → 架构设计 → 架构审核 → PRD → 后端实现 → 验证 → 知识更新
 ```
 
-## 并行 Agent
+## 多 Agent 配置
 
-| Agent | 用途 |
-|-------|------|
-| java-reviewer | 代码分析 |
-| security-scan | 安全扫描 |
+| Agent | 用途 | 调用次数 |
+|-------|------|---------|
+| sop-library-research | 调研 | 3次 |
+| dr-jskill | 后端生成 | 1次 |
+| java-reviewer | 代码审查 | 1次 |
 
-## 命令
+## 调研内容
 
-```bash
-# 构建
-./mvnw clean package -DskipTests
+| 领域 | 内容 |
+|------|------|
+| API设计 | RESTful、分页、过滤 |
+| 技术选型 | 缓存、消息队列、事务 |
+| 安全合规 | 认证、授权、审计 |
 
-# 运行
-./mvnw spring-boot:run
+## 架构审核检查点
 
-# 测试
-./mvnw test
+### P0 (阻塞级)
+- API 设计符合 RESTful 规范
+- 数据模型关系清晰
+- 包结构按功能模块划分
+
+### P1 (重要级)
+- 事务边界清晰
+- 安全设计符合基线
+- 异常处理统一
+
+### P2 (优化级)
+- 性能设计合理
+- 可测试性
+
+## 后端结构
+
+```
+com.example.app/
+├── controller/
+├── service/impl/
+├── repository/
+├── entity/
+├── dto/request/
+├── dto/response/
+└── config/
 ```
 
-## 验证清单
+## 知识库文档
 
-- [ ] 代码格式 (Checkstyle)
-- [ ] 单元测试通过
-- [ ] 无安全漏洞
-- [ ] API 文档生成
+| 文档 | 位置 |
+|------|------|
+| 实体依赖图 | .sop/knowledge/{project}-entities.md |
+| API映射 | .sop/knowledge/{project}-api-map.md |
+
+## 检查点
+
+- [ ] 需求已确认
+- [ ] 依赖已查询
+- [ ] 调研已完成 (3次)
+- [ ] 架构已审核
+- [ ] PRD 已生成
+- [ ] 代码已生成
+- [ ] 验证通过
+- [ ] 知识已更新

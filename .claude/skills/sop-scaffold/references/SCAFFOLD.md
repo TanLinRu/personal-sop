@@ -1,63 +1,77 @@
-# SCAFFOLD.md - 项目脚手架规范
+# SCAFFOLD.md - 项目脚手架规范 (v2.0)
 
-## 生成工具
-
-使用 **dr-jskill** 生成项目
-
-## 支持的类型
-
-| 类型 | 说明 | 命令参数 |
-|------|------|---------|
-| basic | 基础 Spring Boot | `basic` |
-| web | Web 应用 | `web` |
-| fullstack | 前后端完整 | `fullstack` |
-
-## 技术栈选项
-
-| 组件 | 选项 | 默认版本 |
-|------|------|---------|
-| Spring Boot | 2.7.x / 3.x | 3.x |
-| JDK | 17 / 21 | 21 |
-| 前端 | Vue / React / Angular | Vue |
-| 数据库 | MySQL / PostgreSQL | PostgreSQL |
-
-## dr-jskill 脚本
-
-```bash
-# 基本项目
-node create-basic-project.mjs [name] [groupId] [artifactId] [package] [javaVersion]
-
-# Web 项目
-node create-web-project.mjs [name] [groupId] [artifactId] [package] [javaVersion]
-
-# 全栈项目
-node create-fullstack-project.mjs [name] [groupId] [artifactId] [package] [javaVersion]
-
-# 最新版本（自动）
-node create-project-latest.mjs [name] [groupId] [artifactId] [package] [javaVersion] [type]
-```
-
-## 输出结构
+## 流程图
 
 ```
-{project-name}/
-├── src/
+需求确认 → 调研(5x2) → 架构设计 → 架构审核 → PRD → 并行生成 → 验证 → 知识索引
+```
+
+## 多 Agent 配置
+
+| Agent | 用途 | 调用次数 |
+|-------|------|---------|
+| sop-library-research | 调研 | 10次 (5领域x2) |
+| dr-jskill | 后端生成 | 1次 |
+| frontend-design | 前端生成 | 1次 |
+
+## 调研分组
+
+| 领域 | 内容 |
+|------|------|
+| 业务分析 | 业务域建模、实体关系 |
+| 技术调研 | 框架、ORM、中间件 |
+| 安全评估 | 认证、授权、数据保护 |
+| 竞品分析 | 行业方案、最佳实践 |
+| 合规分析 | 法规、数据隐私 |
+
+## 架构审核检查点
+
+### P0 (阻塞级)
+- 分层架构清晰
+- 技术可行性
+- 包结构合理
+
+### P1 (重要级)
+- 数据模型无循环依赖
+- 安全设计符合基线
+- API 设计规范
+
+### P2 (优化级)
+- 性能符合 SLA
+- 模块化可扩展
+- 代码可维护
+
+## 生成内容
+
+### 后端
+```
+{project}/
+├── src/main/java/...
 ├── pom.xml
-├── compose.yaml
-├── Dockerfile
-├── .env.sample
-└── frontend/          # 仅 fullstack
+└── compose.yaml
 ```
+
+### 前端
+```
+{project}-frontend/
+├── src/...
+└── package.json
+```
+
+## 知识库文档
+
+| 文档 | 位置 |
+|------|------|
+| 实体依赖图 | .sop/knowledge/{project}-entities.md |
+| API映射 | .sop/knowledge/{project}-api-map.md |
+| 模块矩阵 | .sop/knowledge/{project}-modules.md |
 
 ## 检查点
 
-- [ ] 项目编译通过
-- [ ] 单元测试通过
-- [ ] Docker 环境可用
-- [ ] 数据库连接正常
-
-## 注意事项
-
-- Spring Boot 3 需要 **jakarta.*** 而非 javax.*
-- 无 Lombok 使用原生 getter/setter
-- PostgreSQL 为默认数据库
+- [ ] 需求已确认
+- [ ] 调研已完成 (10次)
+- [ ] 架构已审核
+- [ ] PRD 已生成 (如需要)
+- [ ] 代码已生成
+- [ ] 验证通过
+- [ ] 知识已索引

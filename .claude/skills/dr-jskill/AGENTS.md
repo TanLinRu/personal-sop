@@ -5,6 +5,8 @@
   - Scripts use ES modules (`.mjs` extension) and only Node.js built-in APIs (no npm dependencies).
   - Node.js 24.x and npm 11.x are prerequisites.
 - NEVER propose to use Lombok in the generated projects (add Maven Enforcer/ArchUnit checks in generated templates).
+- Use **@Resource** (JSR-250) for injection, not @Autowired. Prefer constructor injection with @RequiredArgsConstructor.
+- Add **Javadoc** for all public classes and methods in generated code.
 - Build tool is **Maven only** (no Gradle).
 - **Hibernate ddl-auto** is the supported database initialization mechanism (`spring.jpa.hibernate.ddl-auto`). Do not offer Liquibase or Flyway.
 - Do not add OpenAPI/springdoc, feature toggles, Buildpacks, or Jib.

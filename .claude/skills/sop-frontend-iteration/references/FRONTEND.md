@@ -1,65 +1,67 @@
-# FRONTEND.md - 前端迭代规范
+# FRONTEND.md - 前端架构规范 (v2.0)
 
-## 技术栈
+## 流程图
 
-| 组件 | 版本 | 说明 |
-|------|------|------|
-| Vue | 3.5.x | Composition API |
-| Vite | 6.x | 构建工具 |
-| Element Plus | 2.9.x | UI 组件库 |
-| Pinia | 3.x | 状态管理 |
-| Vue Router | 5.x | 路由 |
+```
+需求确认 → 依赖查询 → UI/UX调研(2) → 组件设计 → 设计审核 → 前端实现 → 验证 → 知识更新
+```
 
-## 关键约束
+## 多 Agent 配置
 
-### 必须遵守
+| Agent | 用途 | 调用次数 |
+|-------|------|---------|
+| sop-library-research | 调研 | 2次 |
+| frontend-design | 前端生成 | 1次 |
+| code-reviewer | 代码审查 | 1次 |
 
-- **Composition API** - 非 Options API
-- **TypeScript** - 强类型
-- **pinia** - 非 Vuex
-- **scoped styles** - 组件样式隔离
+## 调研内容
 
-### 检查点
+| 领域 | 内容 |
+|------|------|
+| UI设计 | 设计系统、布局、主题 |
+| 组件库 | 组件选择、状态管理 |
 
-- [ ] 使用 `<script setup>`
-- [ ] 类型定义完整
-- [ ] 组件按需导入
-- [ ] 环境变量 .env
+## 设计审核检查点
 
-## 项目结构
+### P0 (阻塞级)
+- 组件结构合理可复用
+- 路由设计 RESTful 风格
+- 包结构按页面/组件划分
+
+### P1 (重要级)
+- 状态管理集中
+- TypeScript 类型安全
+- 性能优化
+
+### P2 (优化级)
+- 可访问性 WCAG 2.1
+- 响应式适配
+
+## 前端结构
 
 ```
 src/
-├── views/           # 页面
-├── components/      # 组件
-├── stores/          # Pinia 状态
-├── router/          # 路由
-├── api/             # API 请求
-├── utils/           # 工具函数
-└── assets/         # 静态资源
+├── views/
+├── components/
+├── stores/
+├── api/
+├── router/
+└── types/
 ```
 
-## 并行 Agent
+## 知识库文档
 
-| Agent | 用途 |
-|-------|------|
-| code-reviewer | 代码分析 |
+| 文档 | 位置 |
+|------|------|
+| 组件树 | .sop/knowledge/{project}-components.md |
+| 页面路由 | .sop/knowledge/{project}-pages.md |
 
-## 命令
+## 检查点
 
-```bash
-# 开发
-npm run dev
-
-# 构建
-npm run build
-
-# 预览
-npm run preview
-```
-
-## 验证清单
-
-- [ ] ESLint 通过
-- [ ] 类型检查通过
-- [ ] 组件按需导入
+- [ ] 需求已确认
+- [ ] 依赖已查询
+- [ ] 调研已完成 (2次)
+- [ ] 设计已审核
+- [ ] 代码已生成
+- [ ] 验证通过
+- [ ] 知识已更新

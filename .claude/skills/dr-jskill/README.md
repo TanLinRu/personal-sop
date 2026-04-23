@@ -49,11 +49,12 @@ For complete documentation, usage instructions, and best practices, see **[SKILL
 
 Additional references:
 - [Project Setup & Dotfiles](references/PROJECT-SETUP.md)
-- [Front-end Development Guides](references/) (Vue.js, React, Angular, Vanilla JS)
-- [Database Best Practices](references/DATABASE.md)
-- [Docker Deployment](references/DOCKER.md)
-- [Testing Guide](references/TEST.md)
-- [Azure Deployment](references/AZURE.md)
+- [Java Coding Standards](references/JAVA-CODING.md)
+- [Spring Injection](references/SPRING-INJECTION.md)
+- [Lombok Policy](references/LOMBOK.md)
+- [Vue.js](references/VUE.md) / [React](references/REACT.md) / [Angular](references/ANGULAR.md)
+- [Database](references/DATABASE.md) / [Docker](references/DOCKER.md)
+- [Testing](references/TEST.md) / [Azure](references/AZURE.md)
 - **Versions manifest:** `versions.json` (read by `scripts/lib/versions.mjs`). Update this file first when bumping any tool/library version.
 
 ## Using This Skill with AI Assistants

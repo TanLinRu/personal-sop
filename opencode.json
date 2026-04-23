@@ -136,6 +136,14 @@
     "sop fullstack": {
       "description": "Fullstack iteration workflow (backend + frontend)",
       "template": "Please execute the fullstack iteration SOP workflow.\n\n$ARGUMENTS"
+    },
+    "ctx index": {
+      "description": "Index project to context-mode knowledge base",
+      "template": "Index project to context-mode knowledge base.\n\nSource: $ARGUMENTS"
+    },
+    "ctx query": {
+      "description": "Query context-mode knowledge base",
+      "template": "Query context-mode knowledge base.\n\nQuery: $ARGUMENTS"
     }
   }
 }
