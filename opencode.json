@@ -101,39 +101,39 @@
     }
   },
   "command": {
-    "/sop prd": {
+    "sop prd": {
       "description": "Generate PRD product requirements document",
       "template": "Please execute the PRD generation SOP workflow.\n\n$ARGUMENTS"
     },
-    "/sop testing": {
+    "sop testing": {
       "description": "Execute standard testing workflow",
       "template": "Please execute the testing SOP workflow for this project.\n\n$ARGUMENTS"
     },
-    "/sop bug-fix": {
+    "sop bug-fix": {
       "description": "Execute bug fix workflow with parallel agents",
       "template": "Please execute the bug fix SOP workflow.\n\n$ARGUMENTS"
     },
-    "/sop code-review": {
+    "sop code-review": {
       "description": "Execute code review workflow",
       "template": "Please execute the code review SOP workflow.\n\n$ARGUMENTS"
     },
-    "/sop deployment": {
+    "sop deployment": {
       "description": "Execute deployment workflow",
       "template": "Please execute the deployment SOP workflow.\n\n$ARGUMENTS"
     },
-    "/sop scaffold": {
+    "sop scaffold": {
       "description": "Initialize new project scaffold",
       "template": "Please execute the scaffold SOP workflow.\n\n$ARGUMENTS"
     },
-    "/sop backend": {
+    "sop backend": {
       "description": "Backend-only iteration workflow",
       "template": "Please execute the backend iteration SOP workflow.\n\n$ARGUMENTS"
     },
-    "/sop frontend": {
+    "sop frontend": {
       "description": "Frontend-only iteration workflow",
       "template": "Please execute the frontend iteration SOP workflow.\n\n$ARGUMENTS"
     },
-    "/sop fullstack": {
+    "sop fullstack": {
       "description": "Fullstack iteration workflow (backend + frontend)",
       "template": "Please execute the fullstack iteration SOP workflow.\n\n$ARGUMENTS"
     }
