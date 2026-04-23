@@ -30,12 +30,18 @@ personal-sop/
 │       ├── views/        # 页面视图
 │       ├── components/   # 组件
 │       └── stores/       # 状态管理
-├── .claude/skills/        # SOP Skills (15个)
+├── .claude/skills/        # SOP Skills (20个)
+│   ├── sop-prd/           # PRD生成
 │   ├── sop-testing/       # 测试执行
 │   ├── sop-deployment/    # 部署发布
-│   ├── sop-api-design/    # API设计
-│   ├── sop-database-design/# 数据库设计
-│   └── dr-jskill/        # Java项目工具
+│   ├── sop-bug-fix/       # Bug修复
+│   ├── sop-code-review/   # 代码审查
+│   ├── sop-scaffold/      # 脚手架生成
+│   ├── sop-backend-iteration/  # 后端迭代
+│   ├── sop-frontend-iteration/ # 前端迭代
+│   ├── sop-fullstack-iteration/ # 全栈迭代
+│   ├── dr-jskill/        # Java项目工具
+│   └── frontend-design/  # 前端设计
 ├── docker-compose-dev.yml # 开发环境
 └── AGENTS.md            # 项目指南
 ```
@@ -195,45 +201,60 @@ npm run dev
 
 ## SOP Skills
 
-项目包含15个标准化流程Skill，位置：`.claude/skills/`
+项目包含 20 个标准化流程 Skill，位置：`.claude/skills/`
 
 | 分类 | Skill | 用途 |
 |------|-------|------|
+| 流程 | sop-prd | PRD 产品需求文档 |
 | 流程 | sop-testing | 测试执行 |
 | 流程 | sop-deployment | 部署发布 |
-| 流程 | sop-api-design | API设计 |
-| 流程 | sop-database-design | 数据库设计 |
 | 流程 | sop-code-review | 代码审查 |
-| 流程 | sop-bug-fix | Bug修复 |
+| 流程 | sop-bug-fix | Bug 修复 |
 | 流程 | sop-incident-response | 线上响应 |
-| 工具 | dr-jskill | Java项目生成 |
+| 流程 | sop-onboarding | 项目入职 |
+| 流程 | sop-api-design | API 设计 |
+| 流程 | sop-database-design | 数据库设计 |
+| 流程 | sop-scaffold | 脚手架生成 |
+| 流程 | sop-backend-iteration | 后端迭代 |
+| 流程 | sop-frontend-iteration | 前端迭代 |
+| 流程 | sop-fullstack-iteration | 全栈迭代 |
+| 流程 | sop-product-analysis | 产品分析 |
+| 工具 | dr-jskill | Java 项目生成 |
 | 工具 | frontend-design | 前端设计 |
 | 工具 | tailwind-design-system | Tailwind CSS |
+| 通用 | SOP | Skill 规范 |
 
 使用示例：
 ```
-/sop testing        # 执行测试流程
-/sop bug-fix       # 修复Bug流程
-/sop api-design   # 设计API
+/sop prd           # 生成 PRD
+/sop testing       # 执行测试
+/sop bug-fix       # 修复 Bug
+/sop code-review   # 代码审查
+/sop deployment    # 部署发布
+/sop scaffold      # 生成脚手架
+/sop fullstack     # 全栈迭代
 ```
 
 ## ECC Agents
 
-项目支持调用 AI Agent 进行并行代码审查和业务分析：
+项目支持并行调用 AI Agent：
 
 | Agent | 用途 |
 |-------|------|
 | code-reviewer | 代码格式和规范审查 |
 | java-reviewer | Java/Spring Boot 专家分析 |
-| security-scan | 安全漏洞扫描 |
-| java-build-resolver | 构建错误修复 |
+| security-reviewer | 安全漏洞扫描 |
+| build-error-resolver | 构建错误修复 |
 
-并行执行示例：
-```
-# 并行调用多个 Agent
-/search [关键词]    # 搜索相关代码
-/review [文件]      # 代码审查
-```
+## ECC Rules
+
+通用编码规范：`.claude/rules/`
+
+| 文件 | 说明 |
+|------|------|
+| common/coding-style.md | 不可变性、KISS、DRY、YAGNI |
+| common/testing.md | TDD、覆盖率要求 |
+| INDEX.md | 规则索引 |
 
 ## 常见问题
 

@@ -17,9 +17,8 @@ permissions:
   bash: allow
   web: allow
 execution:
-  mode: async
-  checkpoint_dir: .sop/state
-  state_file: .sop/state/bugfix-{id}.json
+  mode: parallel
+  timeout: 300000
 
 ​---
 

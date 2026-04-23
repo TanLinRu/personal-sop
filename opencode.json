@@ -14,9 +14,13 @@
     ".claude/skills/sop-bug-fix/SKILL.md",
     ".claude/skills/sop-code-review/SKILL.md",
     ".claude/skills/sop-deployment/SKILL.md",
+    ".claude/skills/sop-scaffold/SKILL.md",
     ".claude/skills/sop-backend-iteration/SKILL.md",
     ".claude/skills/sop-frontend-iteration/SKILL.md",
-    ".claude/skills/sop-fullstack-iteration/SKILL.md"
+    ".claude/skills/sop-fullstack-iteration/SKILL.md",
+    ".claude/skills/SOP.md",
+    ".claude/rules/common/coding-style.md",
+    ".claude/rules/common/testing.md"
   ],
   "mcp": {
     "context-mode": {
