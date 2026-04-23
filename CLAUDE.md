@@ -4,195 +4,140 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **Game Risk Control System** (游戏风控系统) - a complete solution for game security and fraud prevention built with Spring Boot + Vue 3.
+This is a **Personal SOP (Standard Operating Procedure) Skill Library** - a collection of standardized workflow skills for Claude Code. It provides structured automation for common development scenarios including bug fixing, code review, technical research, project scaffolding, and incident response.
 
-The system provides risk control services including:
-- Registration risk control: batch registration, virtual number detection
-- Login risk control:异地 login detection, brute force prevention
-- Payment risk control: recharge fraud, money laundering detection
-- Anti-cheat:外挂, scripts, resource farming detection
-- Content moderation: abuse filtering, advertisement detection
+## Available Skills
 
-## Development Commands
+### SOP Workflow Skills
 
-### Backend (Spring Boot)
-
-```bash
-cd backend
-
-# Build project
-mvn clean compile
-
-# Run development server
-mvn spring-boot:run
-
-# Run tests
-mvn test
-
-# Package (skip tests)
-mvn package -DskipTests
-```
-
-### Frontend (Vue 3)
-
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Run development server
-npm run dev
-
-# Build for production
-npm run build
-```
-
-### Database
-
-```bash
-# Initialize MySQL database
-mysql -u root -p < sql/init.sql
-```
-
-## Access URLs
-
-- Backend API: http://localhost:8080
-- API Documentation (Knife4j): http://localhost:8080/doc.html
-- Frontend: http://localhost:5173
-
-## Architecture
-
-### Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| Backend Framework | Spring Boot 3.2.5 |
-| ORM | MyBatis-Plus 3.5.5 |
-| API Docs | Knife4j 4.4.0 |
-| Frontend Framework | Vue 3.4.21 |
-| UI Components | Element Plus 2.5.6 |
-| Build Tool (Frontend) | Vite 5.1.6 |
-| Database | MySQL 8.0 |
-
-### Project Structure
-
-```
-game-risk-control/
-├── backend/                 # Spring Boot backend
-│   ├── src/main/java/com/gamerisk/
-│   │   ├── Application.java
-│   │   ├── config/         # Configuration classes
-│   │   ├── controller/     # REST controllers
-│   │   ├── service/        # Business logic
-│   │   ├── mapper/         # Data access layer
-│   │   ├── entity/         # Entity classes
-│   │   └── dto/            # Data transfer objects
-│   └── src/main/resources/
-│       └── application.yml
-├── frontend/                # Vue 3 frontend
-│   ├── src/
-│   │   ├── api/           # API calls
-│   │   ├── views/         # Page components
-│   │   ├── router/        # Router config
-│   │   └── main.js        # Entry point
-│   └── package.json
-└── sql/
-    └── init.sql           # Database initialization
-```
-
-### SOP Skills
-
-This project includes custom SOP (Standard Operating Procedure) skills for standardized workflows. Each SOP supports two execution modes: **confirm** (default) and **auto**.
+Trigger via `/sop <skill-name>`:
 
 | Skill | Command | Purpose | Confirmation Points |
 |-------|---------|---------|---------------------|
-| sop-framework | - | SOP automation framework definition | - |
-| sop-scaffold | `/sop scaffold` | Project scaffolding generation ⭐ | Step 1 (项目配置) |
-| sop-bug-fix | `/sop bug-fix` | Standard bug fixing workflow | Steps 1,3 |
-| sop-code-review | `/sop code-review` | Standard code review workflow | Steps 1,5 |
-| sop-library-research | `/sop library-research` | Technology research with business analysis | Steps 0,5 |
-| sop-onboarding | `/sop onboarding` | Project onboarding workflow | Steps 1,5 |
+| sop-framework | - | Core execution framework | - |
+| sop-bug-fix | `/sop bug-fix` | Standard bug fixing workflow | Steps 1, 3 |
+| sop-code-review | `/sop code-review` | Code review with parallel checks | Steps 1, 5 |
+| sop-library-research | `/sop library-research` | Technology evaluation | Steps 0, 5 |
+| sop-onboarding | `/sop onboarding` | Project onboarding | Steps 1, 5 |
 | sop-incident-response | `/sop incident-response` | Production incident handling | Step 2 |
-| sop-product-analysis | `/sop product-analysis` | Business analysis & architecture design | Step 1 |
-| sop-knowledge | `/sop knowledge` | Framework learning with error documentation | Steps 1,7 |
+| sop-scaffold | `/sop scaffold` | Project scaffolding | Step 1 |
+| sop-product-analysis | `/sop product-analysis` | Business analysis | Step 1 |
+| sop-knowledge | `/sop knowledge` | Framework learning | Steps 1, 7 |
 | sop-testing | `/sop testing` | Testing workflow | All AUTO |
 | sop-deployment | `/sop deployment` | Deployment workflow | All AUTO |
-| sop-api-design | `/sop api-design` | API design workflow | - |
-| sop-database-design | `/sop database-design` | Database design workflow | - |
+| sop-api-design | `/sop api-design` | API design | - |
+| sop-database-design | `/sop database-design` | Database design | - |
+| sop-backend-iteration | `/sop backend-iteration` | Backend development iteration | - |
+| sop-frontend-iteration | `/sop frontend-iteration` | Frontend development iteration | - |
+| sop-fullstack-iteration | `/sop fullstack-iteration` | Fullstack development iteration | - |
 
-**Execution Modes**:
-- **Confirm mode** (default): User confirms at ⭐ marked steps before proceeding
-- **Auto mode**: Use `/sop xxx --auto` to run without confirmation (after trust is established)
+### Integrated External Skills
 
-**Step Types**:
+| Skill | Location | Purpose |
+|-------|----------|---------|
+| dr-jskill | `.claude/skills/dr-jskill/` | Spring Boot project generation, JDTLS navigation, Docker support |
+| frontend-design | `.claude/skills/frontend-design/` | Production-grade frontend interfaces |
+| tailwind-design-system | `.claude/skills/tailwind-design-system/` | Tailwind CSS v4 patterns |
+
+## Execution Modes
+
+**Confirm mode (default)**: User confirms at marked steps before proceeding.
+**Auto mode**: Use `/sop xxx --auto` to run without confirmation.
+
+Step markers:
 - `⭐ [CONFIRM_REQUIRED]` - Core decision points requiring user confirmation
 - `[AUTO]` - Automatic execution steps
 - `[INFO]` - Informational content
 - `[VERIFY]` - Verification/checkpoint steps
 
-### Integrated Skills
+## Architecture
 
-This project also integrates the following external skills for enhanced capabilities:
+### Skill Structure
 
-| Skill | Purpose |
-|-------|---------|
-| dr-jskill | Spring Boot project generation with JDTLS, Docker, GraalVM support |
-| frontend-design | Production-grade frontend interfaces with distinctive aesthetics |
-| tailwind-design-system | Tailwind CSS v4 design system patterns |
+Each SOP skill is a directory under `.claude/skills/` containing:
+- `SKILL.md` - Skill definition with frontmatter and workflow
+- `references/` - Supporting documentation (optional)
 
-### JDTLS Code Navigation (Java Projects)
+### SOP Framework
 
-For Java projects, use JDTLS for intelligent code navigation instead of grep:
+The `sop-framework` skill provides unified execution patterns:
+- Core steps pause for user confirmation
+- Non-core steps execute automatically
+- Supports mode switching between confirm/auto
 
-| Task | Command |
-|------|---------|
-| Find definition | `lsp goToDefinition` |
-| Find references | `lsp findReferences` |
-| Hover info | `lsp hover` |
-| List symbols | `lsp documentSymbol` |
-| Workspace search | `lsp workspaceSymbol` |
-| Safe rename | `lsp rename` |
+### Multi-Agent Execution
 
-**Install once**: `brew install jdtls` (macOS) or see `.claude/skills/dr-jskill/references/JDTLS.md`
+Some SOPs support parallel task execution:
 
-## SOP Usage Guide
+| SOP | Mode | Parallel Tasks |
+|-----|------|----------------|
+| sop-code-review | parallel | Format, Security, Performance |
+| sop-incident-response | hybrid | Collect, Reproduce, Analyze |
+| sop-bug-fix | parallel | Search, Analyze |
+| sop-library-research | parallel | Search, Verify, Risk |
+
+### Output Structure
+
+SOP execution outputs go to `.sop/output/`:
+```
+.sop/output/
+├── {SOP_Name}_{Project}.md    # Main output
+├── common-mistakes/           # Error documentation
+└── index.md                   # Output index
+```
+
+## Cross-Platform Support
+
+This project supports both **Claude Code** and **OpenCode**:
+
+| Platform | Skill Location | Command |
+|----------|----------------|---------|
+| Claude Code | `.claude/skills/` | `/sop <name>` |
+| OpenCode | `.opencode/skills/` | `skill({ name: "sop-xxx" })` |
+
+## Usage Guide
 
 | Scenario | Recommended SOP |
 |----------|-----------------|
-| New project initiation | sop-product-analysis → sop-scaffold |
-| Technology selection | sop-library-research (includes business analysis) |
-| Framework learning | sop-knowledge |
+| New project | sop-product-analysis → sop-scaffold |
 | Bug fixing | sop-bug-fix |
 | Code review | sop-code-review |
+| Technology evaluation | sop-library-research |
 | Project onboarding | sop-onboarding |
 | Production incident | sop-incident-response |
+| Framework learning | sop-knowledge |
+| Testing | sop-testing |
+| Deployment | sop-deployment |
 
-## SOP Automation Framework
+## Key Design Principles
 
-This project implements a standardized SOP automation framework (`.claude/skills/sop-framework/SKILL.md`) that defines execution patterns for all SOP skills.
+1. **Confirmation Points**: Critical decisions require user approval
+2. **Agent Orchestration**: Each SOP delegates to specialized agents (code-reviewer, security-reviewer, etc.)
+3. **Documentation**: Every step produces state documents for traceability
+4. **Parallel Execution**: Independent tasks run concurrently when possible
+5. **Mode Switching**: Toggle between confirm and auto modes
 
-### Core Design Principles
-- **Confirmation Points**: Core decision steps (marked ⭐ [CONFIRM_REQUIRED]) require user approval
-- **Automatic Execution**: Routine steps (marked [AUTO]) execute without interruption
-- **Mode Switching**: Use `/sop xxx --auto` to enable fully automated execution
+## Agent Mapping (for OpenCode compatibility)
 
-### SOP Workflow Pattern
+```yaml
+code-reviewer: code_review
+security-reviewer: security_scan
+java-reviewer: java_review
+search-first: Task(Explore)
+architect: Task(Plan)
 ```
-[CONFIRM_REQUIRED] → [AUTO] → [AUTO] → [VERIFY] → [CONFIRM_REQUIRED]
-     ↑                    ↑                    ↑
-   关键决策点            自动执行             验证checkpoint
-```
 
-### Multi-Agent Execution
-Some SOPs support parallel task execution:
-- `sop-incident-response`: Hybrid mode (collect + reproduce parallel, fix sequential)
-- `sop-library-research`: Parallel mode (search, verify, risk assessment simultaneously)
+## Karpathy Coding Principles
 
-## Environment Requirements
+Each SOP embeds these principles:
+1. **Think Before Coding** - Clarify before assuming
+2. **Simplicity First** - Minimum viable implementation
+3. **Surgical Changes** - Precise, targeted modifications
+4. **Goal-Driven** - Outcome-focused not task-listing
 
-- JDK 17+
-- Maven 3.8+
-- MySQL 8.0+
-- Node.js 18+
-- npm 9+
+## References
+
+- Skill definitions: `.claude/skills/*/SKILL.md`
+- dr-jskill references: `.claude/skills/dr-jskill/references/`
+- SOP design philosophy: `SOP流程设计思想.md`
+- SOP output index: `.sop/index.md`
