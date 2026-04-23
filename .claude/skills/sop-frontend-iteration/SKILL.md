@@ -43,6 +43,11 @@ parallel_tasks:
 aggregation:
   strategy: merge
   output_format: markdown
+
+agent_mapping:
+  sop-library-research: sop-library-research
+  frontend-design: frontend-design
+  code-reviewer: code-reviewer
 ---
 
 # SOP Frontend Iteration v2.1 - 前端需求迭代流程

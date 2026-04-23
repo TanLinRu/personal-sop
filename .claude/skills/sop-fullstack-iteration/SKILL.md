@@ -61,6 +61,11 @@ parallel_tasks:
 aggregation:
   strategy: merge
   output_format: markdown
+
+agent_mapping:
+  sop-library-research: sop-library-research
+  dr-jskill: dr-jskill
+  frontend-design: frontend-design
 ---
 
 # SOP Fullstack Iteration v2.1 - 前后端需求迭代流程

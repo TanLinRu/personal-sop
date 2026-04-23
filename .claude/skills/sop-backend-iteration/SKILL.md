@@ -43,6 +43,11 @@ parallel_tasks:
 aggregation:
   strategy: merge
   output_format: markdown
+
+agent_mapping:
+  sop-library-research: sop-library-research
+  dr-jskill: dr-jskill
+  java-reviewer: java-reviewer
 ---
 
 # SOP Backend Iteration v2.1 - 后端需求迭代流程

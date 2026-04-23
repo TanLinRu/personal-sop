@@ -49,6 +49,11 @@ parallel_tasks:
 aggregation:
   strategy: merge
   output_format: markdown
+
+agent_mapping:
+  sop-library-research: sop-library-research
+  dr-jskill: dr-jskill
+  frontend-design: frontend-design
 ---
 
 # SOP Scaffold v2.1 - 项目初始化流程
