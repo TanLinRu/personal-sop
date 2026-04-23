@@ -1,18 +1,16 @@
-# Game Risk Control - 游戏风控系统
+# Personal SOP - 标准化项目管理脚手架
 
-游戏账号安全风控后端服务，提供注册、登录、支付、反作弊、内容风控等检测能力。
+基于 Spring Boot + Vue 3 的全栈项目模板，提供标准化的 SOP 流程支持。
 
 ## 技术栈
 
 | 组件 | 版本 |
 |------|------|
 | JDK | 21 |
-| Spring Boot | 2.7.18 |
-| MyBatis-Plus | 3.5.3 |
-| LiteFlow | 2.15.3 |
-| Knife4j | 4.3.0 |
+| Spring Boot | 2.7.18+ |
+| MyBatis-Plus | 3.5.3+ |
 | MySQL | 8.0 |
-| Redis | 7.4 |
+| Redis | 7 |
 | Kafka | 4.0 |
 
 ## 项目结构
@@ -70,61 +68,35 @@ curl http://localhost:8080/actuator/health
 
 ## API接口
 
-### Windows curl测试命令
+### Windows curl测试
 
 ```powershell
-# 使用 --data-binary 避免JSON解析错误
-curl -X POST http://localhost:8080/api/risk/register/check -H "Content-Type: application/json" --data-binary @request.json
+curl -X POST http://localhost:8080/api/v1/check -H "Content-Type: application/json" --data-binary @request.json
 ```
 
-### API端点
+### RESTful端点
 
-| 模块 | 端点 | 说明 |
+| 方法 | 路径 | 说明 |
 |------|------|------|
-| 注册 | POST /api/risk/register/check | 设备指纹/虚拟号检测 |
-| 登录 | POST /api/risk/login/check | 异地/暴力破解检测 |
-| 支付 | POST /api/risk/payment/check | 欺诈/洗钱检测 |
-| 反作弊 | POST /api/risk/anticheat/check | 行为分析/速度检测 |
-| 内容 | POST /api/risk/content/check | 敏感词/广告检测 |
+| GET | /api/v1/{resource} | 获取资源列表 |
+| GET | /api/v1/{resource}/{id} | 获取单个资源 |
+| POST | /api/v1/{resource} | 创建资源 |
+| PUT | /api/v1/{resource}/{id} | 更新资源 |
+| DELETE | /api/v1/{resource}/{id} | 删除资源 |
 
-## 风控规则
+业务检测端点根据项目需求定义。
 
-### 注册风控
-- IP注册次数过多 → +40分
-- 设备注册次数过多 → +30分
-- 虚拟运营商号段(170/171/178) → +25分
-- 代理IP → +35分
-- 阈值: 70分
+## 数据模型
 
-### 登录风控
-- 登录失败多次 → +15分/次
-- 可疑IP段(10.0./172.16.) → +30分
-- 账户锁定 → 100分
-- 阈值: 70分
+根据业务需求定义实体，默认包含审计字段：
 
-### 支付风控
-- 单笔>5000 → +40分
-- 日累计>10000 → +35分
-- 高风险卡bin → +25分
-- 高风险国家(KP/IR/SY) → +30分
-- 新用户 → +15分
-- 阈值: 75分
-
-### 反作弊
-- 移动速度异常(speed>2.5) → 60-90分
-- 瞬移(distance/time>50) → 70-95分
-- 命中率>95% → +50分
-- 反应时间<50ms → +40分
-- 脚本行为(点击间隔<100ms) → +40分
-- 阈值: 80分
-
-### 内容风控
-- 敏感词(+25分): 作弊/外挂/脚本/黑号/代练
-- 广告词(+20分): QQ群/微信群/低价
-- 违法词(+40分): 枪/毒品/赌博
-- URL(+30分)
-- 联系方式(+25分)
-- 阈值: 75分
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | Long | 主键 |
+| createdAt | LocalDateTime | 创建时间 |
+| updatedAt | LocalDateTime | 更新时间 |
+| createdBy | String | 创建人 |
+| updatedBy | String | 更新人 |
 
 ## 测试用例
 
@@ -152,42 +124,31 @@ curl -X POST http://localhost:8080/api/risk/anticheat/check -H "Content-Type: ap
 {
   "code": 200,
   "message": "success",
-  "data": {
-    "id": null,
-    "eventType": "REGISTER",
-    "userId": "test001",
-    "userIp": "192.168.1.100",
-    "deviceId": "device123",
-    "riskLevel": 30,
-    "riskScore": "0",
-    "decision": "ALLOW",
-    "details": null,
-    "createTime": "2026-04-19T18:30:47.2574348"
-  }
+  "data": { }
 }
 ```
 
-### Decision说明
-- `ALLOW` - 允许通过
-- `REVIEW` - 需要人工审核
-- `BLOCK` - 阻止操作
-
-### RiskLevel说明
-- 0-29: LOW - 低风险
-- 30-59: MEDIUM - 中风险
-- 60-89: HIGH - 高风险
-- 90+: CRITICAL - 严重风险
+错误码：
+- `200` - 成功
+- `400` - 请求参数错误
+- `401` - 未授权
+- `403` - 禁止访问
+- `404` - 资源不存在
+- `500` - 服务器错误
 
 ## 数据库
 
-### 初始化
-```bash
-mysql -u root -p gamerisk < backend/src/main/resources/init.sql
-```
+根据业务需求创建表结构，默认包含审计字段。
 
-### 表结构
-- `sys_user` - 系统用户
-- `risk_event` - 风控事件记录
+```sql
+CREATE TABLE IF NOT EXISTS audit_log (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_by VARCHAR(50),
+    updated_by VARCHAR(50)
+);
+```
 
 ## 前端
 
@@ -197,7 +158,7 @@ npm install
 npm run dev
 ```
 
-前端访问: http://localhost:5173
+访问: http://localhost:5173
 
 ## SOP Skills
 
