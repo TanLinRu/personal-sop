@@ -293,33 +293,39 @@ public Warehouse createWarehouse(WarehouseDTO dto) {
 
 ## Step 8: 启动验证 [AUTO]
 
-> **关键**：使用统一验证脚本 `.claude/scripts/verify-backend.ps1`
+> **关键**：生成后必须验证后端能否正常启动
 
 **验证命令**：
 ```powershell
-# 使用验证脚本（非阻塞启动 + 自动验证）
-powershell -ExecutionPolicy Bypass -File .claude/scripts/verify-backend.ps1 -projectDir ".\{project-name}\backend" -waitSeconds 30
+# 编译
+mvn clean compile
+
+# 启动（后台）
+Start-Process mvn -ArgumentList "spring-boot:run"
+
+# 健康检查
+curl http://localhost:8080/actuator/health
 ```
 
 **验证输出**：
 ```markdown
-​---
+---
 sop: backend-iteration
 step: 8_verify
 status: in_progress
-​---
+---
 
 ## 后端启动验证
 
 ### 编译验证
 | 检查项 | 命令 | 状态 |
 |--------|------|------|
-| 编译成功 | verify-backend.ps1 | ✅/❌ |
+| 编译成功 | mvn clean compile | ✅/❌ |
 
 ### 启动验证
 | 检查项 | 命令 | 状态 |
 |--------|------|------|
-| 启动成功 | verify-backend.ps1 | ✅/❌ |
+| 启动成功 | mvn spring-boot:run | ✅/❌ |
 | 健康检查 | /actuator/health | ✅/❌ |
 
 ### API验证

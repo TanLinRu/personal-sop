@@ -271,26 +271,26 @@ await task(
 
 ## Step 8: 联调验证 [AUTO]
 
-> **关键**：使用统一验证脚本
-> - 后端：`.claude/scripts/verify-backend.ps1`
-> - 前端：`.claude/scripts/verify-frontend.ps1`
+> **关键**：验证后端和前端都可以正常启动
 
 **验证命令**：
 ```powershell
 # 后端验证
-powershell -ExecutionPolicy Bypass -File .claude/scripts/verify-backend.ps1 -projectDir ".\{project-name}\backend"
+cd backend; mvn clean compile; mvn spring-boot:run
+curl http://localhost:8080/actuator/health
 
 # 前端验证
-powershell -ExecutionPolicy Bypass -File .claude/scripts/verify-frontend.ps1 -projectDir ".\{project-name}\frontend"
+cd frontend; npm install; npm run dev
+curl http://localhost:3000
 ```
 
 **验证输出**：
 ```markdown
-​---
+---
 sop: fullstack-iteration
 step: 8_verify
 status: in_progress
-​---
+---
 
 ## 联调验证结果
 

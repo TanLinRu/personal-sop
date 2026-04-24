@@ -245,27 +245,38 @@ node scripts/create-project-latest.mjs {project-name} com.{company} {project-nam
 ## Step 9: 启动验证 [AUTO]
 
 > **关键**：生成后必须验证项目能否正常启动
-> **统一验证方式**：使用 `.claude/scripts/verify-backend.ps1` 和 `verify-frontend.ps1`
 
 ### 执行内容
 
-#### 9.1 后端验证（统一脚本）
+#### 9.1 后端验证（命令）
 
 ```powershell
-# 使用验证脚本（非阻塞启动 + 自动验证）
-powershell -ExecutionPolicy Bypass -File .claude/scripts/verify-backend.ps1 -projectDir ".\{backend-dir}" -waitSeconds 30
+# 编译
+cd backend; mvn clean compile
+
+# 启动（后台）
+Start-Process mvn -ArgumentList "spring-boot:run" -WorkingDirectory backend
+
+# 健康检查
+curl http://localhost:8080/actuator/health
 ```
 
-#### 9.2 前端验证（统一脚本）
+#### 9.2 前端验证（命令）
 
 ```powershell
-# 使用验证脚本（非阻塞启动 + 自动验证）
-powershell -ExecutionPolicy Bypass -File .claude/scripts/verify-frontend.ps1 -projectDir ".\{frontend-dir}" -waitSeconds 15
+# 安装依赖
+cd frontend; npm install
+
+# 启动（后台）
+Start-Process npm -ArgumentList "run", "dev" -WorkingDirectory frontend
+
+# 访问检查
+curl http://localhost:3000
 ```
 
 #### 9.3 API验证
 
-> 已在 verify-backend.ps1 中自动执行，包含健康检查和 API 验证
+> 启动后手动验证 API 端点
 
 ### 验证输出
 
