@@ -19,6 +19,8 @@ permissions:
 execution:
   mode: parallel
   timeout: 300000
+  checkpoint_dir: .sop/state
+  state_file: .sop/state/codereview-{id}.json
 
 # 并行任务定义
 parallel_tasks:

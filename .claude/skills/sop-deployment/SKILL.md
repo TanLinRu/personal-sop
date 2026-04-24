@@ -17,6 +17,8 @@ permissions:
 execution:
   mode: sequential
   timeout: 600000
+  checkpoint_dir: .sop/state
+  state_file: .sop/state/deployment-{id}.json
 ---
 
 # SOP Deployment - 标准部署发布流程

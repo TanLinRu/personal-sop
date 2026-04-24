@@ -18,6 +18,8 @@ permissions:
 execution:
   mode: sequential
   timeout: 300000
+  checkpoint_dir: .sop/state
+  state_file: .sop/state/testing-{id}.json
 ---
 
 # SOP Testing - 标准测试执行流程

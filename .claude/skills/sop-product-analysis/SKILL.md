@@ -15,6 +15,11 @@ permissions:
   write: allow
   bash: allow
   web: allow
+execution:
+  mode: sequential
+  timeout: 300000
+  checkpoint_dir: .sop/state
+  state_file: .sop/state/product-{id}.json
 ---
 
 # SOP Product Analysis - 产品业务分析流程

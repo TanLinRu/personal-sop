@@ -19,8 +19,10 @@ permissions:
 execution:
   mode: parallel
   timeout: 300000
+  checkpoint_dir: .sop/state
+  state_file: .sop/state/bugfix-{id}.json
 
-​---
+ ​---
 
 # SOP Bug Fix - 标准 Bug 修复流程
 

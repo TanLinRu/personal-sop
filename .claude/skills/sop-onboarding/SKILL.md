@@ -14,6 +14,11 @@ permissions:
   write: allow
   bash: allow
   web: allow
+execution:
+  mode: sequential
+  timeout: 300000
+  checkpoint_dir: .sop/state
+  state_file: .sop/state/onboarding-{id}.json
 ---
 
 # SOP Onboarding - 标准项目入职流程

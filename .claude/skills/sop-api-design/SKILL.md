@@ -13,6 +13,11 @@ permissions:
   read: allow
   write: allow
   bash: allow
+execution:
+  mode: sequential
+  timeout: 300000
+  checkpoint_dir: .sop/state
+  state_file: .sop/state/api-{id}.json
 ---
 
 # SOP API Design - REST API设计规范

@@ -21,6 +21,8 @@ permissions:
 execution:
   mode: hybrid  # sequential | parallel | hybrid (收集+复现可并行,修复需串行)
   timeout: 600000 # 单任务超时(毫秒)
+  checkpoint_dir: .sop/state
+  state_file: .sop/state/incident-{id}.json
 
 # 并行任务定义
 parallel_tasks:

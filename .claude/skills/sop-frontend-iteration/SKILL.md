@@ -16,6 +16,8 @@ permissions:
 execution:
   mode: parallel
   timeout: 300000
+  checkpoint_dir: .sop/state
+  state_file: .sop/state/frontend-{id}.json
 
 parallel_tasks:
   - name: UI设计调研

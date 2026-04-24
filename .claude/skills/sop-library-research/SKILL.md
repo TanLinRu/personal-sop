@@ -19,6 +19,8 @@ permissions:
 execution:
   mode: parallel  # sequential | parallel | hybrid
   timeout: 300000 # 单任务超时(毫秒)
+  checkpoint_dir: .sop/state
+  state_file: .sop/state/research-{id}.json
 
 # 并行任务定义
 parallel_tasks:
