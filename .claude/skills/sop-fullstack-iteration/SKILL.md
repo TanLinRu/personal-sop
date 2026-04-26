@@ -1,8 +1,8 @@
 ---
 ​---
 name: sop-fullstack-iteration
-description: 前后端需求迭代流程 - PRD生成→依赖分析→API设计→后端实现→前端实现→联调测试（含多Agent并行+context-mode追踪）
-version: 2.1.0
+description: 前后端需求迭代流程 - PRD生成→依赖分析→API设计→后端实现→前端实现→联调测试（含多Agent并行+Graphify图谱）
+version: 2.2.0
 triggers:
   - "需求迭代"
   - "功能迭代"
@@ -124,10 +124,29 @@ Test-Path "{project}/backend/package.json" # 应为 false（后端无package.jso
 
 ## Step 1: 需求确认 [CONFIRM_REQUIRED]
 
+> 详细状态管理规则见 [.claude/rules/sop-execution.md](../rules/sop-execution.md)
+
 **执行内容**：
 - 后端接口需求
 - 前端页面需求
 - 联调验收标准
+
+**持久化**（自动）：
+```bash
+Write(".sop/state/fullstack-{id}.json", """
+{
+  "task_id": "{uuid}",
+  "sop": "fullstack-iteration",
+  "status": "in_progress",
+  "business_requirements": {
+    "name": "{功能名称}",
+    "type": "{全栈功能}",
+    "features": ["{功能列表}"],
+    "priority": "P1"
+  }
+}
+""")
+```
 
 **输出**：
 ```markdown
@@ -231,16 +250,130 @@ P0/P1/P2 检查点，用户确认
 
 ## Step 6: 依赖查询 [AUTO]
 
-**执行内容**：
-/ctx query 查询完整依赖
+> 使用 Graphify 查询（替代 context-mode）+ 业务依赖分析
+
+### 6.1 检查图谱
+
+检查图谱是否存在：
+
+```bash
+Test-Path ".sop/dependency-graph/graph.json"
+```
+
+### 6.2 图谱更新确认
+
+> 增量更新已有依赖图，需用户确认
+
+```javascript
+AskUserQuestion({
+  question: "是否需要更新依赖图谱？",
+  header: "图谱确认",
+  options: [
+    { label: "更新图谱", description: "增量更新 Graphify 依赖图" },
+    { label: "跳过", description: "跳过本次更新" }
+  ],
+  multiSelect: false
+})
+```
+
+### 6.3 Graphify 查询
+
+```bash
+# ===== 后端图谱（强制分开）=====
+graphify update ./backend --out .sop/dependency-graph/{project}/backend
+
+# ===== 前端图谱（强制分开）=====
+graphify update ./frontend --out .sop/dependency-graph/{project}/frontend
+```
+
+### 6.4 业务依赖分析
+
+> 从 PRD（sop-prd 生成）读取业务依赖，分析新功能与已上线模块的业务关联
+
+#### 读取 PRD 业务依赖
+
+检查是否存在 PRD 文档，读取业务依赖章节：
+
+```bash
+Glob(pattern=".sop/output/prd-*.md")
+```
+
+#### 业务依赖检测结果
+
+| 新模块 | 已上线模块 | 依赖类型 | 风险等级 | 处理方案 |
+|--------|------------|----------|----------|----------|
+| {新模块} | 模块A | 服务调用 | 中 | 确认后继续 |
+| {新模块} | 模块B | 无 | - | - |
+
+#### 风险提示
+
+```javascript
+AskUserQuestion({
+  question: "检测到业务依赖风险，是否继续？",
+  header: "业务依赖",
+  options: [
+    { label: "继续开发", description: "独立实现，后续联调" },
+    { label: "合并开发", description: "与关联模块一起迭代" },
+    { label: "取消", description: "先处理依赖模块" }
+  ],
+  multiSelect: false
+})
+```
+
+### 6.5 边界场景分析
+
+> 分析特殊依赖场景，提前识别风险
+
+#### 6.5.1 循环依赖检测
+
+**场景**：A → B → A
 
 **命令**：
 ```bash
-# 查询后端已有实体
-Glob(pattern="**/entity/*.java")
+graphify query "A 和 B 的循环依赖?" --graph .sop/dependency-graph/graph.json
+```
 
-# 查询前端已有组件
-Glob(pattern="**/components/*.vue")
+**风险等级**：🔴 极高
+
+#### 6.5.2 传递依赖检测
+
+**场景**：A → B → C（修改 A 影响 C）
+
+**命令**：
+```bash
+graphify query "A 的完整依赖链?" --graph .sop/dependency-graph/graph.json
+```
+
+**风险等级**：🔴 高
+
+#### 6.5.3 共用依赖检测
+
+**场景**：多个模块引用同一个 Service/Mapper
+
+**命令**：
+```bash
+# 搜索引用同一 Mapper 的 Service
+grep -r "CustomerMapper" --include="*Service.java"
+```
+
+**风险等级**：🟡 中
+
+#### 6.5.4 边界场景报告
+
+```markdown
+## 边界场景分析
+
+### 循环依赖
+- 检测结果: 无 / 有
+- 影响: 可能导致StackOverflow
+
+### 传递依赖
+- 层级: N 层
+- 影响范围: 模块数量
+
+### 共用依赖
+- 被引用次数: N
+- 影响模块: [模块列表]
 ```
 
 ​---
@@ -271,21 +404,115 @@ await task(
 
 ## Step 8: 联调验证 [AUTO]
 
-> **关键**：验证后端和前端都可以正常启动
+> **关键**：使用 TypeScript 脚本启动 + 父 Agent 10秒后检查
 
 **验证命令**：
-```powershell
-# 后端验证
-cd backend; mvn clean compile; mvn spring-boot:run
+```bash
+# 后端启动（不阻塞）
+node .claude/scripts/start-backend.js {project-dir}/backend 8080
+
+# 等待 10 秒
+sleep(10)
+
+# 前端启动（不阻塞）
+node .claude/scripts/start-frontend.js {project-dir}/frontend 5173
+
+# 等待 10 秒
+sleep(10)
+
+# 后端健康检查
 curl http://localhost:8080/actuator/health
 
-# 前端验证
-cd frontend; npm install; npm run dev
-curl http://localhost:3000
+# API 验证
+curl http://localhost:8080/api/v1/{resource}
+
+# 前端页面访问
+curl http://localhost:5173
+
+# 停止服务（如需要）
+taskkill /F /IM java.exe
+taskkill /F /IM node.exe
 ```
 
 **验证输出**：
 ```markdown
+​---
+sop: fullstack-iteration
+step: 8_verify
+status: in_progress
+​---
+
+## 联调验证结果
+
+### 后端验证
+| 检查项 | 状态 |
+|--------|------|
+| 编译成功 | ✅/❌ |
+| 启动成功 | ✅/❌ |
+| API可用 | ✅/❌ |
+
+### 前端验证
+| 检查项 | 状态 |
+|--------|------|
+| 依赖安装 | ✅/❌ |
+| 启动成功 | ✅/❌ |
+| 页面可访问 | ✅/❌ |
+
+### 联调验证
+| 场景 | 状态 |
+|------|------|
+| {功能}列表加载 | ✅/❌ |
+| {功能}新增 | ✅/❌ |
+
+### 验证状态
+- [ ] 编译失败
+- [ ] 启动失败
+- [ ] API无法访问
+- [ ] 联调失败
+- [ ] 全部通过
+```
+
+​---
+
+## Step 9: 知识更新 [AUTO]
+
+**执行内容**：
+graphify update ./backend --out .sop/dependency-graph/{project}/backend
+graphify update ./frontend --out .sop/dependency-graph/{project}/frontend
+
+**状态文件**：
+```json
+{
+  "sop": "fullstack-iteration",
+  "task_id": "fullstack-{id}",
+  "step": "9_complete",
+  "entities": [],
+  "apis": [],
+  "components": [],
+  "pages": []
+}
+```
+
+​---
+
+## 错误处理
+
+| 错误场景 | 处理方式 |
+|----------|----------|
+| 编译失败 | 检查依赖配置 |
+| 联调失败 | 检查接口契约是否一致 |
+| 前后端不同步 | 以接口契约为准 |
+
+​---
+
+## 触发命令
+
+```
+/sop fullstack
+```
+或描述：
+- "添加用户管理功能"
+- "实现订单模块"
 ---
 sop: fullstack-iteration
 step: 8_verify
@@ -331,10 +558,11 @@ status: in_progress
 ## Step 9: 知识更新 [AUTO]
 
 **执行内容**：
-/ctx index 全量更新所有依赖图
+graphify update ./backend --out .sop/dependency-graph/{project}/backend
+graphify update ./frontend --out .sop/dependency-graph/{project}/frontend
 
 **状态文件**：
-```json
+​```json
 {
   "sop": "fullstack-iteration",
   "task_id": "fullstack-{id}",
@@ -346,7 +574,7 @@ status: in_progress
 }
 ```
 
-​---
+---
 
 ## 错误处理
 
@@ -356,7 +584,7 @@ status: in_progress
 | 联调失败 | 检查接口契约是否一致 |
 | 前后端不同步 | 以接口契约为准 |
 
-​---
+---
 
 ## 触发命令
 
@@ -398,7 +626,7 @@ P0/P1/P2 检查点，用户确认
 
 ## Step 6: 依赖查询 [AUTO]
 
-/ctx query 查询完整依赖
+graphify query 查询完整依赖
 
 ## Step 7: 并行生成 [AUTO]
 
@@ -410,4 +638,5 @@ API 联调验证、数据流验证
 
 ## Step 9: 知识更新 [AUTO]
 
-/ctx index 全量更新所有依赖图
+graphify update ./backend --out .sop/dependency-graph/{project}/backend
+graphify update ./frontend --out .sop/dependency-graph/{project}/frontend

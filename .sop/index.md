@@ -2,10 +2,22 @@
 
 > 所有 SOP 产出文档的统一入口，支持快速检索和导航。
 
+## 目录结构
+
+```
+.sop/
+├── knowledge/              # 领域知识（待创建）
+├── state/                # SOP 执行状态文件
+├── output/               # 产出文档
+└── index.md             # 本索引
+```
+
 ## 快速导航
 
 | 类别 | 路径 | 说明 |
 |------|------|------|
+| ⚡ 状态文件 | `.sop/state/*` | SOP 断点恢复状态 |
+| 🔗 依赖图谱 | `.sop/dependency-graph/*` | 后端/前端代码图谱 |
 | 📋 计划与评估 | `.sop/output/*_Plan.md` | 优化计划、评估报告 |
 | 🔧 技术调研 | `.sop/output/*Research*.md` | 技术选型、架构设计 |
 | 📚 框架学习 | `.sop/output/*QuickStart*.md` | 快速入门指南 |
@@ -22,6 +34,43 @@
 ├── SOP_Skills_Evaluation_Report.md    # SOP 评估报告
 └── SOP_Skills_Optimization_Plan.md    # 优化计划
 ```
+
+### 2. 状态文件 ⚡
+```
+.sop/state/
+├── scaffold-20260425-001.json     # scaffold SOP 状态
+├── backend-20260425-001.json    # 后端迭代状态
+└── frontend-20260425-001.json # 前端迭代状态
+```
+
+> 断点恢复：检查 `status=in_progress` 的文件，从 `current_step` 继续
+
+### 状态管理脚本
+
+```bash
+# 保存状态（Step 开始/完成）
+node .claude/scripts/sop-state-save.ts <sop> <step> <status>
+node .claude/scripts/sop-state-save.ts testing 1_confirm in_progress project=chatbot
+node .claude/scripts/sop-state-save.ts testing 1_confirm completed
+
+# 加载状态（断点恢复）
+node .claude/scripts/sop-state-load.ts <sop>
+node .claude/scripts/sop-state-load.ts testing
+
+# 查看所有状态
+node .claude/scripts/sop-state-load.ts --list
+
+# 清理完成状态
+node .claude/scripts/sop-state-clean.ts           # 清理 completed/failed
+node .claude/scripts/sop-state-clean.ts --all   # 清理所有
+node .claude/scripts/sop-state-clean.ts testing # 清理 testing 状态
+```
+
+| 脚本 | 用途 |
+|------|------|
+| `sop-state-save.ts` | 保存步骤状态、用户答案 |
+| `sop-state-load.ts` | 加载断点、查看进度 |
+| `sop-state-clean.ts` | 清理完成/失败状态 |
 
 ### 2. 技术调研
 ```
@@ -168,6 +217,12 @@ architect: architect
 ## 常用命令
 
 ```bash
+# 查看所有状态文件（断点恢复）
+ls -la .sop/state/
+
+# 查看进行中的 SOP
+ls .sop/state/*-in_progress.json
+
 # 查看所有产出文档
 ls -la .sop/output/
 

@@ -1,0 +1,229 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "DeliveryStaffApplication.java",
+      "file_type": "code",
+      "source_file": "src\\main\\java\\com\\delivery\\staff\\DeliveryStaffApplication.java",
+      "source_location": "L1",
+      "id": "main_java_com_delivery_staff_deliverystaffapplication_java",
+      "community": 1,
+      "norm_label": "deliverystaffapplication.java"
+    },
+    {
+      "label": "DeliveryStaffApplication",
+      "file_type": "code",
+      "source_file": "src\\main\\java\\com\\delivery\\staff\\DeliveryStaffApplication.java",
+      "source_location": "L6",
+      "id": "deliverystaffapplication_deliverystaffapplication",
+      "community": 1,
+      "norm_label": "deliverystaffapplication"
+    },
+    {
+      "label": ".main()",
+      "file_type": "code",
+      "source_file": "src\\main\\java\\com\\delivery\\staff\\DeliveryStaffApplication.java",
+      "source_location": "L9",
+      "id": "deliverystaffapplication_deliverystaffapplication_main",
+      "community": 1,
+      "norm_label": ".main()"
+    },
+    {
+      "label": "StartupInfoListener.java",
+      "file_type": "code",
+      "source_file": "src\\main\\java\\com\\delivery\\staff\\config\\StartupInfoListener.java",
+      "source_location": "L1",
+      "id": "main_java_com_delivery_staff_config_startupinfolistener_java",
+      "community": 0,
+      "norm_label": "startupinfolistener.java"
+    },
+    {
+      "label": "StartupInfoListener",
+      "file_type": "code",
+      "source_file": "src\\main\\java\\com\\delivery\\staff\\config\\StartupInfoListener.java",
+      "source_location": "L25",
+      "id": "startupinfolistener_startupinfolistener",
+      "community": 0,
+      "norm_label": "startupinfolistener"
+    },
+    {
+      "label": ".onApplicationEvent()",
+      "file_type": "code",
+      "source_file": "src\\main\\java\\com\\delivery\\staff\\config\\StartupInfoListener.java",
+      "source_location": "L30",
+      "id": "startupinfolistener_startupinfolistener_onapplicationevent",
+      "community": 0,
+      "norm_label": ".onapplicationevent()"
+    },
+    {
+      "label": ".viteDevServerHint()",
+      "file_type": "code",
+      "source_file": "src\\main\\java\\com\\delivery\\staff\\config\\StartupInfoListener.java",
+      "source_location": "L77",
+      "id": "startupinfolistener_startupinfolistener_vitedevserverhint",
+      "community": 0,
+      "norm_label": ".vitedevserverhint()"
+    },
+    {
+      "label": ".readVitePort()",
+      "file_type": "code",
+      "source_file": "src\\main\\java\\com\\delivery\\staff\\config\\StartupInfoListener.java",
+      "source_location": "L90",
+      "id": "startupinfolistener_startupinfolistener_readviteport",
+      "community": 0,
+      "norm_label": ".readviteport()"
+    },
+    {
+      "label": "DeliveryStaffApplicationTests.java",
+      "file_type": "code",
+      "source_file": "src\\test\\java\\com\\delivery\\staff\\DeliveryStaffApplicationTests.java",
+      "source_location": "L1",
+      "id": "test_java_com_delivery_staff_deliverystaffapplicationtests_java",
+      "community": 2,
+      "norm_label": "deliverystaffapplicationtests.java"
+    },
+    {
+      "label": "DeliveryStaffApplicationTests",
+      "file_type": "code",
+      "source_file": "src\\test\\java\\com\\delivery\\staff\\DeliveryStaffApplicationTests.java",
+      "source_location": "L6",
+      "id": "deliverystaffapplicationtests_deliverystaffapplicationtests",
+      "community": 2,
+      "norm_label": "deliverystaffapplicationtests"
+    },
+    {
+      "label": ".contextLoads()",
+      "file_type": "code",
+      "source_file": "src\\test\\java\\com\\delivery\\staff\\DeliveryStaffApplicationTests.java",
+      "source_location": "L9",
+      "id": "deliverystaffapplicationtests_deliverystaffapplicationtests_contextloads",
+      "community": 2,
+      "norm_label": ".contextloads()"
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main\\java\\com\\delivery\\staff\\DeliveryStaffApplication.java",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_src": "main_java_com_delivery_staff_deliverystaffapplication_java",
+      "_tgt": "deliverystaffapplication_deliverystaffapplication",
+      "source": "main_java_com_delivery_staff_deliverystaffapplication_java",
+      "target": "deliverystaffapplication_deliverystaffapplication",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main\\java\\com\\delivery\\staff\\DeliveryStaffApplication.java",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "deliverystaffapplication_deliverystaffapplication",
+      "_tgt": "deliverystaffapplication_deliverystaffapplication_main",
+      "source": "deliverystaffapplication_deliverystaffapplication",
+      "target": "deliverystaffapplication_deliverystaffapplication_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main\\java\\com\\delivery\\staff\\config\\StartupInfoListener.java",
+      "source_location": "L25",
+      "weight": 1.0,
+      "_src": "main_java_com_delivery_staff_config_startupinfolistener_java",
+      "_tgt": "startupinfolistener_startupinfolistener",
+      "source": "main_java_com_delivery_staff_config_startupinfolistener_java",
+      "target": "startupinfolistener_startupinfolistener",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main\\java\\com\\delivery\\staff\\config\\StartupInfoListener.java",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_src": "startupinfolistener_startupinfolistener",
+      "_tgt": "startupinfolistener_startupinfolistener_onapplicationevent",
+      "source": "startupinfolistener_startupinfolistener",
+      "target": "startupinfolistener_startupinfolistener_onapplicationevent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main\\java\\com\\delivery\\staff\\config\\StartupInfoListener.java",
+      "source_location": "L77",
+      "weight": 1.0,
+      "_src": "startupinfolistener_startupinfolistener",
+      "_tgt": "startupinfolistener_startupinfolistener_vitedevserverhint",
+      "source": "startupinfolistener_startupinfolistener",
+      "target": "startupinfolistener_startupinfolistener_vitedevserverhint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main\\java\\com\\delivery\\staff\\config\\StartupInfoListener.java",
+      "source_location": "L90",
+      "weight": 1.0,
+      "_src": "startupinfolistener_startupinfolistener",
+      "_tgt": "startupinfolistener_startupinfolistener_readviteport",
+      "source": "startupinfolistener_startupinfolistener",
+      "target": "startupinfolistener_startupinfolistener_readviteport",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main\\java\\com\\delivery\\staff\\config\\StartupInfoListener.java",
+      "source_location": "L53",
+      "weight": 1.0,
+      "_src": "startupinfolistener_startupinfolistener_onapplicationevent",
+      "_tgt": "startupinfolistener_startupinfolistener_vitedevserverhint",
+      "source": "startupinfolistener_startupinfolistener_onapplicationevent",
+      "target": "startupinfolistener_startupinfolistener_vitedevserverhint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main\\java\\com\\delivery\\staff\\config\\StartupInfoListener.java",
+      "source_location": "L82",
+      "weight": 1.0,
+      "_src": "startupinfolistener_startupinfolistener_vitedevserverhint",
+      "_tgt": "startupinfolistener_startupinfolistener_readviteport",
+      "source": "startupinfolistener_startupinfolistener_vitedevserverhint",
+      "target": "startupinfolistener_startupinfolistener_readviteport",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\test\\java\\com\\delivery\\staff\\DeliveryStaffApplicationTests.java",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_src": "test_java_com_delivery_staff_deliverystaffapplicationtests_java",
+      "_tgt": "deliverystaffapplicationtests_deliverystaffapplicationtests",
+      "source": "test_java_com_delivery_staff_deliverystaffapplicationtests_java",
+      "target": "deliverystaffapplicationtests_deliverystaffapplicationtests",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\test\\java\\com\\delivery\\staff\\DeliveryStaffApplicationTests.java",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "deliverystaffapplicationtests_deliverystaffapplicationtests",
+      "_tgt": "deliverystaffapplicationtests_deliverystaffapplicationtests_contextloads",
+      "source": "deliverystaffapplicationtests_deliverystaffapplicationtests",
+      "target": "deliverystaffapplicationtests_deliverystaffapplicationtests_contextloads",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": []
+}

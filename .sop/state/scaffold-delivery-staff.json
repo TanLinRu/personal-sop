@@ -1,0 +1,31 @@
+{
+  "task_id": "delivery-staff-20260426",
+  "sop": "scaffold",
+  "status": "in_progress",
+  "started_at": "2026-04-26T10:00:00Z",
+  "business_requirements": {
+    "name": "外卖人员管理系统",
+    "type": "人员管理",
+    "features": ["配送员信息管理", "排班", "绩效考核"],
+    "priority": "P1"
+  },
+  "config": {
+    "database": "H2",
+    "frontend": "Vue3+Naive UI",
+    "backend_port": 8080,
+    "frontend_port": 5173
+  },
+  "current_step": 3,
+  "steps": {
+    "1_confirm": {"status": "completed"},
+    "2_config": {"status": "completed"},
+    "3_research": {"status": "completed"},
+    "4_prd": {"status": "pending"},
+    "5_arch": {"status": "pending"},
+    "6_review": {"status": "pending"},
+    "7_dependency": {"status": "pending"},
+    "8_generate": {"status": "pending"},
+    "9_verify": {"status": "pending"},
+    "10_knowledge": {"status": "pending"}
+  }
+}

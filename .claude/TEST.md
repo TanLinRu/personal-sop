@@ -3,7 +3,7 @@
 ## 测试环境
 
 - OpenCode CLI
-- Context-Mode MCP
+- Graphify 知识图谱
 - 项目目录: `D:\project\ai\personal-sop`
 
 ---
@@ -278,26 +278,31 @@ sop bug-fix
 
 ---
 
-## Context-Mode 测试
+## Graphify 知识图谱测试
 
 ### 验证命令
 
 ```bash
-# 索引项目
-ctx index --source "order-system" --path "./order-system"
+# 索引项目到图谱
+graphify update ./backend --out .sop/dependency-graph/{project}/backend
+graphify update ./frontend --out .sop/dependency-graph/{project}/frontend
 
 # 查询实体
-ctx query --type entities --last 5
+graphify query "Order"
 
-# 查询 API
-ctx query --type apis --last 5
+# 查询 API 依赖
+graphify query "哪些模块依赖 OrderService"
+
+# 路径查询
+graphify path "OrderService" "OrderController"
 ```
 
 ### 预期结果
 
-- [ ] 索引成功
+- [ ] 图谱构建成功
 - [ ] 查询返回 Order 实体
 - [ ] 查询返回 /api/v1/orders 端点
+- [ ] 路径查询显示调用链
 
 ---
 
@@ -311,12 +316,13 @@ ctx query --type apis --last 5
 | 全栈迭代 | `sop fullstack` | 生成前后端代码 |
 | 代码审查 | `sop code-review` | 生成审查报告 |
 | Bug修复 | `sop bug-fix` | 修复并验证 |
+| 知识图谱 | `graphify query` | 依赖查询 |
 
 ---
 
 ## 注意事项
 
-1. 首次运行需要配置 context-mode MCP
+1. 首次运行需要配置 Graphify: `graphify opencode install`
 2. 调研次数影响执行时间（5-10分钟）
 3. 生成代码后需要手动编译验证
-4. 知识索引后可查询依赖关系
+4. 知识图谱更新后可查询依赖关系
