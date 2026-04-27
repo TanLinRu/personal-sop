@@ -1,0 +1,173 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode/minimax-m2.5-free",
+  "small_model": "opencode/minimax-m2.5-free",
+  "default_agent": "build",
+  "permission": {
+    "lsp": "allow"
+  },
+  "lsp": {
+    "jdtls": {
+      "command": ["jdtls"],
+      "extensions": [".java"],
+      "env": {
+        "JAVA_HOME": "D:\\software\\jdk-21.0.8"
+      }
+    }
+  },
+  "skills": [
+    ".claude/skills/sop-code-review/SKILL.md"
+  ],
+  "instructions": [
+    "AGENTS.md",
+    "D:\\project\\ai\\everything-claude-code-main\\agents\\code-reviewer.md",
+    "D:\\project\\ai\\everything-claude-code-main\\agents\\java-reviewer.md",
+    "D:\\project\\ai\\everything-claude-code-main\\agents\\security-reviewer.md",
+    "D:\\project\\ai\\everything-claude-code-main\\agents\\build-error-resolver.md",
+    ".claude/skills/sop-prd/SKILL.md",
+    ".claude/skills/sop-testing/SKILL.md",
+    ".claude/skills/sop-bug-fix/SKILL.md",
+    ".claude/skills/sop-code-review/SKILL.md",
+    ".claude/skills/sop-deployment/SKILL.md",
+    ".claude/skills/sop-scaffold/SKILL.md",
+    ".claude/skills/sop-backend-iteration/SKILL.md",
+    ".claude/skills/sop-frontend-iteration/SKILL.md",
+    ".claude/skills/sop-fullstack-iteration/SKILL.md",
+    ".claude/skills/sop-dependency-analysis/SKILL.md",
+    ".claude/skills/SOP.md",
+    ".claude/rules/common/coding-style.md",
+    ".claude/rules/common/testing.md",
+    ".claude/rules/common/sop/sop-execution.md",
+    "D:\\project\\ai\\dr-jskill-main\\references\\DATABASE.md",
+    "D:\\project\\ai\\dr-jskill-main\\references\\SECURITY.md",
+    "D:\\project\\ai\\dr-jskill-main\\references\\TEST.md",
+    "D:\\project\\ai\\dr-jskill-main\\references\\CONFIGURATION.md",
+    "D:\\project\\ai\\dr-jskill-main\\references\\LOGGING.md",
+    "D:\\project\\ai\\dr-jskill-main\\references\\PROJECT-SETUP.md",
+    "D:\\project\\ai\\dr-jskill-main\\references\\SPRING-BOOT-4.md",
+    "D:\\project\\ai\\dr-jskill-main\\references\\DOCKER.md",
+    "D:\\project\\ai\\dr-jskill-main\\references\\JDTLS.md",
+    "D:\\project\\ai\\dr-jskill-main\\references\\MYBATIS-PLUS.md",
+    "D:\\project\\ai\\dr-jskill-main\\references\\VUE.md",
+    "D:\\project\\ai\\dr-jskill-main\\references\\REACT.md"
+  ],
+  "compaction": {
+    "auto": true,
+    "prune": true
+  },
+  "agent": {
+    "build": {
+      "description": "Primary coding agent for project development",
+      "mode": "primary",
+      "model": "opencode/minimax-m2.5-free",
+      "tools": {
+        "write": true,
+        "edit": true,
+        "bash": true,
+        "read": true,
+        "task": true
+      }
+    },
+    "java-reviewer": {
+      "description": "Expert Java and Spring Boot code reviewer specializing in layered architecture, JPA patterns, security, and concurrency.",
+      "mode": "subagent",
+      "model": "opencode/minimax-m2.5-free",
+      "prompt": "You are an expert Java and Spring Boot code reviewer specializing in layered architecture, JPA patterns, security, and concurrency. Use for all code changes. MUST BE USED for Spring Boot projects.",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "code-reviewer": {
+      "description": "Expert code review specialist. Reviews code for quality, security, and maintainability. Use immediately after writing or modifying code.",
+      "mode": "subagent",
+      "model": "opencode/minimax-m2.5-free",
+      "prompt": "You are an expert code reviewer ensuring high standards of code quality and security.",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "security-reviewer": {
+      "description": "Security vulnerability detection and remediation specialist. Use for security issues.",
+      "mode": "subagent",
+      "model": "opencode/minimax-m2.5-free",
+      "prompt": "You are an expert security specialist focused on identifying and remediating vulnerabilities in web applications.",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": true,
+        "edit": true
+      }
+    },
+    "search-first": {
+      "description": "Research and code search specialist",
+      "mode": "subagent",
+      "model": "opencode/minimax-m2.5-free",
+      "prompt": "You are a research specialist. Search for relevant code and documentation before making changes.",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    }
+  },
+  "command": {
+    "sop prd": {
+      "description": "Generate PRD product requirements document",
+      "template": "Please execute the PRD generation SOP workflow.\n\n$ARGUMENTS"
+    },
+    "sop testing": {
+      "description": "Execute standard testing workflow",
+      "template": "Please execute the testing SOP workflow for this project.\n\n$ARGUMENTS"
+    },
+    "sop bug-fix": {
+      "description": "Execute bug fix workflow with parallel agents",
+      "template": "Please execute the bug fix SOP workflow.\n\n$ARGUMENTS"
+    },
+    "sop code-review": {
+      "description": "Execute code review workflow",
+      "template": "Please execute the code review SOP workflow.\n\n$ARGUMENTS"
+    },
+    "sop deployment": {
+      "description": "Execute deployment workflow",
+      "template": "Please execute the deployment SOP workflow.\n\n$ARGUMENTS"
+    },
+    "sop scaffold": {
+      "description": "Initialize new project scaffold",
+      "template": "Please execute the scaffold SOP workflow.\n\n$ARGUMENTS"
+    },
+    "sop backend": {
+      "description": "Backend-only iteration workflow",
+      "template": "Please execute the backend iteration SOP workflow.\n\n$ARGUMENTS"
+    },
+    "sop frontend": {
+      "description": "Frontend-only iteration workflow",
+      "template": "Please execute the frontend iteration SOP workflow.\n\n$ARGUMENTS"
+    },
+    "sop fullstack": {
+      "description": "Fullstack iteration workflow (backend + frontend)",
+      "template": "Please execute the fullstack iteration SOP workflow.\n\n$ARGUMENTS"
+    },
+    "sop dependency-analysis": {
+      "description": "Dependency and conflict analysis using Graphify",
+      "template": "Execute dependency analysis SOP.\n\n$ARGUMENTS"
+    },
+    "graphify": {
+      "description": "Build knowledge graph with Graphify",
+      "template": "Build knowledge graph using Graphify.\n\n$ARGUMENTS"
+    },
+    "graphify query": {
+      "description": "Query Graphify knowledge graph",
+      "template": "Query Graphify knowledge graph.\n\nQuery: $ARGUMENTS"
+    }
+  },
+  "plugin": [
+    ".opencode/plugins/graphify.js"
+  ]
+}
