@@ -135,50 +135,77 @@
   "command": {
     "sop prd": {
       "description": "Generate PRD product requirements document",
+      "agent": "build",
       "template": "Please execute the PRD generation SOP workflow.\n\n$ARGUMENTS"
     },
     "sop testing": {
       "description": "Execute standard testing workflow",
+      "agent": "build",
       "template": "Please execute the testing SOP workflow for this project.\n\n$ARGUMENTS"
     },
     "sop bug-fix": {
       "description": "Execute bug fix workflow with parallel agents",
+      "agent": "build",
       "template": "Please execute the bug fix SOP workflow.\n\n$ARGUMENTS"
     },
     "sop code-review": {
       "description": "Execute code review workflow",
+      "agent": "java-reviewer",
       "template": "Please execute the code review SOP workflow.\n\n$ARGUMENTS"
     },
     "sop deployment": {
       "description": "Execute deployment workflow",
+      "agent": "build",
       "template": "Please execute the deployment SOP workflow.\n\n$ARGUMENTS"
     },
     "sop scaffold": {
       "description": "Initialize new project scaffold",
+      "agent": "build",
       "template": "Please execute the scaffold SOP workflow.\n\n$ARGUMENTS"
     },
     "sop backend": {
       "description": "Backend-only iteration workflow",
+      "agent": "build",
       "template": "Please execute the backend iteration SOP workflow.\n\n$ARGUMENTS"
     },
     "sop frontend": {
       "description": "Frontend-only iteration workflow",
+      "agent": "build",
       "template": "Please execute the frontend iteration SOP workflow.\n\n$ARGUMENTS"
     },
     "sop fullstack": {
       "description": "Fullstack iteration workflow (backend + frontend)",
+      "agent": "build",
       "template": "Please execute the fullstack iteration SOP workflow.\n\n$ARGUMENTS"
     },
     "sop dependency-analysis": {
       "description": "Dependency and conflict analysis using Graphify",
+      "agent": "build",
       "template": "Execute dependency analysis SOP.\n\n$ARGUMENTS"
+    },
+    "java-review": {
+      "description": "Review Java code using java-reviewer agent",
+      "agent": "java-reviewer",
+      "template": "Please review the Java code at the following path:\n$ARGUMENTS"
+    },
+    "code-review": {
+      "description": "Review code using code-reviewer agent",
+      "agent": "code-reviewer",
+      "template": "Please review the code at the following path:\n$ARGUMENTS"
+    },
+    "security-review": {
+      "description": "Review security using security-reviewer agent",
+      "agent": "security-reviewer",
+      "template": "Please perform security review at the following path:\n$ARGUMENTS"
     },
     "graphify": {
       "description": "Build knowledge graph with Graphify",
+      "agent": "build",
       "template": "Build knowledge graph using Graphify.\n\n$ARGUMENTS"
     },
     "graphify query": {
       "description": "Query Graphify knowledge graph",
+      "agent": "build",
       "template": "Query Graphify knowledge graph.\n\nQuery: $ARGUMENTS"
     }
   },
