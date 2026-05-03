@@ -1,5 +1,4 @@
 ---
-​---
 name: sop-backend-iteration
 description: 后端需求迭代流程 - 需求→调研→PRD→架构→审核→依赖查询→实现（含多Agent并行+Graphify）
 version: 2.2.0
@@ -54,7 +53,7 @@ parallel_tasks:
 aggregation:
   strategy: merge
   output_format: markdown
-​---
+---
 
 # SOP Backend Iteration v2.1 - 后端需求迭代流程
 
@@ -97,7 +96,7 @@ aggregation:
 
 ## Step 1: 需求确认 [CONFIRM_REQUIRED]
 
-> 详细状态管理规则见 [.claude/rules/sop-execution.md](../rules/sop-execution.md)
+> 状态管理通过 `.claude/scripts/sop-state-*.ts` 脚本执行，详见 [sop-framework](../skills/sop-framework/SKILL.md)
 
 **执行内容**：
 - 功能名称
@@ -107,28 +106,16 @@ aggregation:
 
 **持久化**（自动）：
 ```bash
-Write(".sop/state/backend-{id}.json", """
-{
-  "task_id": "{uuid}",
-  "sop": "backend-iteration",
-  "status": "in_progress",
-  "business_requirements": {
-    "name": "{功能名称}",
-    "type": "{接口类型}",
-    "features": ["{功能列表}"],
-    "priority": "P1"
-  }
-}
-""")
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts backend-iteration 1_confirm in_progress
 ```
 
 **输出**：
 ```markdown
-​---
+---
 sop: backend-iteration
 step: 1_confirm
 status: in_progress
-​---
+---
 
 ## 需求确认
 
@@ -147,7 +134,7 @@ status: in_progress
 |      |      |      |
 ```
 
-​---
+---
 
 ## Step 2: 需求/技术调研 [AUTO]
 
@@ -166,11 +153,11 @@ status: in_progress
 skill(name="sop-library-research")
 ```
 
-​---
+---
 sop: backend-iteration
 step: 2_research
 status: in_progress
-​---
+---
 
 ## 调研结果
 
@@ -181,7 +168,7 @@ status: in_progress
 -
 ```
 
-​---
+---
 
 ## Step 3: 生成/引用 PRD [AUTO]
 
@@ -191,11 +178,11 @@ status: in_progress
 
 **输出**：
 ```markdown
-​---
+---
 sop: backend-iteration
 step: 3_prd
 status: in_progress
-​---
+---
 
 ## PRD引用
 
@@ -203,7 +190,7 @@ status: in_progress
 -
 ```
 
-​---
+---
 
 ## Step 4: 架构设计 [AUTO]
 
@@ -214,11 +201,11 @@ status: in_progress
 
 **输出**：
 ```markdown
-​---
+---
 sop: backend-iteration
 step: 4_arch
 status: in_progress
-​---
+---
 
 ## 架构设计
 
@@ -236,7 +223,7 @@ status: in_progress
 -
 ```
 
-​---
+---
 
 ## Step 5: 架构审核 [CONFIRM_REQUIRED]
 
@@ -254,7 +241,7 @@ P0/P1/P2 检查点，用户确认后进入实现
 | P1 | 异常处理完善 | 有全局异常处理 |
 | P2 | 代码规范一致 | 符合项目规范 |
 
-​---
+---
 
 ## Step 6: 依赖查询 [AUTO]
 
@@ -291,7 +278,7 @@ AskUserQuestion({
 graphify update ./backend --out .sop/dependency-graph/{project}/backend
 ```
 
-​---
+---
 
 ## Step 6.4: 依赖影响分析 [AUTO]
 
@@ -321,11 +308,11 @@ graphify query "哪些模块依赖 {新模块}?" --graph .sop/dependency-graph/g
 
 **输出格式**：
 ```markdown
-​---
+---
 sop: backend-iteration
 step: 6_4_impact
 status: in_progress
-​---
+---
 
 ## 依赖影响分析
 
@@ -413,7 +400,7 @@ grep -r "CustomerMapper" --include="*Service.java"
 - 影响模块: [模块列表]
 ```
 
-​---
+---
 
 ## Step 7: 后端实现 [AUTO]
 
@@ -428,7 +415,7 @@ skill(name="dr-jskill")
 node scripts/create-project-latest.mjs {module-name} com.{company} {module-name} com.{company}.{module} 21 web
 
 # 使用 java-reviewer agent 进行代码审查
-await task(
+Agent(
   subagent_type="java-reviewer",
   prompt="审查后端代码：检查事务管理、readOnly、异常处理"
 )
@@ -441,7 +428,7 @@ await task(
 - Service 业务层（含 @Transactional）
 - Controller 接口层
 
-**关键规范（coding-style.md）**：
+**关键规范（.claude/rules/common/）**：
 ```java
 // 查询方法
 @Transactional(readOnly = true)
@@ -456,7 +443,7 @@ public Warehouse createWarehouse(WarehouseDTO dto) {
 }
 ```
 
-​---
+---
 
 ## Step 8: 启动验证 [AUTO]
 
@@ -479,11 +466,11 @@ curl http://localhost:8080/api/v1/{resource}
 
 **验证输出**：
 ```markdown
-​---
+---
 sop: backend-iteration
 step: 8_verify
 status: in_progress
-​---
+---
 
 ## 后端启动验证
 
@@ -518,7 +505,7 @@ status: in_progress
 | 接口冲突 | 检查已有 API，执行 Step 6 依赖查询 |
 | 端口被占用 | `netstat -ano \| findstr 8080` |
 
-​---
+---
 
 ## Step 9: 知识更新 [AUTO]
 
@@ -531,85 +518,7 @@ status: in_progress
 {
   "sop": "backend-iteration",
   "task_id": "backend-{id}",
-  "step": 9_complete",
-  "entities": ["Entity1", "Entity2"],
-  "apis": ["/api/v1/xxx"]
-}
-```
-
-​---
-
-## 错误处理
-
-| 错误场景 | 处理方式 |
-|----------|----------|
-| 编译失败 | 检查 pom.xml 依赖 |
-| 测试失败 | 单独运行：`mvn test -Dtest=ClassName` |
-| 接口冲突 | 检查已有 API，执行 Step 6 依赖查询 |
-
-​---
-
-## 触发命令
-
-```
-/sop backend
-```
-或描述：
-- "后端添加用户管理功能"
-- "帮我实现订单接口"
----
-sop: backend-iteration
-step: 8_verify
-status: in_progress
----
-
-## 后端启动验证
-
-### 编译验证
-| 检查项 | 命令 | 状态 |
-|--------|------|------|
-| 编译成功 | mvn clean compile | ✅/❌ |
-
-### 启动验证
-| 检查项 | 命令 | 状态 |
-|--------|------|------|
-| 启动成功 | mvn spring-boot:run | ✅/❌ |
-| 健康检查 | /actuator/health | ✅/❌ |
-
-### API验证
-| 端点 | 方法 | 状态 |
-|------|------|------|
-| /v1/warehouses | GET | ✅/❌ |
-
-### 验证状态
-- [ ] 编译失败
-- [ ] 启动失败
-- [ ] API无法访问
-- [ ] 全部通过
-```
-
-**错误处理**：
-| 错误 | 处理方式 |
-|------|----------|
-| 编译失败 | 检查 pom.xml 依赖 |
-| 测试失败 | 单独运行：`mvn test -Dtest=ClassName` |
-| 接口冲突 | 检查已有 API，执行 Step 6 依赖查询 |
-| 端口被占用 | `netstat -ano \| findstr 8080` |
-
-​---
-
-## Step 9: 知识更新 [AUTO]
-
-**执行内容**：
-- 增量更新实体/API依赖图
-- 更新状态文件
-
-**状态文件**：
-​```json
-{
-  "sop": "backend-iteration",
-  "task_id": "backend-{id}",
-  "step": 9_complete",
+  "step": "9_complete",
   "entities": ["Entity1", "Entity2"],
   "apis": ["/api/v1/xxx"]
 }
@@ -636,47 +545,3 @@ status: in_progress
 - "后端添加用户管理功能"
 - "帮我实现订单接口"
 ---
-
-# SOP Backend Iteration v2.1 - 后端需求迭代流程
-
-## 流程
-
-```
-需求确认 → 需求调研 → PRD → 架构设计 → 架构审核 → 依赖查询 → 后端实现 → 验证 → 知识更新
-```
-
-## Step 1: 需求确认 [CONFIRM_REQUIRED]
-
-功能名称、接口需求、数据模型要求
-
-## Step 2: 需求/技术调研 [AUTO]
-
-3次 sop-library-research：API设计调研、技术选型调研、安全合规调研
-
-## Step 3: 生成 PRD [AUTO]
-
-后端功能通常需要完整 PRD
-
-## Step 4: 架构设计 [AUTO]
-
-API结构设计、数据模型设计、事务边界设计
-
-## Step 5: 架构审核 [CONFIRM_REQUIRED]
-
-P0/P1/P2 检查点，用户确认
-
-## Step 6: 依赖查询 [AUTO]
-
-graphify query 查询已有实体、API
-
-## Step 7: 后端实现 [AUTO]
-
-dr-jskill 生成 + java-reviewer 审查
-
-## Step 8: 验证 [AUTO]
-
-编译测试、接口测试
-
-## Step 9: 知识更新 [AUTO]
-
-graphify update ./backend --out .sop/dependency-graph/{project}/backend

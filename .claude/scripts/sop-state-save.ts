@@ -1,65 +1,49 @@
 #!/usr/bin/env ts-node
 
-import { writeFileSync, existsSync, mkdirSync } from "fs";
-import { resolve, dirname } from "path";
-
-interface SOPState {
-  task_id: string;
-  sop: string;
-  status: "in_progress" | "completed" | "failed";
-  started_at: string;
-  completed_at?: string;
-  business_requirements?: Record<string, unknown>;
-  current_step: number;
-  steps: Record<string, { status: string; timestamp?: string }>;
-  answers: Record<string, Record<string, unknown>>;
-  resume_from?: string;
-}
-
-interface SaveOptions {
-  sop: string;
-  step: string;
-  status: "pending" | "in_progress" | "completed";
-  data?: Partial<SOPState>;
-  answers?: Record<string, unknown>;
-}
+const fs = require("fs");
+const path = require("path");
 
 function getStateDir(): string {
-  return resolve(process.cwd(), ".sop", "state");
+  return path.resolve(process.cwd(), ".sop", "state");
 }
 
 function getStateFilePath(sop: string): string {
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   const dir = getStateDir();
-  if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
   }
-  return resolve(dir, `${sop}-${date}.json`);
+  return path.resolve(dir, `${sop}-${date}.json`);
 }
 
-function loadState(sop: string): SOPState | null {
+function loadStepMap(): Record<string, string[]> {
+  const mapPath = path.resolve(__dirname, "sop-step-map.json");
+  if (!fs.existsSync(mapPath)) {
+    return {};
+  }
+  return JSON.parse(fs.readFileSync(mapPath, "utf-8"));
+}
+
+function loadState(sop: string): any {
   const filePath = getStateFilePath(sop);
-  if (!existsSync(filePath)) {
+  if (!fs.existsSync(filePath)) {
     return null;
   }
   try {
-    const content = require("fs").readFileSync(filePath, "utf-8");
-    return JSON.parse(content);
+    return JSON.parse(fs.readFileSync(filePath, "utf-8"));
   } catch {
     return null;
   }
 }
 
-function saveState(options: SaveOptions): void {
-  const { sop, step, status, data, answers } = options;
+function saveState(sop: string, step: string, status: string, answers?: Record<string, unknown>): void {
   const filePath = getStateFilePath(sop);
+  const stepMap = loadStepMap();
 
-  let state: SOPState;
-
-  if (existsSync(filePath)) {
+  let state: any;
+  if (fs.existsSync(filePath)) {
     try {
-      const content = require("fs").readFileSync(filePath, "utf-8");
-      state = JSON.parse(content);
+      state = JSON.parse(fs.readFileSync(filePath, "utf-8"));
     } catch {
       state = createInitialState(sop);
     }
@@ -67,7 +51,6 @@ function saveState(options: SaveOptions): void {
     state = createInitialState(sop);
   }
 
-  state.current_step = state.current_step || 1;
   state.steps = state.steps || {};
 
   if (step) {
@@ -77,33 +60,46 @@ function saveState(options: SaveOptions): void {
     };
   }
 
-  if (status === "in_progress") {
-    state.status = "in_progress";
-  } else if (status === "completed") {
-    state.status = "completed";
-    state.completed_at = new Date().toISOString();
-  }
-
-  if (answers) {
+  if (answers && Object.keys(answers).length > 0) {
     state.answers = state.answers || {};
     state.answers[step] = answers;
   }
 
-  if (data) {
-    Object.assign(state, data);
+  // Advance current_step when a step completes
+  if (status === "completed") {
+    const steps = stepMap[sop];
+    if (steps) {
+      const idx = steps.indexOf(step);
+      if (idx >= 0 && idx < steps.length - 1) {
+        // More steps remain - advance to next
+        state.current_step = idx + 2; // 1-based, next step
+        state.status = "in_progress";
+      } else if (idx === steps.length - 1) {
+        // Last step completed - mark entire SOP as done
+        state.status = "completed";
+        state.completed_at = new Date().toISOString();
+        state.current_step = steps.length;
+      }
+    } else {
+      // No step map found - just mark step done, keep in_progress
+      state.status = "in_progress";
+    }
+  } else if (status === "in_progress") {
+    state.status = "in_progress";
   }
 
-  const dir = dirname(filePath);
-  if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true });
+  const dir = path.dirname(filePath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
   }
 
-  writeFileSync(filePath, JSON.stringify(state, null, 2), "utf-8");
+  fs.writeFileSync(filePath, JSON.stringify(state, null, 2), "utf-8");
   console.log(`[OK] State saved: ${filePath}`);
   console.log(`[OK] Step: ${step} -> ${status}`);
+  console.log(`[OK] current_step: ${state.current_step}`);
 }
 
-function createInitialState(sop: string): SOPState {
+function createInitialState(sop: string): any {
   return {
     task_id: `${sop}-${Date.now()}`,
     sop,
@@ -115,18 +111,19 @@ function createInitialState(sop: string): SOPState {
   };
 }
 
+// CLI entry point
 const args = process.argv.slice(2);
 
 if (args.length < 2) {
-  console.error("Usage: ts-node sop-state-save.ts <sop-name> <step> <status> [key=value...]");
-  console.error("Example: ts-node sop-state-save.ts scaffold 1_confirm in_progress");
-  console.error("Example: ts-node sop-state-save.ts backend 2_research completed database=H2");
+  console.error("Usage: node sop-state-save.ts <sop-name> <step> <status> [key=value...]");
+  console.error("Example: node sop-state-save.ts scaffold 1_confirm in_progress");
+  console.error("Example: node sop-state-save.ts scaffold 1_confirm completed project_name=myapp");
   process.exit(1);
 }
 
 const sop = args[0];
 const step = args[1];
-const status = args[2] as "pending" | "in_progress" | "completed";
+const status = args[2] || "in_progress";
 const answers: Record<string, unknown> = {};
 
 for (const arg of args.slice(3)) {
@@ -136,11 +133,5 @@ for (const arg of args.slice(3)) {
   }
 }
 
-saveState({
-  sop,
-  step,
-  status: status || "in_progress",
-  answers: Object.keys(answers).length > 0 ? answers : undefined,
-});
-
+saveState(sop, step, status, Object.keys(answers).length > 0 ? answers : undefined);
 process.exit(0);

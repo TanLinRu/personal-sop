@@ -81,6 +81,14 @@ function cleanBySOP(sop: string): number {
   for (const file of files) {
     try {
       const filePath = resolve(getStateDir(), file);
+      const content = readFileSync(filePath, "utf-8");
+      const state = JSON.parse(content) as SOPState;
+
+      if (state.status === "in_progress") {
+        console.log(`[SKIP] In-progress: ${file}`);
+        continue;
+      }
+
       unlinkSync(filePath);
       console.log(`[CLEAN] Removed: ${file}`);
       cleaned++;

@@ -1,5 +1,30 @@
 # Personal SOP - AI 驱动的工作流控制系统
 
+## 快速开始
+
+```bash
+# 1. Clone 仓库
+git clone <repo-url> personal-sop && cd personal-sop
+
+# 2. 运行安装脚本
+bash setup.sh
+
+# 3. 开始使用 (Claude Code)
+/sop scaffold        # 生成新项目
+/sop code-review     # 代码审查
+/sop bug-fix         # Bug 修复
+/sop status          # 查看任务状态
+```
+
+### 依赖项
+
+| 依赖 | 必需 | 说明 |
+|------|------|------|
+| Node.js 18+ | 是 | 状态管理脚本 |
+| Git | 是 | 版本控制 |
+| JAVA_HOME | 否 | Java/Spring Boot 项目需要 |
+| Graphify | 否 | 代码依赖分析，`pip install graphify` |
+
 ## 核心理念
 
 SOP Workflow System - 基于 OpenCode 的工作流系统，底层引用 ECC（Everything Claude Code）能力池。

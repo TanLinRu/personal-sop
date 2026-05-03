@@ -33,9 +33,90 @@ execution:
 - 数据迁移
 - 性能优化
 
+## 迁移策略
+
+数据库变更必须通过迁移工具管理，禁止手动执行 DDL：
+
+| 工具 | 适用场景 | 特点 |
+|------|----------|------|
+| Flyway | Spring Boot 项目（推荐） | 约定优于配置，版本号命名 |
+| Liquibase | 多数据库支持 | XML/YAML/SQL 格式，支持回滚 |
+
+**Flyway 命名规范**：
+```
+V{version}__{description}.sql    # 版本迁移
+R__{description}.sql             # 可重复执行（视图、存储过程）
+U{version}__{description}.sql    # 回滚脚本（可选）
+```
+
+**示例**：
+```
+V1__create_user_table.sql
+V2__add_order_table.sql
+V3__add_index_on_user_phone.sql
+R__create_user_view.sql
+```
+
+## EXPLAIN 验证
+
+索引设计完成后，必须用 EXPLAIN 验证查询计划：
+
+```sql
+-- 验证索引是否生效
+EXPLAIN SELECT * FROM orders WHERE user_id = 1 AND status = 'PAID';
+
+-- 关注指标
+-- type: ALL(全表扫描) → index → range → ref → eq_ref → const(最优)
+-- rows: 扫描行数越少越好
+-- Extra: Using index(覆盖索引) 最优
+```
+
+**EXPLAIN 检查清单**：
+| 检查项 | 期望结果 | 不合格处理 |
+|--------|----------|------------|
+| type | 非 ALL | 添加索引或优化查询 |
+| rows | < 1000 | 检查索引区分度 |
+| key | 非 NULL | 确认索引被使用 |
+| Extra | 无 Using filesort | 优化 ORDER BY 字段 |
+
+## Graphify 集成
+
+在设计表结构前，使用 Graphify 检测已有实体冲突：
+
+```bash
+# 检查已有 Entity 及其表名
+graphify query "搜索所有 JPA Entity 及其 @Table 注解的表名"
+
+# 检查字段命名冲突
+graphify query "搜索所有 Entity 的字段名和类型"
+```
+
+## 状态持久化
+
+每个步骤完成后自动保存状态到 `.sop/state/database-{id}.json`：
+
+```json
+{
+  "sop": "database-design",
+  "task_id": "database-{id}",
+  "status": "in_progress",
+  "current_step": 3,
+  "steps": {
+    "1_requirement": { "status": "completed" },
+    "2_er": { "status": "completed" },
+    "3_schema": { "status": "in_progress" },
+    "4_index": { "status": "pending" },
+    "5_normalization": { "status": "pending" },
+    "6_ddl": { "status": "pending" }
+  },
+  "entities": ["User", "Order"],
+  "tables": ["sys_user", "order_info"]
+}
+```
+
 ## 流程步骤
 
-### 步骤一：需求分析
+### 步骤一：需求分析 [CONFIRM_REQUIRED]
 
 **目标**：理解业务数据需求
 
@@ -62,7 +143,7 @@ status: in_progress
 ```
 ---
 
-### 步骤二：ER建模
+### 步骤二：ER建模 [AUTO]
 
 **目标**：设计实体关系图
 
@@ -96,7 +177,7 @@ status: in_progress
 ```
 ---
 
-### 步骤三：表结构设计
+### 步骤三：表结构设计 [AUTO]
 
 **目标**：生成具体表DDL
 
@@ -143,7 +224,7 @@ status: in_progress
 ```
 ---
 
-### 步骤四：索引设计
+### 步骤四：索引设计 [AUTO]
 
 **目标**：优化查询性能
 
@@ -179,7 +260,7 @@ status: in_progress
 ```
 ---
 
-### 步骤五：范式化检查
+### 步骤五：范式化检查 [AUTO]
 
 **目标**：确保数据一致性
 
@@ -208,7 +289,7 @@ status: in_progress
 ```
 ---
 
-### 步骤六：DDL生成
+### 步骤六：DDL生成 [AUTO]
 
 **目标**：生成可执行脚本
 

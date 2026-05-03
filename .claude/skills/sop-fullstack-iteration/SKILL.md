@@ -1,5 +1,4 @@
 ---
-​---
 name: sop-fullstack-iteration
 description: 前后端需求迭代流程 - PRD生成→依赖分析→API设计→后端实现→前端实现→联调测试（含多Agent并行+Graphify图谱）
 version: 2.2.0
@@ -60,7 +59,7 @@ parallel_tasks:
 aggregation:
   strategy: merge
   output_format: markdown
-​---
+---
 
 # SOP Fullstack Iteration v2.1 - 前后端需求迭代流程
 
@@ -124,7 +123,7 @@ Test-Path "{project}/backend/package.json" # 应为 false（后端无package.jso
 
 ## Step 1: 需求确认 [CONFIRM_REQUIRED]
 
-> 详细状态管理规则见 [.claude/rules/sop-execution.md](../rules/sop-execution.md)
+> 状态管理通过 `.claude/scripts/sop-state-*.ts` 脚本执行，详见 [sop-framework](../skills/sop-framework/SKILL.md)
 
 **执行内容**：
 - 后端接口需求
@@ -133,28 +132,16 @@ Test-Path "{project}/backend/package.json" # 应为 false（后端无package.jso
 
 **持久化**（自动）：
 ```bash
-Write(".sop/state/fullstack-{id}.json", """
-{
-  "task_id": "{uuid}",
-  "sop": "fullstack-iteration",
-  "status": "in_progress",
-  "business_requirements": {
-    "name": "{功能名称}",
-    "type": "{全栈功能}",
-    "features": ["{功能列表}"],
-    "priority": "P1"
-  }
-}
-""")
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts fullstack-iteration 1_confirm in_progress
 ```
 
 **输出**：
 ```markdown
-​---
+---
 sop: fullstack-iteration
 step: 1_confirm
 status: in_progress
-​---
+---
 
 ## 需求确认
 
@@ -169,7 +156,7 @@ status: in_progress
 |      |      |
 ```
 
-​---
+---
 
 ## Step 2: 需求/技术调研 [AUTO]
 
@@ -184,14 +171,14 @@ status: in_progress
 skill(name="sop-library-research")
 ```
 
-​---
+---
 
 ## Step 3: 生成 PRD [AUTO]
 
 **执行内容**：
 全栈功能通常需要完整 PRD
 
-​---
+---
 
 ## Step 4: 架构设计 [AUTO]
 
@@ -202,11 +189,11 @@ skill(name="sop-library-research")
 
 **输出**：
 ```markdown
-​---
+---
 sop: fullstack-iteration
 step: 4_arch
 status: in_progress
-​---
+---
 
 ## 架构设计
 
@@ -230,7 +217,7 @@ status: in_progress
 |      |      |      |      |
 ```
 
-​---
+---
 
 ## Step 5: 架构审核 [CONFIRM_REQUIRED]
 
@@ -246,7 +233,7 @@ P0/P1/P2 检查点，用户确认
 | P1 | 异常处理完善 | 有全局异常处理 |
 | P2 | 代码规范一致 | 符合项目规范 |
 
-​---
+---
 
 ## Step 6: 依赖查询 [AUTO]
 
@@ -376,7 +363,7 @@ grep -r "CustomerMapper" --include="*Service.java"
 - 影响模块: [模块列表]
 ```
 
-​---
+---
 
 ## Step 7: 并行生成 [AUTO]
 
@@ -385,13 +372,13 @@ grep -r "CustomerMapper" --include="*Service.java"
 **并行执行方式**：
 ```python
 # 使用 task 工具并行调用生成任务
-await task(
+Agent(
   subagent_type="dr-jskill",
   prompt="生成后端项目: {project-name}, {group-id}, Spring Boot 3 + MySQL + MyBatis-Plus"
 )
 
-await task(
-  subagent_type="frontend-design", 
+Agent(
+  subagent_type="frontend-design",
   prompt="创建前端项目: {project-name}/frontend, Vue 3 + Vite"
 )
 ```
@@ -400,7 +387,7 @@ await task(
 - 后端：Entity、DTO、Repository、Service、Controller
 - 前端：页面组件、API调用封装、路由配置
 
-​---
+---
 
 ## Step 8: 联调验证 [AUTO]
 
@@ -436,11 +423,11 @@ taskkill /F /IM node.exe
 
 **验证输出**：
 ```markdown
-​---
+---
 sop: fullstack-iteration
 step: 8_verify
 status: in_progress
-​---
+---
 
 ## 联调验证结果
 
@@ -472,7 +459,7 @@ status: in_progress
 - [ ] 全部通过
 ```
 
-​---
+---
 
 ## Step 9: 知识更新 [AUTO]
 
@@ -493,87 +480,6 @@ graphify update ./frontend --out .sop/dependency-graph/{project}/frontend
 }
 ```
 
-​---
-
-## 错误处理
-
-| 错误场景 | 处理方式 |
-|----------|----------|
-| 编译失败 | 检查依赖配置 |
-| 联调失败 | 检查接口契约是否一致 |
-| 前后端不同步 | 以接口契约为准 |
-
-​---
-
-## 触发命令
-
-```
-/sop fullstack
-```
-或描述：
-- "添加用户管理功能"
-- "实现订单模块"
----
-sop: fullstack-iteration
-step: 8_verify
-status: in_progress
----
-
-## 联调验证结果
-
-### 后端验证
-| 检查项 | 状态 |
-|--------|------|
-| 编译成功 | ✅/❌ |
-| 启动成功 | ✅/❌ |
-| API可用 | ✅/❌ |
-
-### 前端验证
-| 检查项 | 状态 |
-|--------|------|
-| 依赖安装 | ✅/❌ |
-| 启动成功 | ✅/❌ |
-| 页面可访问 | ✅/❌ |
-
-### 联调验证
-| 场景 | 状态 |
-|------|------|
-| 仓库列表加载 | ✅/❌ |
-| 车辆列表加载 | ✅/❌ |
-| 运单列表加载 | ✅/❌ |
-| 新增仓库 | ✅/❌ |
-| 新增车辆 | ✅/❌ |
-| 新增运单 | ✅/❌ |
-
-### 验证状态
-- [ ] 编译失败
-- [ ] 启动失败
-- [ ] API无法访问
-- [ ] 联调失败
-- [ ] 全部通过
-```
-
-​---
-
-## Step 9: 知识更新 [AUTO]
-
-**执行内容**：
-graphify update ./backend --out .sop/dependency-graph/{project}/backend
-graphify update ./frontend --out .sop/dependency-graph/{project}/frontend
-
-**状态文件**：
-​```json
-{
-  "sop": "fullstack-iteration",
-  "task_id": "fullstack-{id}",
-  "step": "9_complete",
-  "entities": [],
-  "apis": [],
-  "components": [],
-  "pages": []
-}
-```
-
 ---
 
 ## 错误处理
@@ -595,48 +501,3 @@ graphify update ./frontend --out .sop/dependency-graph/{project}/frontend
 - "添加用户管理功能"
 - "实现订单模块"
 ---
-
-# SOP Fullstack Iteration v2.1 - 前后端需求迭代流程
-
-## 流程
-
-```
-需求确认 → 需求/技术调研 → PRD → 架构设计 → 架构审核 → 依赖查询 → 并行生成 → 联调测试 → 知识更新
-```
-
-## Step 1: 需求确认 [CONFIRM_REQUIRED]
-
-前后端完整需求
-
-## Step 2: 需求/技术调研 [AUTO]
-
-5次 sop-library-research 并行：业务分析、技术调研、安全评估、UI设计、性能评估
-
-## Step 3: 生成 PRD [AUTO]
-
-全栈功能通常需要完整 PRD
-
-## Step 4: 架构设计 [AUTO]
-
-后端分层架构、前端架构、接口契约设计
-
-## Step 5: 架构审核 [CONFIRM_REQUIRED]
-
-P0/P1/P2 检查点，用户确认
-
-## Step 6: 依赖查询 [AUTO]
-
-graphify query 查询完整依赖
-
-## Step 7: 并行生成 [AUTO]
-
-后端 + 前端同时生成
-
-## Step 8: 联调测试 [AUTO]
-
-API 联调验证、数据流验证
-
-## Step 9: 知识更新 [AUTO]
-
-graphify update ./backend --out .sop/dependency-graph/{project}/backend
-graphify update ./frontend --out .sop/dependency-graph/{project}/frontend

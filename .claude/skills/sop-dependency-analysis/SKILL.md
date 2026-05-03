@@ -8,6 +8,7 @@ triggers:
   - "影响分析"
   - "/sop dependency-analysis"
 permissions:
+  task: allow
   read: allow
   write: allow
   bash: allow
@@ -33,9 +34,36 @@ execution:
 ## 使用场景
 
 - 新增 API 前检测路径冲突
-- 新增 Entity ���检测表名冲突
+- 新增 Entity 前检测表名冲突
 - 新增 Controller 前检测路由冲突
 - 修改代码前分析影响范围
+
+## 错误处理
+
+| 错误场景 | 处理方式 |
+|----------|----------|
+| Graphify 未安装 | 提示 `pip install graphifyy`，中止执行 |
+| 图谱文件不存在 | 自动执行 `graphify add .` 构建 |
+| 查询无结果 | 确认目录路径是否正确 |
+| 图谱过期 | 提示执行 `graphify update` 刷新 |
+| 查询超时 | 缩小查询范围，指定子目录 |
+
+## 与其他 SOP 的集成
+
+| 场景 | 前置/后续 SOP | 说明 |
+|------|---------------|------|
+| 后端迭代前 | `sop-backend-iteration` | 先分析冲突，再编写代码 |
+| 前端迭代前 | `sop-frontend-iteration` | 检查路由和组件冲突 |
+| 全栈开发前 | `sop-fullstack-iteration` | 前后端冲突统一检测 |
+| API 设计 | `sop-api-design` | 设计前检测已有接口 |
+| 数据库设计 | `sop-database-design` | 设计前检测已有实体 |
+| 代码审查 | `sop-code-review` | 审查时补充影响分析 |
+
+**调用示例**：
+```
+# 在 sop-backend-iteration 流程中调用
+Skill(skill="sop-dependency-analysis", args="检测新增 OrderService 的冲突")
+```
 
 ## 流程步骤
 

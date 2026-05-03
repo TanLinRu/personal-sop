@@ -169,7 +169,7 @@ cat src/main/resources/application.properties
 
 ---
 
-### 步骤三：运行测试（Test）
+### 步骤三：运行测试（Test） [AUTO]
 
 **目标**：确保项目可正常运行
 
@@ -235,7 +235,7 @@ nohup mvn spring-boot:run &
 
 ---
 
-### 步骤四：理解架构（Explore）
+### 步骤四：理解架构（Explore） [AUTO]
 
 **目标**：理解项目架构和核心模块
 

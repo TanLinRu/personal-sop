@@ -30,31 +30,31 @@
 ```bash
 # ===== 状态保存 =====
 # 步骤开始
-node .claude/scripts/sop-state-save.ts <sop> <step> in_progress key=value
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts <sop> <step> in_progress key=value
 
 # 步骤完成
-node .claude/scripts/sop-state-save.ts <sop> <step> completed
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts <sop> <step> completed
 
 # 示例
-node .claude/scripts/sop-state-save.ts scaffold 1_confirm in_progress project=myapp
-node .claude/scripts/sop-state-save.ts scaffold 1_confirm completed
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts scaffold 1_confirm in_progress project=myapp
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts scaffold 1_confirm completed
 
 # ===== 状态加载（断点恢复）=====
 # 查看所有进行中的状态
-node .claude/scripts/sop-state-load.ts --list
+npx ts-node --transpile-only .claude/scripts/sop-state-load.ts --list
 
 # 查看特定 SOP 状态
-node .claude/scripts/sop-state-load.ts scaffold
+npx ts-node --transpile-only .claude/scripts/sop-state-load.ts scaffold
 
 # ===== 状态清理 =====
 # 清理完成状态
-node .claude/scripts/sop-state-clean.ts
+npx ts-node --transpile-only .claude/scripts/sop-state-clean.ts
 
 # 清理特定 SOP
-node .claude/scripts/sop-state-clean.ts scaffold
+npx ts-node --transpile-only .claude/scripts/sop-state-clean.ts scaffold
 
 # 清理所有状态
-node .claude/scripts/sop-state-clean.ts --all
+npx ts-node --transpile-only .claude/scripts/sop-state-clean.ts --all
 ```
 
 ---
@@ -146,7 +146,7 @@ Step 10: 知识更新 [AUTO]
 | **输入** | 项目名称、核心场景、目标用户、约束条件 |
 | **行为** | AskUserQuestion 询问用户需求 |
 | **输出** | 状态文件 `.sop/state/scaffold-{id}.json` |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts scaffold 1_confirm in_progress project=xxx` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts scaffold 1_confirm in_progress project=xxx` |
 
 **AskUserQuestion 示例**：
 ```javascript
@@ -171,7 +171,7 @@ AskUserQuestion({
 | **输入** | 数据库、前端框架、端口等配置 |
 | **行为** | AskUserQuestion 确认配置 |
 | **输出** | 配置保存到状态文件 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts scaffold 2_config in_progress database=H2` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts scaffold 2_config in_progress database=H2` |
 
 **配置项清单**：
 
@@ -194,7 +194,7 @@ AskUserQuestion({
 | **输入** | 项目需求文档 |
 | **行为** | 5领域并行调研：业务分析、技术调研、安全评估、竞品分析、合规分析 |
 | **输出** | 调研报告 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts scaffold 3_research completed` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts scaffold 3_research completed` |
 
 #### Step 4: PRD生成 [AUTO]
 
@@ -204,7 +204,7 @@ AskUserQuestion({
 | **输入** | 调研报告 |
 | **行为** | 生成产品需求文档 |
 | **输出** | `.sop/output/prd-{name}-{date}.md` |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts scaffold 4_prd completed` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts scaffold 4_prd completed` |
 
 #### Step 5: 架构设计 [AUTO]
 
@@ -214,7 +214,7 @@ AskUserQuestion({
 | **输入** | PRD 文档 |
 | **行为** | 分层架构、技术选型、数据模型设计 |
 | **输出** | 架构设计文档 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts scaffold 5_arch completed` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts scaffold 5_arch completed` |
 
 #### Step 6: 架构审核 [CONFIRM_REQUIRED]
 
@@ -224,7 +224,7 @@ AskUserQuestion({
 | **输入** | 架构设计文档 |
 | **行为** | P0/P1/P2 检查点，用户确认 |
 | **输出** | 审核结果 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts scaffold 6_review in_progress` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts scaffold 6_review in_progress` |
 
 **审核检查清单**：
 
@@ -254,7 +254,7 @@ AskUserQuestion({
 | **输入** | 架构设计 + 配置 |
 | **行为** | 后端 + 前端并行生成 |
 | **输出** | 项目代码到 `backend/` 和 `frontend/` |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts scaffold 8_generate completed` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts scaffold 8_generate completed` |
 
 **生成命令**：
 ```bash
@@ -365,7 +365,7 @@ Step 9: 知识更新 [AUTO]
 | **输入** | 功能名称、接口需求、前端页面需求 |
 | **行为** | AskUserQuestion 询问需求 |
 | **输出** | 状态文件 `.sop/state/fullstack-{id}.json` |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts fullstack 1_confirm in_progress feature=xxx` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts fullstack 1_confirm in_progress feature=xxx` |
 
 #### Step 2: 需求/技术调研 [AUTO]
 
@@ -375,7 +375,7 @@ Step 9: 知识更新 [AUTO]
 | **输入** | 功能需求 |
 | **行为** | 5领域并行调研 |
 | **输出** | 调研报告 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts fullstack 2_research completed` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts fullstack 2_research completed` |
 
 #### Step 3: 生成 PRD [AUTO]
 
@@ -385,7 +385,7 @@ Step 9: 知识更新 [AUTO]
 | **输入** | 调研报告 |
 | **行为** | 生成功能 PRD |
 | **输出** | `.sop/output/prd-{name}-{date}.md` |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts fullstack 3_prd completed` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts fullstack 3_prd completed` |
 
 #### Step 4: 架构设计 [AUTO]
 
@@ -395,7 +395,7 @@ Step 9: 知识更新 [AUTO]
 | **输入** | PRD 文档 |
 | **行为** | 后端分层架构、前端架构、接口契约设计 |
 | **输出** | 架构设计文档 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts fullstack 4_arch completed` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts fullstack 4_arch completed` |
 
 #### Step 5: 架构审核 [CONFIRM_REQUIRED]
 
@@ -405,7 +405,7 @@ Step 9: 知识更新 [AUTO]
 | **输入** | 架构设计文档 |
 | **行为** | P0/P1/P2 检查点，用户确认 |
 | **输出** | 审核结果 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts fullstack 5_review in_progress` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts fullstack 5_review in_progress` |
 
 #### Step 6: 依赖查询 [AUTO]
 
@@ -425,7 +425,7 @@ Step 9: 知识更新 [AUTO]
 | **输入** | 架构设计 + 接口契约 |
 | **行为** | 后端 + 前端并行生成 |
 | **输出** | 更新的项目代码 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts fullstack 7_generate completed` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts fullstack 7_generate completed` |
 
 #### Step 8: 联调验证 [AUTO]
 
@@ -514,7 +514,7 @@ Step 9: 知识更新 [AUTO]
 | **输入** | 功能名称、接口需求、数据模型要求 |
 | **行为** | AskUserQuestion 询问需求 |
 | **输出** | 状态文件 `.sop/state/backend-{id}.json` |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts backend 1_confirm in_progress feature=xxx` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts backend 1_confirm in_progress feature=xxx` |
 
 #### Step 2: 需求/技术调研 [AUTO]
 
@@ -524,7 +524,7 @@ Step 9: 知识更新 [AUTO]
 | **输入** | 功能需求 |
 | **行为** | API设计调研、技术选型调研、安全合规调研 |
 | **输出** | 调研报告 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts backend 2_research completed` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts backend 2_research completed` |
 
 #### Step 3: 生成/引用 PRD [AUTO]
 
@@ -534,7 +534,7 @@ Step 9: 知识更新 [AUTO]
 | **输入** | 调研报告 |
 | **行为** | 引用已有 PRD 或生成简化功能 PRD |
 | **输出** | PRD 文档引用 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts backend 3_prd completed` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts backend 3_prd completed` |
 
 #### Step 4: 架构设计 [AUTO]
 
@@ -544,7 +544,7 @@ Step 9: 知识更新 [AUTO]
 | **输入** | PRD 文档 |
 | **行为** | API结构设计、数据模型设计、事务边界设计 |
 | **输出** | 架构设计文档 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts backend 4_arch completed` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts backend 4_arch completed` |
 
 #### Step 5: 架构审核 [CONFIRM_REQUIRED]
 
@@ -554,7 +554,7 @@ Step 9: 知识更新 [AUTO]
 | **输入** | 架构设计文档 |
 | **行为** | P0/P1/P2 检查点，用户确认 |
 | **输出** | 审核结果 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts backend 5_review in_progress` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts backend 5_review in_progress` |
 
 **审核检查清单**：
 
@@ -584,7 +584,7 @@ Step 9: 知识更新 [AUTO]
 | **输入** | 架构设计 |
 | **行为** | dr-jskill 生成 Entity/DTO/Repository/Service/Controller |
 | **输出** | 后端代码 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts backend 7_implement completed` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts backend 7_implement completed` |
 
 #### Step 8: 启动验证 [AUTO]
 
@@ -669,7 +669,7 @@ Step 8: 知识更新 [AUTO]
 | **输入** | 页面需求、组件需求、设计风格 |
 | **行为** | AskUserQuestion 询问需求 |
 | **输出** | 状态文件 `.sop/state/frontend-{id}.json` |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts frontend 1_confirm in_progress feature=xxx` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts frontend 1_confirm in_progress feature=xxx` |
 
 #### Step 2: UI/UX调研 [AUTO]
 
@@ -679,7 +679,7 @@ Step 8: 知识更新 [AUTO]
 | **输入** | 页面需求 |
 | **行为** | UI设计调研、组件库调研 |
 | **输出** | 调研报告 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts frontend 2_research completed` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts frontend 2_research completed` |
 
 #### Step 3: 组件设计 [AUTO]
 
@@ -689,7 +689,7 @@ Step 8: 知识更新 [AUTO]
 | **输入** | 调研报告 |
 | **行为** | 组件树结构、状态管理设计、路由设计 |
 | **输出** | 组件设计文档 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts frontend 3_design completed` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts frontend 3_design completed` |
 
 #### Step 4: 设计审核 [CONFIRM_REQUIRED]
 
@@ -699,7 +699,7 @@ Step 8: 知识更新 [AUTO]
 | **输入** | 组件设计文档 |
 | **行为** | P0/P1 检查点，用户确认 |
 | **输出** | 审核结果 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts frontend 4_review in_progress` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts frontend 4_review in_progress` |
 
 **审核检查清单**：
 
@@ -728,7 +728,7 @@ Step 8: 知识更新 [AUTO]
 | **输入** | 组件设计 |
 | **行为** | frontend-design 生成页面/组件、API调用封装、状态管理 |
 | **输出** | 前端代码 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts frontend 6_implement completed` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts frontend 6_implement completed` |
 
 #### Step 7: 启动验证 [AUTO]
 
@@ -804,7 +804,7 @@ Step 4: 反馈 [CONFIRM_REQUIRED]
 | **输入** | PR/Commit 信息、变更文件列表 |
 | **行为** | 阅读变更内容、理解业务逻辑和影响范围 |
 | **输出** | 变更概述文档 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts codereview 1_understand in_progress module=xxx` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts codereview 1_understand in_progress module=xxx` |
 
 #### Step 2: 并行审查 [AUTO]
 
@@ -814,7 +814,7 @@ Step 4: 反馈 [CONFIRM_REQUIRED]
 | **输入** | 变更文件 |
 | **行为** | 3个 Agent 并行审查（格式、安全、性能） |
 | **输出** | 审查报告 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts codereview 2_review completed` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts codereview 2_review completed` |
 
 **并行审查 Agent**：
 
@@ -842,7 +842,7 @@ Step 4: 反馈 [CONFIRM_REQUIRED]
 | **输入** | 审查报告 + 测试结果 |
 | **行为** | 汇总反馈、按严重程度分类 |
 | **输出** | 最终审查意见 |
-| **验证命令** | `node .claude/scripts/sop-state-save.ts codereview 4_feedback completed` |
+| **验证命令** | `npx ts-node --transpile-only .claude/scripts/sop-state-save.ts codereview 4_feedback completed` |
 
 ### 8.3 验证结果记录
 

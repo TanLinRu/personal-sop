@@ -38,7 +38,7 @@ permissions:
 
 ## 执行流程
 
-### Step 1: 确认审查范围
+### Step 1: 确认审查范围 [CONFIRM_REQUIRED]
 
 使用 AskUserQuestion 确认审查范围：
 ```javascript
@@ -54,13 +54,13 @@ AskUserQuestion({
 })
 ```
 
-### Step 2: 执行代码审查
+### Step 2: 执行代码审查 [AUTO]
 
-使用 task() 调用已配置的 agent 执行审查：
+使用 Agent() 调用已配置的 agent 执行审查：
 
-```python
+```bash
 # Java 代码审查
-task(
+Agent(
   subagent_type="java-reviewer",
   prompt="""执行代码审查，检查以下内容：
 1. 格式检查（缩进、命名、导入排序）
@@ -80,13 +80,13 @@ task(
 )
 ```
 
-### Step 3: 运行测试
+### Step 3: 运行测试 [AUTO]
 
 ```bash
 mvn test -q
 ```
 
-### Step 4: 输出审查报告
+### Step 4: 输出审查报告 [CONFIRM_REQUIRED]
 
 ```markdown
 ---

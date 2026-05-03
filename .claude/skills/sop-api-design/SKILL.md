@@ -33,9 +33,37 @@ execution:
 - 微服务接口定义
 - OpenAPI规范编写
 
+## Graphify 集成
+
+在设计新 API 前，使用 Graphify 检测已有接口冲突：
+
+```bash
+# 检查已有 API 端点
+graphify query "搜索所有 REST API 端点及其路径和方法"
+
+# 检查路由冲突
+graphify query "搜索所有 @RequestMapping 注解及其路径"
+```
+
+**冲突检测策略**：
+| 冲突类型 | 检测方式 | 处理建议 |
+|----------|----------|----------|
+| 路径重复 | 路径 + HTTP 方法完全匹配 | 修改路径或合并接口 |
+| 路径歧义 | 路径参数位置不同 | 统一参数命名 |
+| 响应格式不一致 | 对比返回类型 | 统一响应格式 |
+
+## 知识更新
+
+API 设计完成后，更新知识图谱：
+
+```bash
+# 增量更新
+graphify update ./backend --out .sop/dependency-graph/{project}/backend
+```
+
 ## 流程步骤
 
-### 步骤一：资源建模（Resource Modeling）
+### 步骤一：资源建模（Resource Modeling） [CONFIRM_REQUIRED]
 
 **目标**：定义业务资源和关系
 
@@ -71,11 +99,11 @@ status: in_progress
 | users | 1 | 用户 |
 | orders | 1 | 订单 |
 | order-items | 2 | 订单明细 |
-| risk-events | 1 | 风控事件 |
+| {resource} | 1 | {资源描述} |
 ```
 ---
 
-### 步骤二：HTTP方法设计
+### 步骤二：HTTP方法设计 [AUTO]
 
 **目标**：正确使用HTTP动词
 
@@ -116,7 +144,7 @@ status: in_progress
 ```
 ---
 
-### 步骤三：响应格式设计
+### 步骤三：响应格式设计 [AUTO]
 
 **目标**：统一响应结构
 
@@ -175,7 +203,7 @@ status: in_progress
 ```
 ---
 
-### 步骤四：版本管理
+### 步骤四：版本管理 [AUTO]
 
 **目标**：支持API演进
 
@@ -210,12 +238,12 @@ status: in_progress
 ```
 ---
 
-### 步骤五：安全设计
+### 步骤五：安全设计 [AUTO]
 
 **目标**：确保接口安全
 
 **执行内容**：
-1. 认证���制
+1. 认证机制
 2. 授权控制
 3. 速率限制
 4. 敏感数据脱敏
@@ -249,7 +277,7 @@ status: in_progress
 ```
 ---
 
-### 步骤六：文档编写
+### 步骤六：文档编写 [AUTO]
 
 **目标**：生成可维护文档
 

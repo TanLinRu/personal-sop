@@ -1,0 +1,21 @@
+{
+  "scaffold": ["1_confirm", "2_config", "3_research", "4_prd", "5_arch", "6_review", "7_dependency", "8_generate", "9_verify", "10_knowledge"],
+  "bug-fix": ["1_reproduce", "2_locate", "3_fix", "4_verify", "5_test"],
+  "code-review": ["1_scope", "2_review", "3_test", "4_report"],
+  "knowledge": ["1_identify", "2_research", "3_structure", "4_generate", "5_output"],
+  "prd": ["0_dependency", "1_initiate", "2_foundations", "3_grounding", "4_deep_dive", "5_decisions", "6_generate", "7_output"],
+  "incident-response": ["1_collect", "2_reproduce", "3_locate", "4_fix", "5_verify", "6_report"],
+  "testing": ["0_setup", "1_unit", "2_integration", "3_e2e", "4_api", "5_security", "6_performance"],
+  "deployment": ["1_build", "2_verify", "3_staging", "4_production", "5_monitor"],
+  "onboarding": ["1_setup", "2_clone", "3_test", "4_explore", "5_task"],
+  "library-research": ["0_business", "1_search", "2_verify", "3_compatible", "4_risk", "5_summary"],
+  "product-analysis": ["1_business", "2_competitor", "3_journey", "4_module", "5_architecture", "6_output"],
+  "backend-iteration": ["1_confirm", "2_research", "3_prd", "4_arch", "5_review", "6_dependency", "7_implement", "8_verify", "9_knowledge"],
+  "frontend-iteration": ["1_confirm", "2_research", "3_design", "4_review", "5_dependency", "6_implement", "7_verify", "8_knowledge"],
+  "fullstack-iteration": ["1_confirm", "2_research", "3_prd", "4_arch", "5_review", "6_dependency", "7_generate", "8_verify", "9_knowledge"],
+  "api-design": ["1_resource", "2_method", "3_response", "4_version", "5_security", "6_documentation"],
+  "database-design": ["1_requirement", "2_er", "3_schema", "4_index", "5_normalization", "6_ddl"],
+  "dependency-analysis": ["1_env", "2_build", "3_conflict", "4_analysis"],
+  "test-design": ["1_requirement_analysis", "2_test_techniques", "3_test_case_design", "4_traceability", "5_review", "6_output"],
+  "regression": ["1_change_analysis", "2_impact_assessment", "3_test_selection", "4_execution", "5_report"]
+}

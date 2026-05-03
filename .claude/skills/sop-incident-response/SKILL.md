@@ -271,7 +271,7 @@ curl -X POST http://localhost:8080/api/xxx
 
 ---
 
-### 步骤三：定位根因（Locate）
+### 步骤三：定位根因（Locate） [AUTO]
 
 **目标**：定位问题根因
 
@@ -336,7 +336,7 @@ jstack pid
 
 ---
 
-### 步骤四：制定修复（Fix）
+### 步骤四：制定修复（Fix） [CONFIRM_REQUIRED]
 
 **目标**：制定临时修复和永久方案
 
@@ -390,7 +390,7 @@ status: pending
 ```bash
 # 紧急回滚
 git revert HEAD
-git push --force
+git push origin main
 
 # 部署修复版本
 mvn clean package -DskipTests
@@ -401,7 +401,7 @@ kubectl rollout restart deployment/app
 
 ---
 
-### 步骤五：验证修复（Verify）
+### 步骤五：验证修复（Verify） [AUTO]
 
 **目标**：验证修复有效，系统恢复正常
 
@@ -650,17 +650,12 @@ tasks = [
 ]
 
 # 等待所有任务完成
-results = await asyncio.gather(*tasks)
+
 ```
 
 ### OpenCode 适配
 
-```python
-opencode_tasks = [
-    Agent(subagent_type="search_first", prompt="搜索日志..."),
-    Agent(subagent_type="java_review", prompt="分析代码..."),
-]
-```
+
 
 ### 结果聚合
 
