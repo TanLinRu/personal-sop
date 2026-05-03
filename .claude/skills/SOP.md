@@ -112,6 +112,44 @@ execution:
 }
 ```
 
+## Compact 上下文压缩与恢复
+
+| 场景 | 处理方式 |
+|------|----------|
+| OpenCode 自动执行 `/compact` | SOP 状态保存在 `.sop/state/` |
+| 压缩后首次对话 | 检测进行中的 SOP 任务 |
+| 存在恢复点 | 自动恢复到上一步继续执行 |
+
+### 状态恢复检测
+
+每个 SOP 执行前自动检测状态：
+
+```bash
+# 检测进行中的任务
+npx ts-node --transpile-only .claude/scripts/sop-state-load.ts --all
+
+# 恢复特定 SOP
+npx ts-node --transpile-only .claude/scripts/sop-state-load.ts [sop-name]
+```
+
+### 恢复流程
+
+```
+新会话开始 / SOP 命令触发
+    ↓
+检测 .sop/state/ 状态
+    ↓
+存在 in_progress 任务?
+    ↓
+┌─ 是 → 自动恢复到 current_step 继续执行
+└─ 否 → 从 Step 1 开始执行
+```
+
+### 恢复点记录
+- `current_step`: 当前步骤序号
+- `answers`: 用户确认过的配置（复用）
+- `resume_from`: 恢复点标识
+
 ## 错误处理
 
 | 错误 | 处理 |
@@ -120,10 +158,38 @@ execution:
 | 构建失败 | 使用 build-error-resolver |
 | 测试失败 | 使用 tdd-workflow |
 
+## 完整技能链
+
+```
+sop-knowledge (领域知识收集)
+       |
+       v
+sop-prd (生成 PRD：用户故事、验收标准、DoR/DoD)
+       |
+       v
+sop-test-design (需求→测试用例、追溯矩阵)
+       |
+       v
+sop-testing (执行测试：单元→集成→E2E→API→安全→性能)
+       |
+       v
+[代码上线]
+       |
+       v
+sop-regression (持续：变更分析→影响评估→选择性测试→报告)
+       |                                   |
+       v                                   v
+[通过: 发布]                      sop-bug-fix (发现失败时)
+```
+
 ## 相关
 
-- [sop-prd](./sop-prd/SKILL.md) - PRD 生成
-- [sop-testing](./sop-testing/SKILL.md) - 测试执行
+- [sop-knowledge](./sop-knowledge/SKILL.md) - 领域知识收集
+- [sop-prd](./sop-prd/SKILL.md) - PRD 生成 (v4.1.0)
+- [sop-test-design](./sop-test-design/SKILL.md) - 测试用例设计 (NEW)
+- [sop-testing](./sop-testing/SKILL.md) - 测试执行 (v2.0.0)
+- [sop-regression](./sop-regression/SKILL.md) - 回归测试 (NEW)
 - [sop-bug-fix](./sop-bug-fix/SKILL.md) - Bug 修复
 - [sop-code-review](./sop-code-review/SKILL.md) - 代码审查
 - [sop-deployment](./sop-deployment/SKILL.md) - 部署发布
+- [sop-product-analysis](./sop-product-analysis/SKILL.md) - 产品分析 (v1.3.0)

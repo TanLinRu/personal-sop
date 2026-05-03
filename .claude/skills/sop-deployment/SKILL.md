@@ -34,6 +34,71 @@ execution:
 - 配置变更
 - 架构升级
 
+## CI/CD 集成
+
+本 SOP 可集成到主流 CI/CD 流水线：
+
+| 平台 | 配置方式 | 文档 |
+|------|----------|------|
+| GitHub Actions | `.github/workflows/deploy.yml` | [文档](https://docs.github.com/en/actions) |
+| GitLab CI | `.gitlab-ci.yml` | [文档](https://docs.gitlab.com/ee/ci/) |
+| Jenkins | `Jenkinsfile` | [文档](https://www.jenkins.io/doc/) |
+
+**流水线阶段**：
+```
+代码提交 → 单元测试 → 构建 → 预发布部署 → 冒烟测试 → 生产发布 → 监控
+```
+
+## 数据库迁移
+
+发布前必须处理数据库变更：
+
+| 工具 | 适用场景 | 命令 |
+|------|----------|------|
+| Flyway | Spring Boot 项目 | `flyway migrate` |
+| Liquibase | 多数据库支持 | `liquibase update` |
+| 手动脚本 | 小型项目 | 按顺序执行 SQL |
+
+**迁移策略**：
+1. **先迁移，后发布**：数据库变更先于代码部署
+2. **向后兼容**：新增字段用 DEFAULT，避免破坏旧代码
+3. **回滚脚本**：每个迁移必须有对应的回滚脚本
+
+## 回滚阈值
+
+发布后监控指标超过以下阈值时自动触发回滚：
+
+| 指标 | 阈值 | 监控方式 |
+|------|------|----------|
+| 错误率 | > 1% | Prometheus / Grafana |
+| 响应时间 P99 | > 500ms | APM 工具 |
+| 健康检查失败 | 连续 3 次 | 负载均衡器 |
+| 内存使用 | > 90% | 系统监控 |
+
+## 状态持久化
+
+每个步骤完成后自动保存状态到 `.sop/state/deployment-{id}.json`：
+
+```json
+{
+  "sop": "deployment",
+  "task_id": "deployment-{id}",
+  "status": "in_progress",
+  "current_step": 3,
+  "steps": {
+    "1_build": { "status": "completed", "artifact": "app-1.2.0.jar" },
+    "2_verify": { "status": "completed" },
+    "3_staging": { "status": "in_progress" },
+    "4_production": { "status": "pending" },
+    "5_monitor": { "status": "pending" }
+  },
+  "rollback": {
+    "previous_version": "app-1.1.0.jar",
+    "backup_path": "/backup/app-1.1.0.jar"
+  }
+}
+```
+
 ## 流程步骤
 
 ### 步骤一：构建（Build） [AUTO]
@@ -66,12 +131,12 @@ status: in_progress
 
 | 模块 | 产物 | 大小 |
 |------|------|------|
-| backend | game-risk-control.jar | 45MB |
+| backend | app.jar | 45MB |
 | frontend | dist/ | 12MB |
 ```
 ---
 
-### 步骤二：验证（Verify）
+### 步骤二：验证（Verify） [AUTO]
 
 **目标**：确保产物可用
 
@@ -107,7 +172,7 @@ status: in_progress
 ```
 ---
 
-### 步骤三：预发布（Staging）
+### 步骤三：预发布（Staging）⭐ [CONFIRM_REQUIRED]
 
 **目标**：在预发环境验证
 
@@ -140,11 +205,11 @@ status: in_progress
 | 用户注册 | ✅ |
 | 登录 | ✅ |
 | 支付 | ✅ |
-| 反作弊 | ✅ |
+| 核心功能 | ✅ |
 ```
 ---
 
-### 步骤四：正式发布（Production）
+### 步骤四：正式发布（Production）⭐ [CONFIRM_REQUIRED]
 
 **目标**：发布到生产环境
 
@@ -173,14 +238,14 @@ status: in_progress
 
 ## 发布结果
 
-- 备份: game-risk-control-20240419.jar
-- 新版本: game-risk-control-1.2.0.jar
+- 备份: app-previous.jar
+- 新版本: app-1.2.0.jar
 - 启动时间: 15s
 - 状态: RUNNING
 ```
 ---
 
-### 步骤五：监控与回滚（Monitor & Rollback）
+### 步骤五：监控与回滚（Monitor & Rollback） [AUTO]
 
 **目标**：监控发布后状态
 
@@ -191,8 +256,9 @@ status: in_progress
 
 **回滚命令**：
 ```bash
-# Docker回滚
-docker-compose -f docker-compose-prod.yml up -d --rollback
+# Docker回滚：重新部署上一个版本的镜像
+docker-compose -f docker-compose-prod.yml down
+docker-compose -f docker-compose-prod-previous.yml up -d
 
 # Kubernetes回滚
 kubectl rollout undo deployment/app

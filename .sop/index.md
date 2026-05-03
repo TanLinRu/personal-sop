@@ -49,21 +49,21 @@
 
 ```bash
 # 保存状态（Step 开始/完成）
-node .claude/scripts/sop-state-save.ts <sop> <step> <status>
-node .claude/scripts/sop-state-save.ts testing 1_confirm in_progress project=chatbot
-node .claude/scripts/sop-state-save.ts testing 1_confirm completed
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts <sop> <step> <status>
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts testing 1_confirm in_progress project=chatbot
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts testing 1_confirm completed
 
 # 加载状态（断点恢复）
-node .claude/scripts/sop-state-load.ts <sop>
-node .claude/scripts/sop-state-load.ts testing
+npx ts-node --transpile-only .claude/scripts/sop-state-load.ts <sop>
+npx ts-node --transpile-only .claude/scripts/sop-state-load.ts testing
 
 # 查看所有状态
-node .claude/scripts/sop-state-load.ts --list
+npx ts-node --transpile-only .claude/scripts/sop-state-load.ts --list
 
 # 清理完成状态
-node .claude/scripts/sop-state-clean.ts           # 清理 completed/failed
-node .claude/scripts/sop-state-clean.ts --all   # 清理所有
-node .claude/scripts/sop-state-clean.ts testing # 清理 testing 状态
+npx ts-node --transpile-only .claude/scripts/sop-state-clean.ts           # 清理 completed/failed
+npx ts-node --transpile-only .claude/scripts/sop-state-clean.ts --all   # 清理所有
+npx ts-node --transpile-only .claude/scripts/sop-state-clean.ts testing # 清理 testing 状态
 ```
 
 | 脚本 | 用途 |

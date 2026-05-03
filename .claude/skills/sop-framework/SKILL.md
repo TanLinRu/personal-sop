@@ -20,6 +20,53 @@ permissions:
 - **核心步骤** 需要用户确认
 - **非核心步骤** 自动执行
 - **模式切换** 支持手动/自动模式
+- **断点恢复** 中断后从上次步骤继续
+- **执行可视化** 实时显示进度
+
+## 断点恢复 (Resume Detection)
+
+在执行任何 SOP 前，先检查是否有未完成的任务：
+
+```bash
+npx ts-node --transpile-only .claude/scripts/sop-resume-check.ts <sop-name>
+```
+
+**如果返回 `has_resume: true`**：
+1. 向用户展示："发现进行中的 <sop> 任务，停在步骤 <N>: <step_name>。是否从这里继续？(Y/n)"
+2. 用户确认 → 跳到 `current_step`，使用已保存的 `answers`
+3. 用户拒绝 → 运行 `npx ts-node --transpile-only .claude/scripts/sop-state-clean.ts <sop-name>` 清理旧状态，重新开始
+
+**如果返回 `has_resume: false`**：正常从步骤 1 开始。
+
+## 执行可视化 (Progress Display)
+
+每步开始时，渲染进度表：
+
+```markdown
+### SOP 进度: <sop-name>
+
+| # | 步骤 | 状态 |
+|---|------|------|
+| 1 | 需求确认 | completed |
+| 2 | 环境配置 | completed |
+| 3 | 代码生成 | **running** |
+| 4 | 验证测试 | pending |
+
+Step 3/6: 代码生成 [==============>................] 50%
+```
+
+每步完成后，渲染完成标记：
+
+```markdown
+### Step 3: 代码生成 [COMPLETED]
+
+耗时: 2m 15s
+产出: `.sop/output/scaffold-delivery-staff.md`
+
+进入 Step 4: 验证测试...
+```
+
+SOP 全部完成后，自动生成执行报告到 `.sop/output/{sop}-{date}-report.md`。
 
 ## 框架设计
 
@@ -34,24 +81,42 @@ permissions:
 
 ### 执行模式配置
 
+执行模式由两个正交维度组成：
+
 ```yaml
 # SKILL.md frontmatter 中配置
 execution:
-  mode: confirm  # confirm(默认) | auto(全自动)
-  confirm_steps:  # 手动模式需要确认的步骤
-    - step_1_xxx
-    - step_2_xxx
-  auto_steps:    # 自动模式执行的步骤
-    - step_3_xxx
-    - step_4_xxx
+  mode: sequential  # 任务执行模式: sequential | parallel | hybrid
+  timeout: 300000
+  checkpoint_dir: .sop/state
+  state_file: .sop/state/{sop}-{id}.json
 ```
 
-### 模式说明
+### 双维度模式
+
+| 维度 | 配置项 | 可选值 | 说明 |
+|------|--------|--------|------|
+| **交互模式** | 由步骤标记决定 | `confirm` / `auto` | `[CONFIRM_REQUIRED]` 暂停确认，`[AUTO]` 自动执行 |
+| **执行模式** | `execution.mode` | `sequential` / `parallel` / `hybrid` | 任务间的执行顺序 |
+
+### 交互模式
+
+由步骤标记控制，无需单独配置：
+
+| 步骤标记 | 行为 | 适用场景 |
+|----------|------|----------|
+| `⭐ [CONFIRM_REQUIRED]` | 暂停等待用户确认 | 关键决策点 |
+| `[AUTO]` | 自动执行 | 例行操作 |
+| `[INFO]` | 信息展示，不阻塞 | 收集信息 |
+| `[VERIFY]` | 展示结果，等待验证 | 检查点 |
+
+### 执行模式
 
 | 模式 | 行为 | 适用场景 |
 |------|------|----------|
-| `confirm` (默认) | 核心步骤暂停等待确认 | 新手、复杂场景 |
-| `auto` | 非核心步骤自动执行 | 熟练用户、简单场景 |
+| `sequential` (默认) | 步骤按顺序执行 | 大多数 SOP |
+| `parallel` | 独立步骤并行执行 | 多 Agent 协作 |
+| `hybrid` | 部分并行，部分串行 | 故障响应等 |
 
 ### 自动模式切换指令
 

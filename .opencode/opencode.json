@@ -1,7 +1,7 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "opencode/minimax-m2.1",
-  "small_model": "opencode/minimax-m2.1",
+  "model": "YOUR_MODEL_HERE",
+  "small_model": "YOUR_MODEL_HERE",
   "default_agent": "build",
   "permission": {
     "lsp": "allow"
@@ -11,38 +11,38 @@
       "command": ["jdtls"],
       "extensions": [".java"],
       "env": {
-        "JAVA_HOME": "D:\\software\\jdk-21.0.8"
+        "JAVA_HOME": "${JAVA_HOME}"
       }
     }
   },
-  "skills": [
-    ".claude/skills/sop-code-review/SKILL.md",
-    ".claude/skills/sop-prd/SKILL.md",
-    ".claude/skills/sop-testing/SKILL.md",
-    ".claude/skills/sop-bug-fix/SKILL.md",
-    ".claude/skills/sop-deployment/SKILL.md",
-    ".claude/skills/sop-scaffold/SKILL.md",
-    ".claude/skills/sop-backend-iteration/SKILL.md",
-    ".claude/skills/sop-frontend-iteration/SKILL.md",
-    ".claude/skills/sop-fullstack-iteration/SKILL.md",
-    ".claude/skills/sop-dependency-analysis/SKILL.md",
-    ".claude/skills/sop-knowledge/SKILL.md",
-    ".claude/skills/sop-library-research/SKILL.md",
-    ".claude/skills/sop-incident-response/SKILL.md",
-    ".claude/skills/sop-onboarding/SKILL.md",
-    ".claude/skills/sop-product-analysis/SKILL.md",
-    ".claude/skills/sop-api-design/SKILL.md",
-    ".claude/skills/sop-database-design/SKILL.md",
-    ".claude/skills/SOP.md",
-    ".claude/skills/dr-jskill/SKILL.md",
-    ".claude/skills/frontend-design/SKILL.md"
-  ],
+  "skills": {
+    "sop-code-review": ".claude/skills/sop-code-review/SKILL.md",
+    "sop-prd": ".claude/skills/sop-prd/SKILL.md",
+    "sop-testing": ".claude/skills/sop-testing/SKILL.md",
+    "sop-bug-fix": ".claude/skills/sop-bug-fix/SKILL.md",
+    "sop-deployment": ".claude/skills/sop-deployment/SKILL.md",
+    "sop-scaffold": ".claude/skills/sop-scaffold/SKILL.md",
+    "sop-backend-iteration": ".claude/skills/sop-backend-iteration/SKILL.md",
+    "sop-frontend-iteration": ".claude/skills/sop-frontend-iteration/SKILL.md",
+    "sop-fullstack-iteration": ".claude/skills/sop-fullstack-iteration/SKILL.md",
+    "sop-dependency-analysis": ".claude/skills/sop-dependency-analysis/SKILL.md",
+    "sop-knowledge": ".claude/skills/sop-knowledge/SKILL.md",
+    "sop-library-research": ".claude/skills/sop-library-research/SKILL.md",
+    "sop-incident-response": ".claude/skills/sop-incident-response/SKILL.md",
+    "sop-onboarding": ".claude/skills/sop-onboarding/SKILL.md",
+    "sop-product-analysis": ".claude/skills/sop-product-analysis/SKILL.md",
+    "sop-api-design": ".claude/skills/sop-api-design/SKILL.md",
+    "sop-database-design": ".claude/skills/sop-database-design/SKILL.md",
+    "SOP": ".claude/skills/SOP.md",
+    "dr-jskill": ".claude/skills/dr-jskill/SKILL.md",
+    "frontend-design": ".claude/skills/frontend-design/SKILL.md"
+  },
   "instructions": [
     "AGENTS.md",
-    "D:\\project\\ai\\everything-claude-code-main\\agents\\code-reviewer.md",
-    "D:\\project\\ai\\everything-claude-code-main\\agents\\java-reviewer.md",
-    "D:\\project\\ai\\everything-claude-code-main\\agents\\security-reviewer.md",
-    "D:\\project\\ai\\everything-claude-code-main\\agents\\build-error-resolver.md",
+    ".claude/agents/code-reviewer.md",
+    ".claude/agents/java-reviewer.md",
+    ".claude/agents/security-reviewer.md",
+    ".claude/agents/build-error-resolver.md",
     ".claude/rules/common/01_naming.md",
     ".claude/rules/common/02_oop.md",
     ".claude/rules/common/03_concurrency.md",
@@ -53,18 +53,18 @@
     ".claude/rules/common/08_security.md",
     ".claude/rules/common/09_project.md",
     ".claude/rules/common/10_mysql.md",
-    "D:\\project\\ai\\dr-jskill-main\\references\\DATABASE.md",
-    "D:\\project\\ai\\dr-jskill-main\\references\\SECURITY.md",
-    "D:\\project\\ai\\dr-jskill-main\\references\\TEST.md",
-    "D:\\project\\ai\\dr-jskill-main\\references\\CONFIGURATION.md",
-    "D:\\project\\ai\\dr-jskill-main\\references\\LOGGING.md",
-    "D:\\project\\ai\\dr-jskill-main\\references\\PROJECT-SETUP.md",
-    "D:\\project\\ai\\dr-jskill-main\\references\\SPRING-BOOT-4.md",
-    "D:\\project\\ai\\dr-jskill-main\\references\\DOCKER.md",
-    "D:\\project\\ai\\dr-jskill-main\\references\\JDTLS.md",
-    "D:\\project\\ai\\dr-jskill-main\\references\\MYBATIS-PLUS.md",
-    "D:\\project\\ai\\dr-jskill-main\\references\\VUE.md",
-    "D:\\project\\ai\\dr-jskill-main\\references\\REACT.md"
+    ".claude/skills/dr-jskill/references/DATABASE.md",
+    ".claude/skills/dr-jskill/references/SECURITY.md",
+    ".claude/skills/dr-jskill/references/TEST.md",
+    ".claude/skills/dr-jskill/references/CONFIGURATION.md",
+    ".claude/skills/dr-jskill/references/LOGGING.md",
+    ".claude/skills/dr-jskill/references/PROJECT-SETUP.md",
+    ".claude/skills/dr-jskill/references/SPRING-BOOT-4.md",
+    ".claude/skills/dr-jskill/references/DOCKER.md",
+    ".claude/skills/dr-jskill/references/JDTLS.md",
+    ".claude/skills/dr-jskill/references/MYBATIS-PLUS.md",
+    ".claude/skills/dr-jskill/references/VUE.md",
+    ".claude/skills/dr-jskill/references/REACT.md"
   ],
   "compaction": {
     "auto": true,
@@ -74,7 +74,7 @@
     "build": {
       "description": "Primary coding agent for project development",
       "mode": "primary",
-      "model": "opencode/minimax-m2.1",
+      "model": "YOUR_MODEL_HERE",
       "tools": {
         "write": true,
         "edit": true,
@@ -86,7 +86,7 @@
     "java-reviewer": {
       "description": "Expert Java and Spring Boot code reviewer specializing in layered architecture, JPA patterns, security, and concurrency.",
       "mode": "subagent",
-      "model": "opencode/minimax-m2.1",
+      "model": "YOUR_MODEL_HERE",
       "prompt": "You are an expert Java and Spring Boot code reviewer specializing in layered architecture, JPA patterns, security, and concurrency. Use for all code changes. MUST BE USED for Spring Boot projects.",
       "tools": {
         "read": true,
@@ -98,7 +98,7 @@
     "code-reviewer": {
       "description": "Expert code review specialist. Reviews code for quality, security, and maintainability. Use immediately after writing or modifying code.",
       "mode": "subagent",
-      "model": "opencode/minimax-m2.1",
+      "model": "YOUR_MODEL_HERE",
       "prompt": "You are an expert code reviewer ensuring high standards of code quality and security.",
       "tools": {
         "read": true,
@@ -110,7 +110,7 @@
     "security-reviewer": {
       "description": "Security vulnerability detection and remediation specialist. Use for security issues.",
       "mode": "subagent",
-      "model": "opencode/minimax-m2.1",
+      "model": "YOUR_MODEL_HERE",
       "prompt": "You are an expert security specialist focused on identifying and remediating vulnerabilities in web applications.",
       "tools": {
         "read": true,
@@ -122,7 +122,7 @@
     "search-first": {
       "description": "Research and code search specialist",
       "mode": "subagent",
-      "model": "opencode/minimax-m2.1",
+      "model": "YOUR_MODEL_HERE",
       "prompt": "You are a research specialist. Search for relevant code and documentation before making changes.",
       "tools": {
         "read": true,
@@ -207,6 +207,11 @@
       "description": "Query Graphify knowledge graph",
       "agent": "build",
       "template": "Query Graphify knowledge graph.\n\nQuery: $ARGUMENTS"
+    },
+    "sop status": {
+      "description": "Show status of all SOP tasks",
+      "agent": "build",
+      "template": "Show the status of all in-progress and recently completed SOP tasks.\n\n$ARGUMENTS"
     }
   },
   "plugin": [

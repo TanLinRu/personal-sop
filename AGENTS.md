@@ -3,82 +3,85 @@
 ## Project Structure
 ```
 personal-sop/
-├── delivery-staff/           # Spring Boot backend (Java 21)
-├── delivery-staff-frontend/  # Vue 3 + Vite frontend
-├── .opencode/              # OpenCode config (merged)
-└── .claude/skills/        # SOP Skills
+├── delivery-staff/              # Spring Boot backend (Java 21)
+├── delivery-staff-frontend/   # Vue 3 + Vite frontend (Naive UI)
+├── .opencode/                 # OpenCode config
+├── .claude/skills/            # SOP Skills (workflow automation)
+└── .sop/                    # SOP execution state
 ```
 
-## Verified Working Commands
+## Verified Commands
 
-### Build & Test
+### Backend (Spring Boot)
 ```bash
-# Backend
-cd delivery-staff && mvn compile
-
-# Frontend (in directory)
-cd delivery-staff-frontend && npm run build
+cd delivery-staff && mvn compile           # Compile only
+cd delivery-staff && mvn spring-boot:run  # Run dev server on :8080
 ```
 
-### Service Startup (scripts fixed)
+### Frontend (Vue 3)
 ```bash
-# Use node scripts (now work)
-node .claude/scripts/start-backend.js delivery-staff 8080
-node .claude/scripts/start-frontend.js delivery-staff-frontend 5173
+cd delivery-staff-frontend && npm run dev      # Dev server on :5173
+cd delivery-staff-frontend && npm run build  # Production build
 ```
 
-### Manual Start (alternative)
+### Kill Services (Windows)
 ```powershell
-# Backend - use PowerShell directly
-Start-Process -FilePath 'delivery-staff\mvnw.cmd' -ArgumentList 'spring-boot:run' -WorkingDirectory 'delivery-staff' -WindowStyle Hidden
-```
-
-### Kill Services (by port)
-```powershell
-# Kill by port (safe - doesn't kill OpenCode)
 Get-NetTCPConnection -LocalPort 8080 | Stop-Process -Force
 Get-NetTCPConnection -LocalPort 5173 | Stop-Process -Force
 ```
 
-## Backend Stack
-- Spring Boot 3.5.14
-- MyBatis-Plus 3.5.7 (NOT JPA/Hibernate)
-- H2 in-memory database
-- Java 21
+## Stack Details
+- **Backend**: Spring Boot 3.5.14, MyBatis-Plus 3.5.7, Java 21, H2 in-memory DB
+- **Frontend**: Vue 3.4 + Vite 5 + Naive UI 2.39 + Pinia + Vue Router 4
+- **DB**: H2 auto-initializes from `delivery-staff/src/main/resources/schema.sql`
+- **Column mapping**: `underscore_format` (DB) → `camelCase` (Java)
 
-## Database
-- H2 auto-initializes from `delivery-staff/src/main/resources/schema.sql`
-- Column mapping: underscore_format in DB → camelCase in Java
+## SOP Commands (via /sop)
+| Command | Purpose |
+|---------|---------|
+| `/sop fullstack` | Backend + frontend iteration |
+| `/sop backend` | Backend only iteration |
+| `/sop frontend` | Frontend only iteration |
+| `/sop prd` | PRD generation |
+| `/sop testing` | Test workflow |
+| `/sop code-review` | Code review (parallel agents) |
+| `/sop bug-fix` | Bug fix workflow |
+| `/sop deployment` | Deployment workflow |
+| `/sop dependency-analysis` | Code dependency analysis (Graphify) |
 
-## Frontend Stack
-- Vue 3 + Vite
-- Port 5173, proxies `/api/*` to backend:8080
-
-## SOP Commands
-```bash
-/sop fullstack    # Full iteration (backend + frontend)
-/sop backend     # Backend only
-/sop frontend    # Frontend only
-/sop prd         # PRD generation
-/sop testing    # Test workflow
-```
+## SOP 状态恢复 (Compact 后)
+- **状态文件**：`.sop/state/{sop}-{date}.json`
+- **检测命令**：`npx ts-node --transpile-only .claude/scripts/sop-state-load.ts --all`
+- **规则**：自动恢复到 `current_step` 继续执行，无需重复输入已确认的配置
 
 ## Key References
-- MyBatis-Plus: see `dr-jskill-main/references/MYBATIS-PLUS.md`
-- Vue setup: see `dr-jskill-main/references/VUE.md`
-- Full SOP list in opencode.json commands section
+- Java/Backend rules: `.claude/rules/common/01-10_*.md`
+- MyBatis-Plus: `.claude/skills/dr-jskill/references/MYBATIS-PLUS.md`
+- Vue setup: `.claude/skills/dr-jskill/references/VUE.md`
+- Spring Boot ref: `.claude/skills/dr-jskill/references/SPRING-BOOT-3.md`
 
-## Future Optimization
+## Architecture Notes
+- **JDTLS**: Requires JAVA_HOME environment variable (configured in opencode.json)
+- **Frontend proxy**: `/api/*` proxied to backend:8080 (vite.config.js)
+- **Multi-Agent SOPs**: code-review, bug-fix run agents in parallel
+- **SOP State**: Saved to `.sop/state/` for session recovery
 
-### 1. Token Optimization (Complex Projects)
-- **Problem**: Long conversations burn token too fast with workflow + skill
-- **Solution**: Skill layering - core vs extended vs on-demand
-- **Reference**: See README.md future section for details
+## Code Patterns
+- **Backend**: Entity/Mapper/Service/Controller layering
+- **Transactions**: `@Transactional(readOnly = true)` for queries, `@Transactional(rollbackFor = Exception.class)` for writes
+- **SQL**: MyBatis-Plus `QueryWrapper` for dynamic queries (NOT raw SQL)
+- **Frontend**: Vue Composition API with `<script setup>`
+- **State**: Pinia stores in frontend
 
-### 2. Vue UI Optimization
-- **Problem**: AI-generated UI styles are inconsistent
-- **Solution**: Build `ui-styles/` template library with:
-  - Component templates (list, form, detail, dashboard)
-  - Color themes (enterprise, logistics, medical)
-  - Design patterns (table, form, chart)
-- **Reference**: See README.md for implementation plan
+## Startup Banner
+The project includes `StartupInfoListener` that prints access URLs at startup:
+- Local: http://localhost:8080/
+- API: http://localhost:8080/api
+- Frontend: http://localhost:5173 (if running)
+
+## Critical Files
+- `delivery-staff/pom.xml` - Maven dependencies
+- `delivery-staff-frontend/package.json` - npm dependencies
+- `delivery-staff-frontend/vite.config.js` - Vite + proxy config
+- `delivery-staff/src/main/resources/application.properties` - Spring config
+- `.opencode/opencode.json` - OpenCode configuration, SOP commands, agent mapping
