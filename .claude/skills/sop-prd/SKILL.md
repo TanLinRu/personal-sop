@@ -1,13 +1,14 @@
 ---
 name: sop-prd
-description: PRD产品需求文档生成 - 知识驱动
-version: 4.1.0
+description: PRD产品需求文档生成 - 知识驱动 + 可视化原型
+version: 5.1.0
 triggers:
   - "/sop prd"
   - "生成PRD"
   - "产品需求文档"
   - "需求分析"
   - "创建PRD"
+  - "原型设计"
 permissions:
   task:
     explore: allow
@@ -36,15 +37,16 @@ execution:
 1. **知识前置**：先收集领域知识，再生成PRD（依赖 sop-knowledge）
 2. **问题驱动**：先理解问题，再生成方案
 3. **最佳实践**：自动引用行业标准和技术规范
-4. **可测试性**：用户故事遵循 INVEST 标准，验收标准使用 Given/When/Then 格式（v4.1.0）
-5. **需求追溯**：自动生成需求-测试用例追溯矩阵，衔接 `/sop test-design`（v4.1.0）
+4. **可测试性**：用户故事遵循 INVEST 标准，验收标准使用 Given/When/Then 格式
+5. **需求追溯**：自动生成需求-测试用例追溯矩阵，衔接 `/sop test-design`
+6. **可视化原型**：PRD 生成后自动产出可编辑 HTML 原型（v5.0.0）
 
 ## 与其他 SOP 的关系
 
 | 前置 SOP      | 用途                         |
 | ------------- | ---------------------------- |
 | sop-knowledge | 收集领域知识（**必须前置**） |
-| sop-prd       | 生成 PRD                     |
+| sop-prd       | 生成 PRD + 可编辑 HTML 原型  |
 | sop-scaffold  | 生成脚手架                   |
 
 ---
@@ -85,23 +87,21 @@ Glob(pattern=".sop/knowledge/knowledge-*{keyword}*.md")
 | 找到1个  | 加载该文件的元数据                     |
 | 没找到   | 进入步骤3请求用户协助                  |
 
-**步骤3：请求用户协助**（找不到时）
+**步骤3：自动处理**（找不到时）
 
-```javascript
-AskUserQuestion({
-  question: "未找到该领域的知识文档，请选择：",
-  header: "依赖缺失",
-  options: [
-    { label: "运行sop-knowledge", description: "先运行 /sop knowledge 收集领域知识" },
-    { label: "提供路径", description: "手动提供知识文档的绝对路径" },
-    { label: "跳过", description: "不依赖领域知识，快速生成PRD" },
-    { label: "默认继续(推荐)", description: "自动跳过，直接生成PRD" }
-  ],
-  multiSelect: false
-})
+> v5.1.0 优化：不再阻塞询问，自动执行以下逻辑：
+> - 记录 `knowledge_id: null`
+> - 状态标记为 `skipped`
+> - 直接继续 Step 1，不阻塞
+
+```markdown
+## 依赖检查结果
+- 状态: skipped (未找到知识文档)
+- 处理方式: auto_skip
+- 后续: 使用通用模板生成 PRD
 ```
 
-> **注意**：选择"默认继续"将自动执行后续步骤，无需阻塞等待
+> **优化说明**：如需使用领域知识，可在 PRD 生成后手动运行 `/sop knowledge` 收集，再重新生成。
 
 **如果用户提供路径**：
 ```agent
@@ -181,12 +181,13 @@ status: completed | skipped
   "steps": {
     "0_dependency": { "status": "completed", "timestamp": "..." },
     "1_initiate": { "status": "pending" },
-    "2_foundations": { "status": "pending" },
-    "3_grounding": { "status": "pending" },
-    "4_deep_dive": { "status": "pending" },
-    "5_decisions": { "status": "pending" },
-    "6_generate": { "status": "pending" },
-    "7_output": { "status": "pending" }
+    "1.2_brainstorm": { "status": "pending" },
+    "1.5_doc_type": { "status": "pending" },
+    "2_requirements": { "status": "pending" },
+    "3_decisions": { "status": "pending" },
+    "4_generate": { "status": "pending" },
+    "5_prototype": { "status": "pending" },
+    "6_output": { "status": "pending" }
   },
   "data": {
     "knowledge_id": null,
@@ -207,34 +208,51 @@ fi
 
 ---
 
-## Step 1: 智能识别 (INITIATE) [CONFIRM_REQUIRED]
+## Step 1: 关键确认 (KEY CONFIRM) [CONFIRM_REQUIRED]
+
+> v5.1.0 优化：合并多次确认为单次确认
 
 ### 执行指令
 
-分析用户输入，识别业务类型：
+一次性收集所有关键信息：
+
+```agent
+# 1. 解析用户输入，识别业务类型
+# 2. 生成 HMW 问题候选
+# 3. 一次性展示确认
+```
+
+### 业务类型识别
 
 | 关键词              | 业务类型 | 行业背景     |
 | ------------------- | -------- | ------------ |
 | 电商、商城、订单    | 电商平台 | 零售电商     |
 | 管理、后台、OA、CRM | 管理系统 | 企业服务     |
+| 物流、配送、运输    | 物流配送 | 物流行业     |
 | 小程序              | 小程序   | 移动互联网   |
-| App、手机应用       | 移动App  | 移动互联网   |
 | 金融、支付、贷款    | 金融科技 | 金融科技     |
 | {自定义关键词}      | {业务类型} | {行业背景} |
 
-### 执行逻辑
+### 一次性确认 AskUserQuestion
 
-```agent
-# 1. 解析用户输入
-# 2. 识别业务类型
-# 3. 如果输入简单，询问更多信息
-# 4. 如果输入详细，直接进入 FOUNDATION 阶段
+> 将 Step 1 + Step 1.2 + Step 1.5 合并为单次确认
+
+```javascript
+AskUserQuestion({
+  question: "请确认以下信息，或选择你关心的方向：",
+  header: "PRD 关键信息确认",
+  options: [
+    { label: "效率提升", description: "如何让系统提升30%效率？" },
+    { label: "用户体验", description: "如何让用户使用更便捷？" },
+    { label: "智能自动化", description: "如何用AI替代人工决策？" },
+    { label: "扩展性", description: "如何支持10倍业务增长？" },
+    { label: "数据可视化", description: "如何让数据驱动决策？" }
+  ],
+  multiSelect: false
+})
 ```
 
-### AskUserQuestion 引导
-
-如果用户输入过于简单（如"帮我生成一个{业务系统}的PRD"），需要追问：
-
+**补充问询**（如果用户输入过于简单）：
 > **请补充以下信息：**
 > 1. 核心用户是谁？（如：{角色1}、{角色2}）
 > 2. 主要解决什么问题？（如：{问题1}、{问题2}）
@@ -242,23 +260,425 @@ fi
 
 ---
 
-## Step 2: 问题发现 (FOUNDATION) [AUTO]
+## Step 1.2: 脑暴探索 (BRAINSTORM) [CONFIRM_REQUIRED]
+
+> **目的**：在结构化需求深挖之前，先帮用户发散思维、厘清方向，避免过早收敛到狭窄方案。
+> **位置**：Step 1 识别业务类型之后，Step 1.5 选择文档类型之前。
+> **输入**：Step 1 的业务类型识别结果 + 用户初始描述。
+
+### Phase A: 发散 (Diverge)
+
+**目标**：用结构化问题打开思路，发现用户自己可能没想到的角度。
+
+#### A1. How Might We 问题
+
+基于 Step 1 识别的业务类型，自动生成 3-5 个 HMW 问题：
+
+```agent
+# 根据业务类型生成 HMW 问题
+# 例如：业务类型 = "物流管理系统"
+# → "我们如何让配送员减少50%的无效等待？"
+# → "我们如何让用户实时感知包裹位置而不焦虑？"
+# → "我们如何让调度从人工经验变成智能决策？"
+# → "我们如何让异常处理从被动响应变成主动预防？"
+```
+
+**HMW 生成规则**：
+
+| 维度 | 问题方向 | 示例 |
+|------|----------|------|
+| 效率 | 如何减少浪费/等待/重复 | "如何让XX操作从3步变成1步？" |
+| 体验 | 如何降低认知负荷/焦虑 | "如何让用户不用看说明书就会用？" |
+| 智能 | 如何用数据/AI替代人工判断 | "如何让系统自动做XX决策？" |
+| 扩展 | 如何支持未来增长/新场景 | "如何让系统支持10倍业务量？" |
+| 协同 | 如何打通信息孤岛/流程断点 | "如何让XX和XX实时同步？" |
+
+**执行方式**：
+
+```javascript
+AskUserQuestion({
+  question: "以下是基于你的业务场景生成的 HMW 问题，选择你最关心的 2-3 个，或补充你自己的：",
+  header: "HMW 发散",
+  options: [
+    { label: "{HMW问题1}", description: "{问题描述}" },
+    { label: "{HMW问题2}", description: "{问题描述}" },
+    { label: "{HMW问题3}", description: "{问题描述}" },
+    { label: "{HMW问题4}", description: "{问题描述}" }
+  ],
+  multiSelect: true
+})
+```
+
+#### A2. 约束破除
+
+挑战用户的隐含假设，打开可能性空间：
+
+```agent
+# 识别用户描述中的隐含约束并逐一挑战
+# 例如：
+# 用户说 "做一个订单管理系统"
+# → 隐含约束：需要人工下单 → 破除：能否自动预测补货？
+# → 隐含约束：订单是单向的 → 破除：能否支持双向协商？
+# → 隐含约束：需要登录才能用 → 破除：能否免登录快速下单？
+```
+
+**约束破除清单**：
+
+| 隐含假设 | 破除问题 | 可能的新方向 |
+|----------|----------|--------------|
+| {假设1} | 如果这个限制不存在呢？ | {方向1} |
+| {假设2} | 如果反过来做呢？ | {方向2} |
+| {假设3} | 如果目标用户完全不同呢？ | {方向3} |
+
+#### A3. 自由补充
+
+```javascript
+AskUserQuestion({
+  question: "除了以上，你还有什么想法、灵感、或参考产品想分享？",
+  header: "自由补充",
+  options: [
+    { label: "我有补充", description: "输入你的想法、参考产品、灵感来源" },
+    { label: "跳过", description: "没有额外补充，继续" }
+  ],
+  multiSelect: false
+})
+```
+
+### Phase B: 可视化 (Visualize)
+
+**目标**：将散乱的想法结构化，让用户看到全貌。
+
+#### B1. 自动生成思维导图
+
+基于 Phase A 的产出，生成 Mermaid 思维导图：
+
+```agent
+# 将 HMW 选择 + 约束破除 + 自由补充整合为思维导图
+# 中心节点：业务系统名称
+# 一级分支：核心方向（从 HMW 选择中提炼）
+# 二级分支：具体想法（从约束破除和自由补充中提取）
+```
+
+**思维导图模板**：
+
+```mermaid
+mindmap
+  root((业务系统))
+    方向1: 效率提升
+      想法1.1
+      想法1.2
+    方向2: 体验优化
+      想法2.1
+      想法2.2
+    方向3: 智能化
+      想法3.1
+    方向4: 协同打通
+      想法4.1
+```
+
+#### B2. 用户确认/编辑
+
+```javascript
+AskUserQuestion({
+  question: "以上是整理后的思维导图，是否需要调整？",
+  header: "思维导图",
+  options: [
+    { label: "确认，继续", description: "思维导图准确反映了我的想法" },
+    { label: "需要补充", description: "我有额外的方向或想法要加" },
+    { label: "需要修改", description: "某些分支不准确，需要调整" }
+  ],
+  multiSelect: false
+})
+```
+
+### Phase C: 聚焦 (Converge)
+
+**目标**：从发散的想法中筛选出最值得做的方向。
+
+#### C1. 影响力/难度矩阵
+
+将 Phase B 确认的想法放入 2x2 矩阵：
+
+```agent
+# 对每个想法评估：
+# - 影响力（High/Low）：对核心问题的解决程度
+# - 难度（High/Low）：技术实现复杂度 + 所需资源
+```
+
+**矩阵输出**：
+
+```markdown
+| 象限 | 策略 | 想法 |
+|------|------|------|
+| 🟢 高影响/低难度 | **立即做**（Quick Wins） | {想法列表} |
+| 🔵 高影响/高难度 | **规划做**（Strategic Bets） | {想法列表} |
+| 🟡 低影响/低难度 | **可选做**（Fill-ins） | {想法列表} |
+| 🔴 低影响/高难度 | **暂不做**（Deprioritize） | {想法列表} |
+```
+
+#### C2. MVP 方向确认
+
+```javascript
+AskUserQuestion({
+  question: "基于影响力/难度分析，你希望 MVP 聚焦在哪些方向？",
+  header: "MVP 聚焦",
+  options: [
+    { label: "Quick Wins 优先", description: "先做高影响低难度的，快速验证" },
+    { label: "Strategic Bet", description: "聚焦一个高影响方向，做深做透" },
+    { label: "混合策略", description: "Quick Wins + 1个 Strategic Bet" },
+    { label: "自定义选择", description: "我来手动选择要包含的方向" }
+  ],
+  multiSelect: false
+})
+```
+
+### 输出：脑暴文档
+
+```agent
+Write(
+  file_path=".sop/output/brainstorm-{kebab-case-name}-{date}.md",
+  content="{{brainstorm_content}}"
+)
+```
+
+**脑暴文档结构**：
+
+```markdown
+---
+sop: prd
+step: 1.2_brainstorm
+status: completed
+---
+
+# 脑暴探索：{业务系统名称}
+
+## 1. HMW 问题（已选）
+
+| # | HMW 问题 | 关联维度 |
+|---|----------|----------|
+| 1 | {问题} | {效率/体验/智能/扩展/协同} |
+
+## 2. 约束破除
+
+| 隐含假设 | 破除方向 | 新想法 |
+|----------|----------|--------|
+| {假设} | {破除} | {想法} |
+
+## 3. 自由补充
+
+{用户补充的内容}
+
+## 4. 思维导图
+
+```mermaid
+mindmap
+  ...
+```
+
+## 5. 影响力/难度矩阵
+
+| 象限 | 想法 |
+|------|------|
+| 🟢 Quick Wins | ... |
+| 🔵 Strategic Bets | ... |
+| 🟡 Fill-ins | ... |
+| 🔴 Deprioritize | ... |
+
+## 6. MVP 方向共识
+
+**选择的策略**: {Quick Wins 优先 / Strategic Bet / 混合策略}
+**包含的方向**:
+- {方向1}
+- {方向2}
+
+## 7. 下一步输入
+
+> 以上共识将作为 Step 2 需求深挖的输入，确保深挖聚焦在用户真正关心的方向上。
+```
+
+### 状态持久化
+
+```bash
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts prd 1.2_brainstorm completed
+```
+
+### 与后续步骤的衔接
+
+| 脑暴产出 | → 后续步骤 |
+|----------|-----------|
+| HMW 选择 | → Step 2 Phase A 问题发现（聚焦深挖） |
+| MVP 方向共识 | → Step 2 Phase C 深度需求（避免发散） |
+| 约束破除 | → Step 3 范围决策（参考"暂不做"象限） |
+| 思维导图 | → Step 4 PRD 生成（产品定位参考） |
+
+---
+
+## Step 1.5: 文档类型选择 (DOC_TYPE) [CONFIRM_REQUIRED]
 
 ### 执行指令
+
+根据项目规模和用途，选择 PRD 文档层级：
+
+### AskUserQuestion
+
+```javascript
+AskUserQuestion({
+  question: "请选择 PRD 文档类型：",
+  header: "文档类型",
+  options: [
+    { label: "标准版(推荐)", description: "BRD + PRD 完整版，适合商业项目和对外汇报，含 6-7 个配套附件" },
+    { label: "精简版", description: "PRD 核心内容，适合快速迭代和内部项目，含 3-4 个配套附件" },
+    { label: "完整版", description: "BRD + MRD + PRD，适合大型项目立项汇报，含 9+ 个配套附件" }
+  ],
+  multiSelect: false
+})
+```
+
+### 文档层级映射
+
+| 层级 | 核心文档 | 配套附件 | 深度 |
+|------|----------|----------|------|
+| 精简版 | 05_PRD_LITE | 06_FLOW + 08_DATA_DICT + 10_NFR | 基础问题 + MVP 功能 |
+| 标准版 | 01_BRD + 04_PRD_FULL | 06_FLOW + 07_SEQUENCE + 08_DATA_DICT + 09_PERMISSION + 10_NFR | 完整问题发现 + 市场研究 + 深度需求 |
+| 完整版 | 01_BRD + 02_MRD + 04_PRD_FULL | 06~13 全部 | 全部三阶段深挖 |
+
+### 状态持久化
+
+```bash
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts prd 1.5_doc_type completed tier=standard
+```
+
+---
+
+## Step 1.75: AI 辅助用户故事生成 (AI_USER_STORY) [AUTO]
+
+> 在进入深度需求分析前，使用 AI 辅助生成用户故事初稿，提升需求捕获效率
+
+### 执行指令
+
+基于 Step 1 + Step 1.2 的产出，使用 AI 生成候选用户故事：
+
+```agent
+# 1. 读取前期产出
+load_state .sop/state/prd-{id}.json
+
+# 2. AI 辅助生成用户故事
+Write(
+  file_path=".sop/output/user-stories-draft.md",
+  content="# 用户故事候选（AI 辅助生成）
+
+## 输入信息
+- HMW 选择：{{hmw_selection}}
+- MVP 方向：{{mvp_direction}}
+- 目标用户：{{target_users}}
+
+## 候选用户故事
+
+### US-01
+**As a** {{用户}},
+**I want to** {{功能}},
+**So that** {{价值}}
+
+| 验收标准 | Given | When | Then |
+|----------|-------|------|------|
+| 正常 | | | |
+| 异常 | | | |
+
+### US-02
+...
+
+## AI 建议
+
+- **优先级建议**：基于影响力和实现难度排序
+- **风险提示**：{{potential_risks}}
+- **遗漏检查**：{{possible_gaps}}
+"
+)
+
+# 3. 保存状态
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts prd 1.75_ai_story completed
+```
+
+> **自动模式**：Step 1.75 会自动完成用户故事初稿生成和状态保存
+
+### 提示词模板
+
+如果需要手动触发 AI，可以使用以下提示词：
+
+```
+基于以下信息生成 3-5 个用户故事候选：
+
+**问题**：{{core_problem}}
+**解决方案**：{{solution}}
+**目标用户**：{{target_users}}
+**MVP 方向**：{{mvp_direction}}
+
+请按以下格式输出：
+- 每个故事包含：As a... I want to... So that...
+- 每个故事附带 2-3 个验收标准（Given/When/Then 格式）
+- 每个故事附带 INVEST 自检评分（Independent, Negotiable, Valuable, Estimable, Small, Testable）
+```
+
+### 与后续步骤的衔接
+
+| 产出 | → 后续步骤 |
+|------|-----------|
+| 用户故事候选 | → Step 2 Phase A/B 深度验证 |
+| 验收标准初稿 | → Step 3 DoR 检查 |
+| AI 风险提示 | → Step 3 范围决策参考 |
+
+### 状态持久化
+
+```bash
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts prd 1.75_ai_story completed
+```
+
+---
+
+## Step 2: 需求深挖 (REQUIREMENTS) [AUTO]
+
+> 合并原问题发现、市场研究、深度需求三阶段，减少步骤冗余
+
+### Phase A: 问题发现
 
 ```agent
 # 基于 Step 0/1 的输入，深入挖掘问题
 ```
 
-### 必问问题
-
 | #    | 问题                         | 目的                             |
 | ---- | ---------------------------- | -------------------------------- |
-| 1    | **谁**有这个问题？           | 明确用户角色                     |
+| 1    | **谁**有这个问题？           | 明确用户角色和首要用户           |
 | 2    | **什么**是他们面临的痛点？   | 描述可观察的问题，而非假设的方案 |
 | 3    | **为什么**他们现在无法解决？ | 现有方案的不足                   |
 | 4    | **为什么**现在要做？         | 业务驱动因素                     |
 | 5    | **如何**判断做成了？         | 成功指标                         |
+
+### Phase B: 市场锚定
+
+```agent
+# 1. 如果有知识文档，自动引用竞品分析和技术方案
+# 2. 如果无知识文档，Web 搜索行业方案和竞品
+# 3. 记录可借鉴的模式和需避免的反模式
+```
+
+**已有知识引用**（如已完成 sop-knowledge）：
+- 竞品分析：直接从知识文档引入
+- 技术方案参考：引用行业主流方案
+- 最佳实践：引用领域标准
+
+**无知识时的轻量调研**：
+- 搜索同领域产品/功能
+- 识别竞品核心能力和差异化
+- 记录 3-5 个关键发现
+
+### Phase C: 深度需求
+
+| #    | 问题                                                         | 目的           |
+| ---- | ------------------------------------------------------------ | -------------- |
+| 1    | **愿景**：成功后的理想状态是什么？                           | 定义成功画面   |
+| 2    | **JTBD**：When {situation}, I want {motivation}, so I can {outcome} | 理解用户动机   |
+| 3    | **非用户**：谁明确不是目标？                                 | 边界清晰       |
+| 4    | **约束**：有什么限制？                                       | 技术/时间/预算 |
 
 ### AskUserQuestion 示例
 
@@ -277,60 +697,15 @@ AskUserQuestion({
 })
 ```
 
----
+### 状态持久化
 
-## Step 3: 市场和竞品研究 (GROUNDING) [AUTO]
-
-### 执行指令
-
-```agent
-# 1. 市场调研：搜索竞品和行业方案
-# 2. 代码库探索（如果存在）：识别可复用模式
-# 3. 如果已有知识文档，自动引用
+```bash
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts prd 2_requirements completed
 ```
 
-### 执行内容
-
-**已有知识引用**（如已完成 sop-knowledge）：
-```markdown
-## 市场研究（来自知识库）
-
-### 竞品分析
-| 竞品 | 核心功能 | 技术特点 |
-|------|----------|----------|
-| (从知识文档自动引入) |
-
-### 技术方案
-- 主流架构：{引用}
-- 技术选型：{引用}
-```
-
-**新增调研**：
-- 搜索同领域产品/功能
-- 识别竞品解决方案
-- 记录常见模式和反模式
-
 ---
 
-## Step 4: 深度需求 (DEEP DIVE) [AUTO]
-
-### 执行指令
-
-基于 foundation + grounding 结果，继续挖掘：
-
-### 必问问题
-
-| #    | 问题                                                         | 目的           |
-| ---- | ------------------------------------------------------------ | -------------- |
-| 1    | **愿景**：成功后的理想状态是什么？                           | 定义成功画面   |
-| 2    | **首要用户**：最重要的用户是谁？                             | 确定核心用户   |
-| 3    | **JTBD**：When {situation}, I want {motivation}, so I can {outcome} | 理解用户动机   |
-| 4    | **非用户**：谁明确不是目标？                                 | 边界清晰       |
-| 5    | **约束**：有什么限制？                                       | 技术/时间/预算 |
-
----
-
-## Step 5: 范围和决策 (DECISIONS) [CONFIRM_REQUIRED]
+## Step 3: 范围和决策 (DECISIONS) [CONFIRM_REQUIRED]
 
 ### 执行指令
 
@@ -375,9 +750,15 @@ AskUserQuestion({
 | 验收标准全部通过 | ⬜ |
 | 部署到测试环境验证 | ⬜ |
 
+### 状态持久化
+
+```bash
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts prd 3_decisions completed
+```
+
 ---
 
-## Step 6: 生成 PRD 文档 (GENERATE) [AUTO]
+## Step 4: 生成 PRD 文档 (GENERATE) [AUTO]
 
 ### 执行指令
 
@@ -394,10 +775,10 @@ Write(
 )
 
 # 3. 保存状态（自动执行，无需等待）
-npx ts-node --transpile-only .claude/scripts/sop-state-save.ts prd 6_generate completed
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts prd 4_generate completed
 ```
 
-> **自动模式**：Step 6 会自动完成文档生成和状态保存，无需用户确认
+> **自动模式**：Step 4 会自动完成文档生成和状态保存，无需用户确认
 
 ### PRD 模板（知识增强版）
 
@@ -594,16 +975,11 @@ graph TD
 ```
 
 ### 6.2 功能列表
-| 模块     | 功能点       | 功能描述                                                   | 优先级 | 权限要求          | 依赖     |
-| -------- | ------------ | ---------------------------------------------------------- | ------ | ----------------- | -------- |
-| 规则管理 | 规则冲突检测 | 检测新规则与已有规则是否存在冲突，包括条件包含、互斥等场景 | P1     | 算法工程师/管理员 | 规则列表 |
-|          |              |                                                            |        |                   |          |
+| 模块 | 功能点 | 功能描述 | 优先级 | 权限要求 | 依赖 |
+| ---- | ------ | -------- | ------ | -------- | ---- |
+| {module} | {feature} | {description} | P{0-2} | {role} | {dependency} |
 
-> **注意**：权限要求列需与5.1节用户角色定义保持一致：
-> - 管理员：全部权限
-> - 算法工程师：规则挖掘、评估、管理
-> - 产品经理：评估、管理，无删除权限
-> - 运营人员：查看、监控，无创建权限
+> **注意**：权限要求列需与5.1节用户角色定义保持一致
 
 ### 6.3 版本规划
 | 版本 | 范围   | 交付时间 | 里程碑   |
@@ -632,14 +1008,9 @@ graph TB
 | ---- | ---- | ---- | ---- |
 |      |      |      |      |
 
-> **数据隔离要求**：评估数据集必须与训练数据隔离，严禁重叠。具体要求：
-> - **时间切片**：训练集使用T-N至T-1数据，评估集使用T期数据
-> - **独立采样**：若无法时间切片，需确保评估样本与训练样本无交集
-> - **数据穿越风险**：在7.4接口设计中增加校验逻辑，拒绝与训练集重叠的评估请求
-
 ### 7.4 接口设计
 
-> **统一异步任务响应范式**：所有异步任务接口（如规则挖掘）采用统一响应格式：
+> **统一异步任务响应范式**：所有异步任务接口采用统一响应格式：
 
 ```json
 // 异步任务响应结构
@@ -657,19 +1028,9 @@ graph TB
 }
 ```
 
-| 接口         | 方法 | 路径                              | 说明                       |
-| ------------ | ---- | --------------------------------- | -------------------------- |
-| 规则冲突检测 | POST | /api/v1/rules/{id}/check-conflict | 检测规则与已有规则是否冲突 |
-| 告警配置     | POST | /api/v1/monitoring/alert          | 配置告警规则               |
-
-> **告警通知渠道**：明确支持的渠道及配置：
-> | 渠道     | 配置字段                       | 说明              |
-> | -------- | ------------------------------ | ----------------- |
-> | 邮件     | smtp_host, smtp_port, from, to | 标准SMTP配置      |
-> | 钉钉     | webhook_url, secret            | 机器人Webhook     |
-> | 企业微信 | webhook_url, secret            | 企业微信机器人    |
-> | 短信     | provider, app_key, templates   | 阿里云/腾讯云短信 |
-> | Webhook  | url, method, headers           | 通用回调          |
+| 接口 | 方法 | 路径 | 说明 |
+| ---- | ---- | ---- | ---- |
+| {api_name} | {METHOD} | {/api/v1/resource} | {description} |
 
 ---
 
@@ -735,89 +1096,10 @@ graph TB
 | ---- | ---- |
 |      |      |
 
-### 11.2 规则条件JSON Schema
+### 11.2 技术规范（按需）
 
-> 定义规则条件字段的标准格式，避免前后端联调歧义：
-
-```json
-// 规则条件 JSON Schema
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "required": ["type"],
-  "properties": {
-    "type": {
-      "type": "string",
-      "enum": ["single", "multi", "tree"],
-      "description": "规则类型：单特征/多特征/树模型"
-    },
-    "field": {
-      "type": "string",
-      "description": "特征字段名（仅single类型需要）"
-    },
-    "operator": {
-      "type": "string",
-      "enum": [">", ">=", "<", "<=", "==", "!=", "in", "not_in", "like", "between"],
-      "description": "操作符"
-    },
-    "value": {
-      "type": ["number", "string", "array"],
-      "description": "比较值"
-    },
-    "conditions": {
-      "type": "array",
-      "description": "多条件列表（仅multi类型需要）",
-      "items": {
-        "type": "object",
-        "properties": {
-          "field": {"type": "string"},
-          "operator": {"type": "string"},
-          "value": {}
-        }
-      }
-    },
-    "logic": {
-      "type": "string",
-      "enum": ["AND", "OR"],
-      "description": "多条件逻辑关系"
-    },
-    "tree_id": {
-      "type": "string",
-      "description": "树模型ID（仅tree类型需要）"
-    },
-    "path": {
-      "type": "array",
-      "description": "树路径（仅tree类型需要）"
-    }
-  }
-}
-
-// 使用示例
-// 单特征规则：age > 30
-{
-  "type": "single",
-  "field": "age",
-  "operator": ">",
-  "value": 30
-}
-
-// 多特征规则：age > 30 AND amount < 1000
-{
-  "type": "multi",
-  "conditions": [
-    {"field": "age", "operator": ">", "value": 30},
-    {"field": "amount", "operator": "<", "value": 1000}
-  ],
-  "logic": "AND"
-}
-
-// 树模型规则
-{
-  "type": "tree",
-  "tree_id": "tree_001",
-  "path": [">30", "<1000", true]
-}
-```
+> 根据项目需要，此处可放置接口协议、数据格式、业务规则等技术规范。
+> 示例：JSON Schema、API 契约、枚举定义、状态机定义等。
 
 ### 11.3 参考文档
 | 文档 | 链接 |
@@ -855,7 +1137,68 @@ graph TB
 
 ---
 
-## Step 7: 输出和后续 (OUTPUT) [AUTO]
+## Step 5: 原型生成 (PROTOTYPE) [AUTO]
+
+### 执行指令
+
+基于 Step 4 生成的 PRD，提取产品设计信息，生成可编辑 HTML 原型：
+
+```agent
+# 1. 读取 PRD 文档
+Read(file_path=".sop/output/prd-{name}-{date}.md")
+
+# 2. 提取关键信息
+# - Section 4.1 信息架构 → 页面导航结构
+# - Section 4.2 核心页面设计 → 每个页面的布局和组件
+# - Section 4.3 交互流程 → 页面间的跳转关系
+# - Section 5.1 用户角色 → 角色切换功能
+# - Section 5.2 用户故事 → 表单字段和操作按钮
+
+# 3. 生成 HTML 原型（参考 references/17_PROTOTYPE.md 模板）
+Write(
+  file_path=".sop/output/prototype-{kebab-case-name}-{date}.html",
+  content="{{prototype_html}}"
+)
+
+# 4. 保存状态
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts prd 5_prototype completed
+```
+
+### 原型生成规则
+
+**从 PRD 提取内容的映射关系：**
+
+| PRD 章节 | → 原型元素 |
+|----------|-----------|
+| 4.1 信息架构 | 顶部导航栏 / 侧边菜单 |
+| 4.2 核心页面设计 | 每个页面一个 `<section data-page="...">` |
+| 4.2 关键组件列 | 页面内的表单/表格/卡片等组件 |
+| 4.3 交互流程 | 页面间的点击跳转 |
+| 5.1 用户角色 | 角色切换下拉框 |
+| 5.2 用户故事 | 操作按钮和表单字段 |
+
+### 原型功能清单
+
+生成的 HTML 原型包含：
+
+| 功能 | 实现方式 |
+|------|----------|
+| 多页面导航 | `data-page` 属性 + JS 切换 |
+| 文本可编辑 | `contenteditable="true"` |
+| 表单交互 | 原生 `<input>` / `<select>` / `<checkbox>` |
+| 视口切换 | 按钮切换 `max-width`（375/768/1280px） |
+| 打印导出 | `@media print` + `window.print()` |
+| 响应式布局 | Tailwind 响应式前缀（sm:/md:/lg:） |
+
+### 输出路径
+
+`.sop/output/prototype-{kebab-case-name}-{date}.html`
+
+> 详细 HTML 模板参见 [references/17_PROTOTYPE.md](./references/17_PROTOTYPE.md)
+
+---
+
+## Step 6: 输出和后续 (OUTPUT) [AUTO]
 
 ### 执行指令
 
@@ -864,7 +1207,10 @@ graph TB
 ```markdown
 ## PRD 已创建
 
-**文件**: `.sop/output/prd-{name}-{date}.md`
+**文件**:
+- 脑暴: `.sop/output/brainstorm-{name}-{date}.md`
+- PRD: `.sop/output/prd-{name}-{date}.md`
+- 原型: `.sop/output/prototype-{name}-{date}.html`
 
 ### 摘要
 
@@ -891,9 +1237,10 @@ graph TB
 
 ### 推荐下一步
 
-1. **生成测试用例**: 运行 `/sop test-design` — 从用户故事自动生成测试用例和追溯矩阵
-2. **如需技术实现约束**: 运行 `/product-capability`
-3. **如需修改**: 编辑 `.sop/output/prd-{name}-{date}.md`
+1. **查看原型**: 在浏览器中打开 `.sop/output/prototype-{name}-{date}.html` 进行交互预览和编辑
+2. **生成测试用例**: 运行 `/sop test-design` — 从用户故事自动生成测试用例和追溯矩阵
+3. **如需技术实现约束**: 运行 `/product-capability`
+4. **如需修改**: 编辑 `.sop/output/prd-{name}-{date}.md`
 ```
 
 ### 状态文档
@@ -901,14 +1248,16 @@ graph TB
 ```markdown
 ---
 sop: prd
-step: 7_output
+step: 6_output
 status: completed
 ---
 
 ## PRD 生成完成
 
 ### 输出文件
+- `.sop/output/brainstorm-{name}-{date}.md`
 - `.sop/output/prd-{name}-{date}.md`
+- `.sop/output/prototype-{name}-{date}.html`
 
 ### 知识引用
 - [x] 行业知识已引用
@@ -936,6 +1285,7 @@ status: completed
 - [x] 范围已界定
 - [x] 指标已设定
 - [x] PRD 文档已生成
+- [x] HTML 原型已生成
 ```
 
 ---
@@ -948,12 +1298,14 @@ status: completed
 │   ├── knowledge-game-risk-20260421.md      # 领域知识
 │   └── knowledge-game-risk-spec-20260421.md # 技术规范
 └── output/
-    └── prd-game-risk-20260421.md            # PRD文档
+    ├── brainstorm-game-risk-20260421.md     # 脑暴探索文档
+    ├── prd-game-risk-20260421.md            # PRD文档
+    └── prototype-game-risk-20260421.html    # 可编辑HTML原型
 ```
 
 ## 自动执行模式
 
-> v4.0.0 新增：支持完全自动化执行
+> 支持完全自动化执行
 
 ### 断点续传
 
@@ -973,12 +1325,15 @@ ls .sop/state/prd-*.json
 ```json
 {
   "task_id": "prd-xxx",
-  "current_step": 2,
+  "current_step": 3,
   "status": "in_progress",
   "steps": {
     "0_dependency": {"status": "completed"},
     "1_initiate": {"status": "completed"},
-    "2_foundations": {"status": "in_progress"}
+    "1.2_brainstorm": {"status": "completed"},
+    "1.5_doc_type": {"status": "completed"},
+    "2_requirements": {"status": "completed"},
+    "3_decisions": {"status": "in_progress"}
   }
 }
 ```
@@ -1009,7 +1364,7 @@ Step 0: /sop prd {业务系统}
    ↓
    检查是否有知识文档
    ↓
-   ┌─ 有知识 → 加载知识，直接进入 Step 2
+   ┌─ 有知识 → 加载知识，进入 Step 1
    ↓
    ┌─ 无知识 → AskUserQuestion:
    │           "是否需要先收集领域知识？"
@@ -1020,18 +1375,25 @@ Step 0.5: /sop knowledge {业务领域}
    ↓
    输出：knowledge-{domain}-{date}.md
    ↓
-Step 2: 问题发现 (FOUNDATION)
+Step 1: 智能识别 (INITIATE) [CONFIRM]
    ↓
-Step 3: 市场研究 (引用知识库)
+Step 1.2: 脑暴探索 (BRAINSTORM) [CONFIRM]
+   ↓ HMW发散 → 思维导图 → 影响力矩阵
+Step 1.5: 文档类型选择 (DOC_TYPE) [CONFIRM]
+   ↓ 精简/标准/完整
+Step 2: 需求深挖 (REQUIREMENTS) [AUTO]
+   ↓ Phase A 问题发现（聚焦脑暴方向）+ Phase B 市场锚定 + Phase C 深度需求
+Step 3: 范围决策 (DECISIONS) [CONFIRM]
    ↓
-Step 4: 深度需求 (DEEP DIVE)
-   ↓
-Step 5: 范围决策 (DECISIONS)
-   ↓
-Step 6: 生成 PRD (自动引用知识)
+Step 4: 生成 PRD (自动引用知识) [AUTO]
    ↓
    输出：prd-{domain}-{date}.md
-   (自动包含：行业趋势、技术方案、合规要求)
+   ↓
+Step 5: 原型生成 (PROTOTYPE) [AUTO]
+   ↓
+   输出：prototype-{domain}-{date}.html
+   ↓
+Step 6: 输出和后续 (OUTPUT) [AUTO]
 ```
 
 ---
@@ -1051,32 +1413,30 @@ Step 6: 生成 PRD (自动引用知识)
 3. 用户选择"是"
 4. 自动触发 /sop knowledge {业务领域}
 5. 收集知识完成
-6. 继续 Step 2-6，生成 PRD
+6. Step 1: 智能识别业务类型
+7. Step 1.2: 脑暴探索（HMW 发散 → 思维导图 → 影响力矩阵）
+8. Step 1.5: 选择文档类型（标准版）
+9. Step 2: 需求深挖（聚焦脑暴方向）
+10. Step 3: 范围决策
+11. Step 4: 生成 PRD
+12. Step 5: 生成可编辑 HTML 原型
+13. Step 6: 输出摘要
 
 ### 示例 2：已有知识
-
-**用户输入**：
-```
-/sop prd {业务系统}
-```
 
 **SOP 响应**：
 1. Step 0: 检查知识文档 → 有（之前已收集）
 2. 加载知识文档
-3. 直接进入 Step 2-6，生成 PRD
+3. Step 1-6: 完整流程（含原型生成）
 
-### 示例 3：跳过知识
-
-**用户输入**：
-```
-/sop prd {业务系统}
-```
+### 示例 3：精简模式
 
 **SOP 响应**：
 1. Step 0: 检查知识文档 → 无
-2. 询问：是否需要先收集知识？
-3. 用户选择"简化模式"
-4. 直接进入 Step 2-6，生成简化版 PRD
+2. 用户选择"跳过知识"
+3. Step 1: 智能识别
+4. Step 1.5: 选择文档类型（精简版）
+5. Step 2-6: 精简流程（含轻量原型）
 
 ---
 

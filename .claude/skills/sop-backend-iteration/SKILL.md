@@ -104,6 +104,21 @@ aggregation:
 - 数据模型要求（Entity/DTO）
 - 事务边界需求
 
+### DoD 检查点 ⭐
+
+> 在开始开发前，确认以下完成标准（参考 sop-prd Step 3 DoD）：
+
+| 检查项 | 确认状态 | 说明 |
+|--------|----------|------|
+| 代码已提交并通过 Code Review | ⬜ | |
+| 单元测试覆盖率 ≥ 80% | ⬜ | |
+| 集成测试通过 | ⬜ | |
+| API 文档已更新 | ⬜ | |
+| 无 CRITICAL/HIGH 级别 Bug | ⬜ | |
+| 验收标准全部通过 | ⬜ | 来自 PRD |
+
+> **提示**：如果 DoD 检查点未满足，应在 Step 5 (架构审核) 之前完成补齐
+
 **持久化**（自动）：
 ```bash
 npx ts-node --transpile-only .claude/scripts/sop-state-save.ts backend-iteration 1_confirm in_progress
