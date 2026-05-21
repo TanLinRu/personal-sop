@@ -1,7 +1,7 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "YOUR_MODEL_HERE",
-  "small_model": "YOUR_MODEL_HERE",
+  "model": "deepseek-v4-flash-free",
+  "small_model": "deepseek-v4-flash-free",
   "default_agent": "build",
   "permission": {
     "lsp": "allow"
@@ -35,7 +35,10 @@
     "sop-database-design": ".claude/skills/sop-database-design/SKILL.md",
     "SOP": ".claude/skills/SOP.md",
     "dr-jskill": ".claude/skills/dr-jskill/SKILL.md",
-    "frontend-design": ".claude/skills/frontend-design/SKILL.md"
+    "frontend-design": ".claude/skills/frontend-design/SKILL.md",
+    "sop-dynamic-input": ".claude/skills/sop-dynamic-input/SKILL.md",
+    "sop-brainstorming": ".claude/skills/sop-brainstorming/SKILL.md",
+    "sop-verification": ".claude/skills/sop-verification/SKILL.md"
   },
   "instructions": [
     "AGENTS.md",
@@ -74,7 +77,7 @@
     "build": {
       "description": "Primary coding agent for project development",
       "mode": "primary",
-      "model": "YOUR_MODEL_HERE",
+      "model": "deepseek-v4-flash-free",
       "tools": {
         "write": true,
         "edit": true,
@@ -86,7 +89,7 @@
     "java-reviewer": {
       "description": "Expert Java and Spring Boot code reviewer specializing in layered architecture, JPA patterns, security, and concurrency.",
       "mode": "subagent",
-      "model": "YOUR_MODEL_HERE",
+      "model": "deepseek-v4-flash-free",
       "prompt": "You are an expert Java and Spring Boot code reviewer specializing in layered architecture, JPA patterns, security, and concurrency. Use for all code changes. MUST BE USED for Spring Boot projects.",
       "tools": {
         "read": true,
@@ -98,7 +101,7 @@
     "code-reviewer": {
       "description": "Expert code review specialist. Reviews code for quality, security, and maintainability. Use immediately after writing or modifying code.",
       "mode": "subagent",
-      "model": "YOUR_MODEL_HERE",
+      "model": "deepseek-v4-flash-free",
       "prompt": "You are an expert code reviewer ensuring high standards of code quality and security.",
       "tools": {
         "read": true,
@@ -110,7 +113,7 @@
     "security-reviewer": {
       "description": "Security vulnerability detection and remediation specialist. Use for security issues.",
       "mode": "subagent",
-      "model": "YOUR_MODEL_HERE",
+      "model": "deepseek-v4-flash-free",
       "prompt": "You are an expert security specialist focused on identifying and remediating vulnerabilities in web applications.",
       "tools": {
         "read": true,
@@ -119,10 +122,70 @@
         "edit": true
       }
     },
+    "flow-reviewer": {
+      "description": "SOP 流程合规审查 - 检查步骤顺序、跳过、重复",
+      "mode": "subagent",
+      "model": "deepseek-v4-flash-free",
+      "prompt": "You are a SOP flow compliance reviewer. Check if the SOP execution followed the expected step order defined in sop-step-map. Report: missing steps, wrong order, duplicate execution.",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "output-reviewer": {
+      "description": "SOP 产出完整性审查 - 检查预期文件是否生成",
+      "mode": "subagent",
+      "model": "deepseek-v4-flash-free",
+      "prompt": "You are a SOP output completeness reviewer. Check if all expected output files were generated according to expected.yml. Report: missing files, empty files, incomplete content.",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "param-reviewer": {
+      "description": "SOP 参数一致性审查 - 检查参数传递是否正确",
+      "mode": "subagent",
+      "model": "deepseek-v4-flash-free",
+      "prompt": "You are a SOP parameter consistency reviewer. Check if user-input parameters are correctly passed and used across all steps. Report: unused params, modified params, inconsistent values.",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "state-reviewer": {
+      "description": "SOP 状态一致性审查 - 检查状态标记与实际是否一致",
+      "mode": "subagent",
+      "model": "deepseek-v4-flash-free",
+      "prompt": "You are a SOP state consistency reviewer. Compare the state file status markers against actual filesystem state. Report: false completed, stale pending, orphan outputs.",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "arch-reviewer": {
+      "description": "SOP 架构审查 - 评估产出方案架构",
+      "mode": "subagent",
+      "model": "deepseek-v4-flash-free",
+      "prompt": "You are a SOP architecture reviewer. Evaluate the architecture of generated output: layering, tech choices, extensibility, over-engineering, scalability.",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
     "search-first": {
       "description": "Research and code search specialist",
       "mode": "subagent",
-      "model": "YOUR_MODEL_HERE",
+      "model": "deepseek-v4-flash-free",
       "prompt": "You are a research specialist. Search for relevant code and documentation before making changes.",
       "tools": {
         "read": true,
@@ -212,6 +275,21 @@
       "description": "Show status of all SOP tasks",
       "agent": "build",
       "template": "Show the status of all in-progress and recently completed SOP tasks.\n\n$ARGUMENTS"
+    },
+    "sop input": {
+      "description": "动态参数输入 - 从接口/文件读取参数定义，弹窗交互收集用户输入",
+      "agent": "build",
+      "template": "Please use the sop-dynamic-input skill to collect user parameters.\nContext: $ARGUMENTS"
+    },
+    "sop brainstrom": {
+      "description": "结构化头脑风暴 - 发散+收敛双阶段，支持SCAMPER/六顶思考帽等多种方法",
+      "agent": "build",
+      "template": "Please use the sop-brainstorming skill.\nTopic: $ARGUMENTS"
+    },
+    "sop verify": {
+      "description": "SOP 执行验证 - 执行后自动审查反模式，多Agent审核产出",
+      "agent": "build",
+      "template": "Please execute SOP verification for the last completed SOP.\nFocus: $ARGUMENTS"
     }
   },
   "plugin": [

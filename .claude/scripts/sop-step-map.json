@@ -3,7 +3,7 @@
   "bug-fix": ["1_reproduce", "2_locate", "3_fix", "4_verify", "5_test"],
   "code-review": ["1_scope", "2_review", "3_test", "4_report"],
   "knowledge": ["1_identify", "2_research", "3_structure", "4_generate", "5_output"],
-  "prd": ["0_dependency", "1_initiate", "2_foundations", "3_grounding", "4_deep_dive", "5_decisions", "6_generate", "7_output"],
+  "prd": ["0_dependency", "1_initiate", "1.2_brainstorm", "1.5_doc_type", "2_requirements", "3_decisions", "4_generate", "5_prototype", "6_output"],
   "incident-response": ["1_collect", "2_reproduce", "3_locate", "4_fix", "5_verify", "6_report"],
   "testing": ["0_setup", "1_unit", "2_integration", "3_e2e", "4_api", "5_security", "6_performance"],
   "deployment": ["1_build", "2_verify", "3_staging", "4_production", "5_monitor"],
@@ -17,5 +17,8 @@
   "database-design": ["1_requirement", "2_er", "3_schema", "4_index", "5_normalization", "6_ddl"],
   "dependency-analysis": ["1_env", "2_build", "3_conflict", "4_analysis"],
   "test-design": ["1_requirement_analysis", "2_test_techniques", "3_test_case_design", "4_traceability", "5_review", "6_output"],
-  "regression": ["1_change_analysis", "2_impact_assessment", "3_test_selection", "4_execution", "5_report"]
+  "regression": ["1_change_analysis", "2_impact_assessment", "3_test_selection", "4_execution", "5_report"],
+  "input": ["1_get_params", "2_collect", "3_confirm"],
+  "brainstrom": ["1_confirm_topic", "2_choose_method", "3_diverge", "4_converge", "5_output"],
+  "verify": ["1_collect_context", "2_load_expected", "3_basic_check", "4_deep_review", "5_report"]
 }

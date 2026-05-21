@@ -1,0 +1,52 @@
+sop: testing
+version: 1.0.0
+metadata:
+  description: Standard test execution workflow
+  updated: 2026-05-21
+
+expected_steps:
+  - id: 0_setup
+    name: 环境搭建
+    type: auto
+    required: true
+  - id: 1_unit
+    name: 单元测试
+    type: auto
+    required: true
+  - id: 2_integration
+    name: 集成测试
+    type: auto
+    required: true
+  - id: 3_e2e
+    name: E2E 测试
+    type: auto
+    required: false
+  - id: 4_api
+    name: API 测试
+    type: auto
+    required: false
+  - id: 5_security
+    name: 安全测试
+    type: auto
+    required: false
+  - id: 6_performance
+    name: 性能测试
+    type: auto
+    required: false
+
+expected_outputs:
+  - path: "target/surefire-reports/*.xml"
+    description: 单元测试报告
+    type: data
+    required: true
+    tags: [test-report]
+  - path: "target/failsafe-reports/*.xml"
+    description: 集成测试报告
+    type: data
+    required: false
+    tags: [test-report]
+
+constraints:
+  strict_order: true
+  allow_skip: true
+  allow_parallel: true

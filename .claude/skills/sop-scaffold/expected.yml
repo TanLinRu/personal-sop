@@ -1,0 +1,94 @@
+sop: scaffold
+version: 1.0.0
+metadata:
+  description: Complete project scaffold initialization
+  author: SOP Team
+  updated: 2026-05-21
+
+expected_steps:
+  - id: 1_confirm
+    name: 需求确认
+    type: confirm
+    required: true
+  - id: 2_config
+    name: 配置确认
+    type: confirm
+    required: true
+  - id: 3_research
+    name: 技术调研
+    type: auto
+    required: true
+  - id: 4_prd
+    name: PRD 生成
+    type: auto
+    required: true
+    produces: [".sop/output/scaffold-*-prd.md"]
+  - id: 5_arch
+    name: 架构设计
+    type: auto
+    required: true
+    produces: [".sop/output/scaffold-*-arch.md"]
+  - id: 6_review
+    name: 方案审核
+    type: confirm
+    required: true
+  - id: 7_dependency
+    name: 依赖查询
+    type: auto
+    required: true
+  - id: 8_generate
+    name: 代码生成
+    type: auto
+    required: true
+  - id: 9_verify
+    name: 验证运行
+    type: auto
+    required: true
+  - id: 10_knowledge
+    name: 知识沉淀
+    type: auto
+    required: true
+    produces: [".sop/output/scaffold-*-knowledge.md"]
+
+expected_params:
+  - name: project_name
+    description: 项目名称
+    type: string
+    required: true
+    source: user_input
+    used_in_steps: [1_confirm, 2_config, 8_generate]
+  - name: tech_stack
+    description: 技术栈
+    type: string
+    required: true
+    source: user_input
+    used_in_steps: [2_config, 3_research]
+
+expected_outputs:
+  - path: ".sop/output/scaffold-*-prd.md"
+    description: PRD 文档
+    type: markdown
+    required: true
+    validate: [not_empty]
+    tags: [report]
+  - path: ".sop/output/scaffold-*-arch.md"
+    description: 架构设计文档
+    type: markdown
+    required: true
+    validate: [not_empty]
+    tags: [report]
+  - path: "delivery-staff/**"
+    description: 后端代码
+    type: code
+    required: true
+    tags: [backend]
+  - path: "delivery-staff-frontend/**"
+    description: 前端代码
+    type: code
+    required: true
+    tags: [frontend]
+
+constraints:
+  strict_order: true
+  allow_skip: false
+  allow_parallel: true

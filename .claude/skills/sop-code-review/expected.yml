@@ -1,0 +1,67 @@
+sop: code-review
+version: 1.0.0
+metadata:
+  description: Standard code review workflow
+  author: SOP Team
+  updated: 2026-05-21
+
+expected_steps:
+  - id: 1_scope
+    name: 确认审查范围
+    type: confirm
+    required: true
+    produces: [".sop/output/code-review-*-scope.md"]
+  - id: 2_review
+    name: 执行代码审查
+    type: auto
+    required: true
+    produces: [".sop/output/code-review-*-review.md"]
+  - id: 3_test
+    name: 运行测试
+    type: auto
+    required: true
+    produces: ["target/surefire-reports/*"]
+  - id: 4_report
+    name: 输出审查报告
+    type: confirm
+    required: true
+    produces: [".sop/output/code-review-*-report.md"]
+
+expected_params:
+  - name: review_mode
+    description: 审查模式 (quick/full/incremental)
+    type: string
+    required: true
+    source: user_input
+    used_in_steps: [1_scope, 2_review]
+  - name: target_path
+    description: 审查目标路径
+    type: string
+    required: true
+    source: user_input
+    used_in_steps: [1_scope, 2_review, 3_test]
+
+expected_outputs:
+  - path: ".sop/output/code-review-*-scope.md"
+    description: 变更范围分析
+    type: markdown
+    required: true
+    validate: [not_empty]
+    tags: [report]
+  - path: ".sop/output/code-review-*-review.md"
+    description: 代码审查结果
+    type: markdown
+    required: true
+    validate: [not_empty]
+    tags: [report]
+  - path: ".sop/output/code-review-*-report.md"
+    description: 审查总结报告
+    type: markdown
+    required: true
+    validate: [not_empty, contains: "审查结论"]
+    tags: [report]
+
+constraints:
+  strict_order: true
+  allow_skip: false
+  allow_parallel: false

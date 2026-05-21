@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智能配送调度系统 - 原型</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { primary: '#3b82f6' }
+        }
+      }
+    }
+  </script>
+  <style>
+    @media print { .no-print { display: none !important; } }
+    [contenteditable]:hover { outline: 2px dashed #3b82f6; outline-offset: 2px; cursor: text; }
+    [contenteditable]:focus { outline: 2px solid #3b82f6; outline-offset: 2px; }
+    .page-section { min-height: 100vh; padding: 2rem; }
+    .hidden-page { display: none; }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <!-- 顶部导航 -->
+  <nav class="bg-primary text-white px-6 py-4 flex justify-between items-center no-print">
+    <h1 class="text-xl font-bold" contenteditable="true">智能配送调度系统</h1>
+    <div class="flex gap-4">
+      <button onclick="showPage('dashboard')" class="hover:bg-white/20 px-3 py-1 rounded">仪表盘</button>
+      <button onclick="showPage('orders')" class="hover:bg-white/20 px-3 py-1 rounded">订单</button>
+      <button onclick="showPage('riders')" class="hover:bg-white/20 px-3 py-1 rounded">骑手</button>
+      <button onclick="showPage('dispatch')" class="hover:bg-white/20 px-3 py-1 rounded">调度</button>
+    </div>
+  </nav>
+
+  <!-- 仪表盘 -->
+  <section id="dashboard" class="page-section">
+    <h2 class="text-2xl font-bold mb-6" contenteditable="true">📊 调度中心仪表盘</h2>
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      <div class="bg-white p-4 rounded shadow">
+        <div class="text-gray-500 text-sm" contenteditable="true">今日订单</div>
+        <div class="text-3xl font-bold text-primary" contenteditable="true">1,234</div>
+      </div>
+      <div class="bg-white p-4 rounded shadow">
+        <div class="text-gray-500 text-sm" contenteditable="true">配送中</div>
+        <div class="text-3xl font-bold text-orange-500" contenteditable="true">89</div>
+      </div>
+      <div class="bg-white p-4 rounded shadow">
+        <div class="text-gray-500 text-sm" contenteditable="true">妥投率</div>
+        <div class="text-3xl font-bold text-green-500" contenteditable="true">98.5%</div>
+      </div>
+      <div class="bg-white p-4 rounded shadow">
+        <div class="text-gray-500 text-sm" contenteditable="true">平均时长</div>
+        <div class="text-3xl font-bold" contenteditable="true">28分钟</div>
+      </div>
+    </div>
+    <div class="bg-white p-6 rounded shadow">
+      <h3 class="font-bold mb-4" contenteditable="true">实时调度地图</h3>
+      <div class="h-96 bg-gray-100 rounded flex items-center justify-center text-gray-400" contenteditable="true">
+        [地图区域占位符 - 实际接入高德/腾讯地图SDK]
+      </div>
+    </div>
+  </section>
+
+  <!-- 订单管理 -->
+  <section id="orders" class="page-section hidden-page">
+    <h2 class="text-2xl font-bold mb-6" contenteditable="true">📦 订单管理</h2>
+    <div class="bg-white rounded shadow overflow-hidden">
+      <table class="w-full">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-2 text-left">订单ID</th>
+            <th class="px-4 py-2 text-left">取货地址</th>
+            <th class="px-4 py-2 text-left">送货地址</th>
+            <th class="px-4 py-2 text-left">状态</th>
+            <th class="px-4 py-2 text-left">骑手</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-t">
+            <td class="px-4 py-2" contenteditable="true">ORD-001</td>
+            <td class="px-4 py-2" contenteditable="true">朝阳区建国路88号</td>
+            <td class="px-4 py-2" contenteditable="true">海淀区中关村大街1号</td>
+            <td class="px-4 py-2"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">配送中</span></td>
+            <td class="px-4 py-2" contenteditable="true">骑手A</td>
+          </tr>
+          <tr class="border-t">
+            <td class="px-4 py-2" contenteditable="true">ORD-002</td>
+            <td class="px-4 py-2" contenteditable="true">朝阳区望京SOHO</td>
+            <td class="px-4 py-2" contenteditable="true">海淀区软件园</td>
+            <td class="px-4 py-2"><span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm">待接单</span></td>
+            <td class="px-4 py-2" contenteditable="true">-</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 骑手管理 -->
+  <section id="riders" class="page-section hidden-page">
+    <h2 class="text-2xl font-bold mb-6" contenteditable="true">🏃 骑手管理</h2>
+    <div class="bg-white rounded shadow p-6">
+      <div class="grid grid-cols-3 gap-4">
+        <div class="border rounded p-4">
+          <div class="text-sm text-gray-500" contenteditable="true">在线骑手</div>
+          <div class="text-2xl font-bold text-green-500" contenteditable="true">156</div>
+        </div>
+        <div class="border rounded p-4">
+          <div class="text-sm text-gray-500" contenteditable="true">配送中</div>
+          <div class="text-2xl font-bold text-orange-500" contenteditable="true">89</div>
+        </div>
+        <div class="border rounded p-4">
+          <div class="text-sm text-gray-500" contenteditable="true">离线</div>
+          <div class="text-2xl font-bold text-gray-400" contenteditable="true">23</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 调度配置 -->
+  <section id="dispatch" class="page-section hidden-page">
+    <h2 class="text-2xl font-bold mb-6" contenteditable="true">⚙️ 调度配置</h2>
+    <div class="bg-white rounded shadow p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1" contenteditable="true">调度模式</label>
+        <select class="w-full border rounded px-3 py-2">
+          <option contenteditable="true">智能匹配（推荐）</option>
+          <option contenteditable="true">区域派单</option>
+          <option contenteditable="true">距离优先</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" contenteditable="true">最大同时配送数</label>
+        <input type="number" class="w-full border rounded px-3 py-2" value="3" contenteditable="true">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" contenteditable="true">超时预警（分钟）</label>
+        <input type="number" class="w-full border rounded px-3 py-2" value="45" contenteditable="true">
+      </div>
+      <button class="bg-primary text-white px-4 py-2 rounded hover:opacity-90" contenteditable="true">保存配置</button>
+    </div>
+  </section>
+
+  <!-- 打印按钮 -->
+  <div class="fixed bottom-4 right-4 no-print">
+    <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded shadow hover:bg-gray-700">
+      🖨️ 导出PDF
+    </button>
+  </div>
+
+  <script>
+    function showPage(pageId) {
+      document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden-page'));
+      document.getElementById(pageId).classList.remove('hidden-page');
+    }
+  </script>
+</body>
+</html>

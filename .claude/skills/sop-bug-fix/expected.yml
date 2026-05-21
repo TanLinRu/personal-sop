@@ -1,0 +1,70 @@
+sop: bug-fix
+version: 1.0.0
+metadata:
+  description: Standard bug fix workflow
+  author: SOP Team
+  updated: 2026-05-21
+
+expected_steps:
+  - id: 1_reproduce
+    name: 复现 Bug
+    type: confirm
+    required: true
+    produces: [".sop/output/bug-fix-*-reproduce.md"]
+  - id: 2_locate
+    name: 定位原因
+    type: auto
+    required: true
+    produces: [".sop/output/bug-fix-*-locate.md"]
+  - id: 3_fix
+    name: 修复代码
+    type: confirm
+    required: true
+  - id: 4_verify
+    name: 验证修复
+    type: auto
+    required: true
+  - id: 5_test
+    name: 测试用例
+    type: auto
+    required: true
+    produces: ["**/*Test*.java"]
+
+expected_params:
+  - name: bug_description
+    description: Bug 描述
+    type: string
+    required: true
+    source: user_input
+    used_in_steps: [1_reproduce, 2_locate]
+  - name: severity
+    description: 严重程度
+    type: string
+    required: false
+    source: user_input
+    used_in_steps: [1_reproduce]
+
+expected_outputs:
+  - path: ".sop/output/bug-fix-*-reproduce.md"
+    description: 复现报告
+    type: markdown
+    required: true
+    validate: [not_empty]
+    tags: [report]
+  - path: ".sop/output/bug-fix-*-locate.md"
+    description: 根因分析
+    type: markdown
+    required: true
+    validate: [not_empty]
+    tags: [report]
+  - path: "**/*Test*.java"
+    description: 新增测试
+    type: code
+    required: false
+    validate: [not_empty]
+    tags: [test]
+
+constraints:
+  strict_order: true
+  allow_skip: false
+  allow_parallel: false

@@ -13,6 +13,7 @@ bash setup.sh
 /sop scaffold        # 生成新项目
 /sop code-review     # 代码审查
 /sop bug-fix         # Bug 修复
+/sop verify          # 验证上次 SOP 执行质量
 /sop status          # 查看任务状态
 ```
 
@@ -20,7 +21,7 @@ bash setup.sh
 
 | 依赖 | 必需 | 说明 |
 |------|------|------|
-| Node.js 18+ | 是 | 状态管理脚本 |
+| Node.js 18+ | 是 | 状态管理 + 验证脚本 |
 | Git | 是 | 版本控制 |
 | JAVA_HOME | 否 | Java/Spring Boot 项目需要 |
 | Graphify | 否 | 代码依赖分析，`pip install graphify` |
@@ -111,7 +112,49 @@ SOP Workflow System - 基于 OpenCode 的工作流系统，底层引用 ECC（Ev
                聚合结果 → 统一反馈
 ```
 
+### 4. SOP 验证与反模式检测（sop-verification）
+
+SOP 执行完成后，自动验证执行质量，检测 6 类反模式：
+
+| 类型 | 检测内容 | 严重度 |
+|------|----------|--------|
+| **步骤跳过** | required 步骤未执行 | HIGH |
+| **顺序颠倒** | 步骤顺序与 expected.yml 定义不一致 | MEDIUM |
+| **状态不一致** | state 标记 completed 但产出文件不存在 | HIGH |
+| **参数未生效** | 用户输入的参数未被步骤使用 | MEDIUM |
+| **产出偏差** | expected.yml 声明的 required 产出缺失或为空 | HIGH |
+| **空跑** | SOP 标记为 done 但无任何实际产出 | CRITICAL |
+
+**验证架构（三层）**:
+
+```
+┌──────────────────────────────────────────────────┐
+│   DSL 层：expected.yml（声明预期）               │
+│   定义步骤/参数/产出/约束                        │
+├──────────────────────────────────────────────────┤
+│   引擎层：基础验证（自动执行）                   │
+│   步骤合规 → 产出完整性 → 状态一致 → 参数一致    │
+├──────────────────────────────────────────────────┤
+│   Agent 层：多 Agent 深度审查                    │
+│   flow/output/param/state/security/quality       │
+└──────────────────────────────────────────────────┘
+```
+
+**关键文件**：
+- `.claude/skills/{sop}/expected.yml` — 各 SOP 的预期产出声明
+- `.claude/scripts/sop-verify.ts` — 验证上下文收集脚本
+- `.sop/output/verify-{sop}-{date}.md` — 审查总报告
+
+**评分公式**：
+
+```
+score = steps(30%) + outputs(30%) + params(20%) + state(10%) + quality(10%)
+Pass: ≥90 | Warn: 70–89 | Fail: <70
+```
+
 ---
+
+
 
 ## 二、依赖体系
 
@@ -149,6 +192,7 @@ git clone https://github.com/affaan-m/everything-claude-code.git ~/.claude/plugi
 | sop-bug-fix | Bug 修复 | `/sop bug-fix` |
 | sop-deployment | 部署发布 | `/sop deployment` |
 | sop-dependency-analysis | 依赖分析 | `/sop dependency-analysis` |
+| sop-verification | SOP 执行验证（反模式检测） | `/sop verify` |
 
 ### 效率 SOP
 
@@ -248,17 +292,41 @@ public Warehouse createWarehouse(WarehouseDTO dto) {
 
 # 依赖分析（Graphify）
 /sop dependency-analysis
+
+# SOP 执行验证（反模式检测）
+/sop verify              # 自动检测最近完成的 SOP
+/sop verify code-review  # 指定验证 code-review
+/sop verify all          # 验证所有已完成的 SOP
 ```
 
 ---
 
 ## 七、SOP 执行状态
 
-| 状态 | 说明 |
+### 步骤类型
+
+| 类型 | 说明 |
 |------|------|
 | `[CONFIRM_REQUIRED]` | 需用户确认，阻塞执行 |
 | `[AUTO]` | 自动执行，无需确认 |
 | `[OPTIONAL]` | 可选步骤，用户决定 |
+
+### SOP 生命周期
+
+```
+PENDING → IN_PROGRESS → COMPLETED → VERIFIED (通过验证)
+                                        ↓
+                                     REJECTED (反模式检测失败)
+```
+
+| 状态 | 说明 |
+|------|------|
+| `pending` | 任务已创建，未开始执行 |
+| `in_progress` | 执行中 |
+| `completed` | 步骤/任务完成 |
+| `done` | 整个 SOP 完成 |
+| `verified` | 通过反模式验证 |
+| `rejected` | 验证发现反模式，需修复 |
 
 ---
 
@@ -270,30 +338,174 @@ public Warehouse createWarehouse(WarehouseDTO dto) {
 │   ├── SOP.md                       # Skill 规范
 │   ├── sop-prd/                    # PRD 生成
 │   ├── sop-scaffold/               # 脚手架生成
+│   │   └── expected.yml           # 预期产出 DSL
 │   ├── sop-backend-iteration/      # 后端迭代
 │   ├── sop-frontend-iteration/     # 前端迭代
 │   ├── sop-fullstack-iteration/   # 全栈迭代
 │   ├── sop-testing/               # 测试执行
+│   │   └── expected.yml           # 预期产出 DSL
 │   ├── sop-code-review/           # 代码审查
+│   │   └── expected.yml           # 预期产出 DSL
 │   ├── sop-bug-fix/               # Bug 修复
+│   │   └── expected.yml           # 预期产出 DSL
 │   ├── sop-deployment/            # 部署发布
+│   │   └── expected.yml           # 预期产出 DSL
 │   ├── sop-dependency-analysis/    # 依赖分析
 │   ├── sop-onboarding/            # 项目入职
 │   ├── sop-knowledge/             # 领域知识
 │   ├── sop-library-research/      # 技术调研
+│   ├── sop-verification/          # SOP 验证（反模式检测）
+│   │   ├── SKILL.md               # 验证技能
+│   │   ├── STEPS.md               # 5 步验证流程
+│   │   └── references/
+│   │       ├── DSL.md             # expected.yml 完整 Schema
+│   │       └── REVIEWER-AGENTS.md # 8 个审查 Agent 定义
 │   ├── dr-jskill/                # Java 项目工具
 │   └── frontend-design/           # 前端设计工具
 ├── rules/                          # 编码规范
 │   └── common/
 │       ├── coding-style.md        # Java/Spring 规范
 │       └── testing.md             # 测试规范
-└── scripts/                       # 验证脚本
+├── scripts/                       # 工具脚本
+│   ├── sop-state-save.ts         # 状态保存
+│   ├── sop-state-load.ts         # 状态恢复
+│   └── sop-verify.ts             # 验证上下文收集
+└── agents/                        # 审查 Agent 定义
+    ├── flow-reviewer.md           # 流程合规审查
+    ├── output-reviewer.md         # 产出完整性审查
+    ├── param-reviewer.md          # 参数一致性审查
+    ├── state-reviewer.md          # 状态一致性审查
+    ├── security-reviewer.md       # 安全审查
+    ├── quality-reviewer.md        # 质量审查
+    └── arch-reviewer.md           # 架构审查
 ```
 
 ---
 
-## 九、参考文档
+## 九、使用用例
+
+### 用例 1：SOP 执行后自动验证
+
+```bash
+# 执行 code-review SOP
+/sop code-review
+
+# 执行后验证（自动检测最近完成的 SOP）
+/sop verify
+
+# 输出示例：
+# === SOP Verify: code-review ===
+# State: code-review | status=done | steps=4/4
+# Expected outputs:
+#   ✓ code-review-2026-05-21-scope.md
+#   ✓ code-review-2026-05-21-review.md
+#   ✓ code-review-2026-05-21-report.md
+# Anti-pattern checks:
+#   ✓ status=done
+#   ✓ all 4 steps completed
+#   ✓ all outputs present
+#   ✓ report contains required fields
+# === VERDICT: PASS ===
+```
+
+### 用例 2：检测反模式（故意跳过步骤）
+
+```bash
+# 执行 Bug Fix SOP 但跳过 reproduce 步骤
+/sop bug-fix
+
+# 验证发现反模式
+/sop verify bug-fix
+
+# 输出示例：
+# === SOP Verify: bug-fix ===
+# Anti-pattern checks:
+#   ✗ step 1_reproduce skipped (required)
+#   ✗ reproduce-*.md output missing
+#   ✗ state inconsistency: step 3_fix marked completed but step 1 skipped
+# === VERDICT: FAIL ===
+# Detected: 1 CRITICAL (空跑风险), 2 HIGH (步骤跳过)
+```
+
+### 用例 3：指定预期产出（expected.yml）
+
+```yaml
+# .claude/skills/sop-scaffold/expected.yml
+sop: scaffold
+expected_steps:
+  - id: 1_confirm
+    name: 需求确认
+    type: confirm
+    required: true
+  - id: 2_generate
+    name: 代码生成
+    type: auto
+    required: true
+    produces: [".sop/output/scaffold-*-generated.md"]
+  - id: 3_verify
+    name: 启动验证
+    type: auto
+    required: true
+
+expected_outputs:
+  - path: ".sop/output/scaffold-*-generated.md"
+    description: 生成的项目结构
+    type: markdown
+    required: true
+    validate: [not_empty, contains: "项目结构"]
+  - path: "delivery-staff/pom.xml"
+    description: 后端项目配置
+    type: code
+    required: true
+    validate: [not_empty]
+
+constraints:
+  strict_order: true
+  allow_skip: false
+```
+
+### 用例 4：多 Agent 深度审查
+
+```bash
+# 验证完成，发现产出完整性警告
+/sop verify code-review
+
+# 基础验证完成后，自动分发 subAgent：
+#   flow-reviewer    → 检查步骤顺序
+#   output-reviewer  → 检查缺失的文件
+#   security-reviewer → 扫描敏感信息
+#   quality-reviewer  → 评估产出质量
+
+# 最终生成总报告：
+# .sop/output/verify-code-review-2026-05-21.md
+#
+# 反模式汇总：
+# | # | 类型 | 严重度 | 描述 |
+# |---|------|--------|------|
+# | 1 | 产出缺失 | LOW | api-docs.md 未生成 |
+# | 2 | 参数未生效 | LOW | db_url 参数未被使用 |
+```
+
+### 用例 5：验证状态生命周期
+
+```
+# 正常流程
+/sop scaffold           # PENDING → IN_PROGRESS → COMPLETED
+/sop verify scaffold    # COMPLETED → VERIFIED (评分≥90)
+
+# 反模式流程
+/sop bug-fix            # 执行中跳过了 reproduce 步骤
+/sop verify bug-fix     # COMPLETED → REJECTED (评分<70)
+# 建议修复：补充 reproduce 步骤后重新验证
+```
+
+---
+
+## 十、参考文档
 
 - dr-jskill: `.claude/skills/dr-jskill/references/`
 - ECC Agents: `everything-claude-code-main/agents/`
 - ECC Commands: `everything-claude-code-main/commands/`
+- SOP 验证 DSL: `.claude/skills/sop-verification/references/DSL.md`
+- 审查 Agent 定义: `.claude/skills/sop-verification/references/REVIEWER-AGENTS.md`
+- 验证执行步骤: `.claude/skills/sop-verification/STEPS.md`

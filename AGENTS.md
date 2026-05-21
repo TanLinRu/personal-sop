@@ -50,6 +50,9 @@ Get-NetTCPConnection -LocalPort 5173 | Stop-Process -Force
 | `/sop bug-fix` | Bug fix workflow |
 | `/sop deployment` | Deployment workflow |
 | `/sop dependency-analysis` | Code dependency analysis |
+| `/sop input` | Dynamic user parameter input (interactive dialogs) |
+| `/sop brainstrom` | Structured brainstorming |
+| `/sop verify` | SOP execution verification & anti-pattern detection |
 
 ## SOP State Recovery
 - **检测命令**: `npx ts-node --transpile-only .claude/scripts/sop-state-load.ts --all`
@@ -68,6 +71,9 @@ Get-NetTCPConnection -LocalPort 5173 | Stop-Process -Force
 - MyBatis-Plus: `.claude/skills/dr-jskill/references/MYBATIS-PLUS.md`
 - Vue setup: `.claude/skills/dr-jskill/references/VUE.md`
 - Spring Boot: `.claude/skills/dr-jskill/references/SPRING-BOOT-4.md`
+- Dynamic Input: `.claude/skills/sop-dynamic-input/SKILL.md`
+- Brainstorming: `.claude/skills/sop-brainstorming/SKILL.md`
+- Verification: `.claude/skills/sop-verification/SKILL.md`
 
 ## Critical Files
 | File | Purpose |

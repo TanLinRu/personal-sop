@@ -23,20 +23,70 @@ permissions:
 - **断点恢复** 中断后从上次步骤继续
 - **执行可视化** 实时显示进度
 
-## 断点恢复 (Resume Detection)
+## 断点恢复 (Auto Resume Detection)
 
-在执行任何 SOP 前，先检查是否有未完成的任务：
+> v1.1.0 新增：自动检测恢复，无需手动执行命令
 
-```bash
-npx ts-node --transpile-only .claude/scripts/sop-resume-check.ts <sop-name>
+### 自动检测机制
+
+在执行任何 SOP 时，自动检查状态文件：
+
+```agent
+# 自动检测逻辑（集成到 SOP 执行器）
+Glob(pattern=".sop/state/{sop}-*.json")
+
+# 读取最新状态文件，检查 status 是否为 in_progress
+# 如有未完成任务，自动提示用户
 ```
 
-**如果返回 `has_resume: true`**：
-1. 向用户展示："发现进行中的 <sop> 任务，停在步骤 <N>: <step_name>。是否从这里继续？(Y/n)"
-2. 用户确认 → 跳到 `current_step`，使用已保存的 `answers`
-3. 用户拒绝 → 运行 `npx ts-node --transpile-only .claude/scripts/sop-state-clean.ts <sop-name>` 清理旧状态，重新开始
+### 检测逻辑
 
-**如果返回 `has_resume: false`**：正常从步骤 1 开始。
+| 检查结果 | 执行动作 |
+|----------|----------|
+| 有 `in_progress` 状态 | 向用户展示恢复提示，使用保存的 answers |
+| 有 `completed` 状态 | 视为已完成，正常执行 |
+| 无状态文件 | 正常从步骤 1 开始 |
+
+### 恢复提示示例
+
+```markdown
+### 🔄 发现未完成的 SOP 任务
+
+| 项目 | 值 |
+|------|-----|
+| SOP | prd-logistics |
+| 当前步骤 | Step 3: 需求深挖 |
+| 完成度 | 4/9 (44%) |
+| 上次时间 | 2026-05-08 15:30 |
+
+**答案已保存**：
+- 业务类型：物流配送
+- 核心问题：智能调度
+- HMW选择：如何让AI自动规划配送路线？
+
+[继续] [重新开始] [查看产出]
+```
+
+### 用户选择处理
+
+| 选择 | 执行动作 |
+|------|----------|
+| **继续** | 从 `current_step` 继续，使用已保存的 answers |
+| **重新开始** | 清理状态文件，重新从 Step 1 开始 |
+| **查看产出** | 展示已生成的产出文件 |
+
+### 状态清理（如选择重新开始）
+
+```bash
+# 清理指定 SOP 的状态
+npx ts-node --transpile-only .claude/scripts/sop-state-clean.ts <sop-name>
+```
+
+### v1.1.0 变更
+
+- ✅ 自动检测状态，无需手动执行命令
+- ✅ 自动加载已保存的 answers
+- ✅ 从 current_step 继续执行
 
 ## 执行可视化 (Progress Display)
 

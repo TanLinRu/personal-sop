@@ -1,0 +1,48 @@
+sop: deployment
+version: 1.0.0
+metadata:
+  description: Standard deployment workflow
+  updated: 2026-05-21
+
+expected_steps:
+  - id: 1_build
+    name: 构建
+    type: auto
+    required: true
+  - id: 2_verify
+    name: 验证
+    type: auto
+    required: true
+  - id: 3_staging
+    name: 预发布
+    type: confirm
+    required: true
+  - id: 4_production
+    name: 正式发布
+    type: confirm
+    required: true
+  - id: 5_monitor
+    name: 监控回滚
+    type: auto
+    required: true
+
+expected_params:
+  - name: version
+    description: 发布版本号
+    type: string
+    required: true
+    source: user_input
+    used_in_steps: [1_build, 4_production]
+
+expected_outputs:
+  - path: "target/*.jar"
+    description: 构建产物
+    type: data
+    required: true
+    validate: [not_empty]
+    tags: [artifact]
+
+constraints:
+  strict_order: true
+  allow_skip: false
+  allow_parallel: false

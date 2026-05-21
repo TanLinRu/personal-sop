@@ -60,9 +60,38 @@ function saveState(sop: string, step: string, status: string, answers?: Record<s
     };
   }
 
+  // v1.1.0 新增：约束验证
   if (answers && Object.keys(answers).length > 0) {
     state.answers = state.answers || {};
     state.answers[step] = answers;
+
+    // 获取当前 SOP 的约束规则
+    const constraints = SOP_CONSTRAINTS[sop]?.[step] || {};
+    const validationResults: Record<string, any> = {};
+
+    // 验证每个答案字段
+    for (const [key, value] of Object.entries(answers)) {
+      const constraint = constraints[key];
+      const result = validateConstraint(key, value, constraint);
+      validationResults[key] = result;
+    }
+
+    // 保存验证结果
+    state.validation = state.validation || {};
+    state.validation[step] = validationResults;
+
+    // 输出验证结果
+    const hasErrors = Object.values(validationResults).some((r: any) => !r.valid);
+    if (hasErrors) {
+      console.warn("[WARN] Constraint validation failed:");
+      for (const [key, result] of Object.entries(validationResults)) {
+        if (!result.valid) {
+          console.warn(`  - ${key}: ${result.error}`);
+        }
+      }
+    } else {
+      console.log("[OK] All constraints validated");
+    }
   }
 
   // Advance current_step when a step completes
@@ -108,8 +137,69 @@ function createInitialState(sop: string): any {
     current_step: 1,
     steps: {},
     answers: {},
+    constraints: {}, // v1.1.0 新增：约束验证
+    validation: {}, // v1.1.0 新增：验证结果
   };
 }
+
+// v1.1.0 新增：约束验证函数
+function validateConstraint(field: string, value: any, constraint: any): { valid: boolean; error?: string } {
+  if (!constraint) return { valid: true };
+
+  // required 验证
+  if (constraint.required && (value === undefined || value === null || value === "")) {
+    return { valid: false, error: `${field} is required` };
+  }
+
+  // pattern 验证（正则）
+  if (constraint.pattern && value) {
+    const regex = new RegExp(constraint.pattern);
+    if (!regex.test(value)) {
+      return { valid: false, error: `${field} does not match pattern: ${constraint.pattern}` };
+    }
+  }
+
+  // enum 验证
+  if (constraint.enum && value) {
+    if (!constraint.enum.includes(value)) {
+      return { valid: false, error: `${field} must be one of: ${constraint.enum.join(", ")}` };
+    }
+  }
+
+  // min/max 验证（数值）
+  if (constraint.min !== undefined && value !== undefined) {
+    if (Number(value) < constraint.min) {
+      return { valid: false, error: `${field} must be >= ${constraint.min}` };
+    }
+  }
+  if (constraint.max !== undefined && value !== undefined) {
+    if (Number(value) > constraint.max) {
+      return { valid: false, error: `${field} must be <= ${constraint.max}` };
+    }
+  }
+
+  return { valid: true };
+}
+
+// 预定义的 SOP 约束规则
+const SOP_CONSTRAINTS: Record<string, Record<string, any>> = {
+  "sop-prd": {
+    "1_confirm": {
+      "project_name": { required: true, pattern: "^[a-z][a-z0-9-]*$" },
+      "business_type": { required: true, enum: ["电商平台", "管理系统", "物流配送", "金融科技", "小程序", "移动App", "自定义"] },
+      "doc_type": { required: true, enum: ["精简版", "标准版", "完整版"] }
+    },
+    "1_key_confirm": {
+      "direction": { required: true, enum: ["效率提升", "用户体验", "智能自动化", "扩展性", "数据可视化", "自定义"] }
+    }
+  },
+  "sop-scaffold": {
+    "1_confirm": {
+      "project_name": { required: true, pattern: "^[a-z][a-z0-9-]*$" },
+      "tech_stack": { required: true, enum: ["spring-boot", "express", "fastapi", "nextjs", "react", "vue"] }
+    }
+  }
+};
 
 // CLI entry point
 const args = process.argv.slice(2);
