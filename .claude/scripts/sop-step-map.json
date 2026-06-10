@@ -3,7 +3,7 @@
   "bug-fix": ["1_reproduce", "2_locate", "3_fix", "4_verify", "5_test"],
   "code-review": ["1_scope", "2_review", "3_test", "4_report"],
   "knowledge": ["1_identify", "2_research", "3_structure", "4_generate", "5_output"],
-  "prd": ["0_dependency", "1_initiate", "1.2_brainstorm", "1.5_doc_type", "2_requirements", "3_decisions", "4_generate", "5_prototype", "6_output"],
+  "prd": ["0_dependency", "1_biz_brief", "2_doc_type_reqs", "3_scope", "4_generate", "5_prototype", "6_output"],
   "incident-response": ["1_collect", "2_reproduce", "3_locate", "4_fix", "5_verify", "6_report"],
   "testing": ["0_setup", "1_unit", "2_integration", "3_e2e", "4_api", "5_security", "6_performance"],
   "deployment": ["1_build", "2_verify", "3_staging", "4_production", "5_monitor"],

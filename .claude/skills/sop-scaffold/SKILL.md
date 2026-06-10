@@ -103,6 +103,24 @@ Test-Path "{project}/frontend/package.json"
 Test-Path "{project}/src/main/java" # 应为 false
 ```
 
+## DoD 硬门 (v3.0 新增)
+
+> 与 `sop-prd` 的 DoR 硬门一致，应用 DoD 规范。
+
+### 必查项（Step 9 之前必须通过）
+
+| 检查项 | 阈值 | 失败动作 |
+|--------|------|----------|
+| 后端编译 | `mvn compile` 退出码 0 | BLOCK Step 9 |
+| 后端启动 | `mvn spring-boot:run` 启动成功 | BLOCK Step 9 |
+| 健康检查 | `curl /actuator/health` 返回 200 | BLOCK Step 9 |
+| 前端构建 | `npm run build` 退出码 0 | BLOCK Step 9 |
+| 目录结构 | backend/ + frontend/ 分离 | BLOCK Step 9 |
+
+### 跳过门控
+
+如需跳过 DoD（如 PoC 项目），在 Step 2 配置时显式声明 `tier=poc`，跳过强制编译/启动检查。
+
 ## 流程
 
 ```

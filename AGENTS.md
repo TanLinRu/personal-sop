@@ -41,17 +41,28 @@ Get-NetTCPConnection -LocalPort 5173 | Stop-Process -Force
 ## SOP Commands (via /sop)
 | Command | Purpose |
 |---------|---------|
-| `/sop fullstack` | Backend + frontend iteration |
+| `/sop api-design` | REST API design (resource modeling, versioning) |
 | `/sop backend` | Backend only iteration |
-| `/sop frontend` | Frontend only iteration |
-| `/sop prd` | PRD generation |
-| `/sop testing` | Test workflow |
-| `/sop code-review` | Code review (parallel agents) |
+| `/sop brainstrom` | Structured brainstorming |
 | `/sop bug-fix` | Bug fix workflow |
+| `/sop code-review` | Code review (parallel agents) |
+| `/sop database-design` | Database schema design (ER → DDL) |
 | `/sop deployment` | Deployment workflow |
 | `/sop dependency-analysis` | Code dependency analysis |
-| `/sop input` | Dynamic user parameter input (interactive dialogs) |
-| `/sop brainstrom` | Structured brainstorming |
+| `/sop frontend` | Frontend only iteration |
+| `/sop fullstack` | Backend + frontend iteration |
+| `/sop incident-response` | Incident response workflow |
+| `/sop input` | Dynamic user parameter input |
+| `/sop knowledge` | Domain knowledge learning |
+| `/sop library-research` | Technology evaluation |
+| `/sop onboarding` | Project onboarding |
+| `/sop prd` | PRD generation |
+| `/sop product-analysis` | Product/business analysis |
+| `/sop regression` | Regression test selection |
+| `/sop scaffold` | Generate new project scaffold |
+| `/sop status` | Show status of all SOP tasks |
+| `/sop test-design` | Test case design from PRD user stories |
+| `/sop testing` | Test workflow |
 | `/sop verify` | SOP execution verification & anti-pattern detection |
 
 ## SOP State Recovery

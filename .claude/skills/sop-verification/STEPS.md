@@ -91,44 +91,56 @@ status: pending
 
 ## Step 4: 分发深度审查 [AUTO]
 
-**目标**：根据基础验证结果和 SOP 类型，分发 subAgent 进行深度审查
+**目标**：根据基础验证结果和 SOP 类型，自动分发 subAgent 进行深度审查
 
-**执行内容**：
+### 自动化 Dispatch（v1.1.0）
 
-### 分发策略
+使用 `--deep-review` 标志自动分析并输出分发计划：
 
-```javascript
-// 逻辑判断，由 Agent 自行执行
-const agentsToDispatch = [];
-
-// 所有 SOP 都必须检查
-agentsToDispatch.push("flow-reviewer");
-
-// 基础验证发现问题时深入
-if (basicCheck.outputMissing.length > 0) {
-  agentsToDispatch.push("output-reviewer");
-}
-if (basicCheck.paramIssues.length > 0) {
-  agentsToDispatch.push("param-reviewer");
-}
-if (basicCheck.stateIssues.length > 0) {
-  agentsToDispatch.push("state-reviewer");
-}
-
-// 按产出类型分发
-if (hasCodeOutput) {
-  agentsToDispatch.push("code-reviewer");
-}
-if (hasArchOutput) {
-  agentsToDispatch.push("arch-reviewer");
-}
-
-// 始终检查安全
-agentsToDispatch.push("security-reviewer");
-
-// 始终检查质量
-agentsToDispatch.push("quality-reviewer");
+```bash
+# 生成 deep review 分发计划（JSON）
+npx ts-node --transpile-only .claude/scripts/sop-verify.ts <sop-name> --deep-review
 ```
+
+**输出 JSON 结构**：
+```json
+{
+  "sop": "code-review",
+  "status": "in_progress",
+  "basicValidation": {
+    "stepCompliance": { "valid": false, "issues": [...] },
+    "outputCompleteness": { "valid": true, "issues": [] },
+    "stateConsistency": { "valid": true, "issues": [] },
+    "paramConsistency": { "valid": true, "issues": [] }
+  },
+  "agentsToDispatch": [
+    { "agent": "flow-reviewer", "priority": "required", "prompt": "..." },
+    { "agent": "output-reviewer", "priority": "required", "prompt": "..." }
+  ],
+  "hasCodeOutput": false,
+  "hasArchOutput": false
+}
+```
+
+### 分发策略（脚本自动化）
+
+```bash
+# 1. 生成分发计划
+PLAN=$(npx ts-node --transpile-only .claude/scripts/sop-verify.ts <sop-name> --deep-review)
+
+# 2. 按 priority 分发 Agent
+#    required → 必须执行
+#    recommended → 推荐执行
+#    optional → 可选执行
+```
+
+分发规则：
+- **flow-reviewer**: 始终分发（有步骤问题时为 required）
+- **output-reviewer**: 产出缺失时 required
+- **param-reviewer**: 参数问题时 required
+- **state-reviewer**: 状态不一致时 required
+- **code-reviewer**: 产出含代码文件时 recommended
+- **arch-reviewer**: scaffold/backend-iteration/fullstack-iteration/api-design/database-design 时 recommended
 
 ### 调用 subAgent
 

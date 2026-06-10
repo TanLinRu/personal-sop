@@ -59,6 +59,16 @@ parallel_tasks:
 aggregation:
   strategy: merge
   output_format: markdown
+
+# RACI per parallel task (R=Responsible 执行, A=Accountable 问责, C=Consulted 咨询, I=Informed 知会)
+raci:
+  业务分析:        { R: [sop-library-research], A: [build],    C: [java-reviewer], I: [user] }
+  技术调研:        { R: [sop-library-research], A: [build],    C: [java-reviewer], I: [user] }
+  安全评估:        { R: [sop-library-research], A: [build],    C: [security-reviewer], I: [user] }
+  UI设计调研:      { R: [sop-library-research], A: [build],    C: [frontend-design], I: [user] }
+  后端生成:        { R: [dr-jskill],            A: [build],    C: [java-reviewer], I: [user] }
+  前端生成:        { R: [frontend-design],      A: [build],    C: [code-reviewer],  I: [user] }
+  架构审核:        { R: [arch-reviewer],        A: [build],    C: [java-reviewer, frontend-design], I: [user] }
 ---
 
 # SOP Fullstack Iteration v2.1 - 前后端需求迭代流程

@@ -1,0 +1,84 @@
+sop: fullstack-iteration
+version: 1.0.0
+metadata:
+  description: Fullstack development iteration workflow (backend + frontend)
+  author: SOP Team
+  updated: 2026-06-09
+
+expected_steps:
+  - id: 1_confirm
+    name: 需求确认
+    type: confirm
+    required: true
+  - id: 2_research
+    name: 技术调研
+    type: auto
+    required: false
+  - id: 3_prd
+    name: PRD 生成
+    type: auto
+    required: true
+  - id: 4_arch
+    name: 架构设计
+    type: auto
+    required: true
+  - id: 5_review
+    name: 架构审核
+    type: confirm
+    required: true
+  - id: 6_dependency
+    name: 依赖分析
+    type: auto
+    required: true
+  - id: 7_generate
+    name: 并行实现
+    type: auto
+    required: true
+    parallel: true
+    produces: ["src/main/java/**/*.java", "src/**/*.vue"]
+  - id: 8_verify
+    name: 联调验证
+    type: auto
+    required: true
+  - id: 9_knowledge
+    name: 知识沉淀
+    type: auto
+    required: false
+
+expected_params:
+  - name: feature_description
+    description: 功能描述
+    type: string
+    required: true
+    source: user_input
+    used_in_steps: [1_confirm, 3_prd, 4_arch, 7_generate]
+
+expected_outputs:
+  - path: "src/main/java/**/*.java"
+    description: 后端 Java 源代码
+    type: code
+    required: true
+    validate: [not_empty]
+    tags: [code, backend]
+  - path: "src/test/java/**/*Test*.java"
+    description: 后端测试代码
+    type: code
+    required: true
+    tags: [test, backend]
+  - path: "src/**/*.vue"
+    description: 前端 Vue 组件
+    type: code
+    required: true
+    validate: [not_empty]
+    tags: [code, frontend]
+  - path: "src/**/*.ts"
+    description: 前端 TypeScript 代码
+    type: code
+    required: false
+    tags: [code, frontend]
+
+constraints:
+  strict_order: true
+  allow_skip: false
+  allow_parallel: true
+  parallel_steps: [7_generate]

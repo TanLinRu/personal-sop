@@ -36,9 +36,14 @@
     "SOP": ".claude/skills/SOP.md",
     "dr-jskill": ".claude/skills/dr-jskill/SKILL.md",
     "frontend-design": ".claude/skills/frontend-design/SKILL.md",
+    "tailwind-design-system": ".claude/skills/tailwind-design-system/SKILL.md",
     "sop-dynamic-input": ".claude/skills/sop-dynamic-input/SKILL.md",
     "sop-brainstorming": ".claude/skills/sop-brainstorming/SKILL.md",
-    "sop-verification": ".claude/skills/sop-verification/SKILL.md"
+    "sop-verification": ".claude/skills/sop-verification/SKILL.md",
+    "sop-framework": ".claude/skills/sop-framework/SKILL.md",
+    "sop-test-design": ".claude/skills/sop-test-design/SKILL.md",
+    "sop-regression": ".claude/skills/sop-regression/SKILL.md",
+    "sop-status": ".claude/skills/sop-status/SKILL.md"
   },
   "instructions": [
     "AGENTS.md",
@@ -290,6 +295,51 @@
       "description": "SOP 执行验证 - 执行后自动审查反模式，多Agent审核产出",
       "agent": "build",
       "template": "Please execute SOP verification for the last completed SOP.\nFocus: $ARGUMENTS"
+    },
+    "sop api-design": {
+      "description": "REST API 设计 - 资源建模→接口定义→版本管理→文档编写",
+      "agent": "build",
+      "template": "Please execute API design SOP.\n\n$ARGUMENTS"
+    },
+    "sop database-design": {
+      "description": "数据库设计 - 需求分析→ER建模→表结构→索引→范式化",
+      "agent": "build",
+      "template": "Please execute database design SOP.\n\n$ARGUMENTS"
+    },
+    "sop incident-response": {
+      "description": "线上问题响应 - 收集→复现→定位→修复→验证→报告",
+      "agent": "build",
+      "template": "Please execute incident response SOP.\n\n$ARGUMENTS"
+    },
+    "sop knowledge": {
+      "description": "领域知识管理 - 项目前的知识准备与规范沉淀",
+      "agent": "build",
+      "template": "Please execute knowledge management SOP.\n\n$ARGUMENTS"
+    },
+    "sop library-research": {
+      "description": "技术调研 - 搜索→验证→兼容→风险→总结",
+      "agent": "build",
+      "template": "Please execute library research SOP.\n\n$ARGUMENTS"
+    },
+    "sop onboarding": {
+      "description": "项目入职 - 配置→拉取→测试→探索→任务（含JDTLS导航）",
+      "agent": "build",
+      "template": "Please execute onboarding SOP.\n\n$ARGUMENTS"
+    },
+    "sop product-analysis": {
+      "description": "产品业务分析 - 业务理解→竞品分析→用户旅程→模块划分→架构",
+      "agent": "build",
+      "template": "Please execute product analysis SOP.\n\n$ARGUMENTS"
+    },
+    "sop regression": {
+      "description": "回归测试 - 变更分析→影响评估→用例筛选→执行→报告",
+      "agent": "build",
+      "template": "Please execute regression testing SOP.\n\n$ARGUMENTS"
+    },
+    "sop test-design": {
+      "description": "测试用例设计 - 需求分析→测试技术选择→用例设计→追溯→评审",
+      "agent": "build",
+      "template": "Please execute test design SOP.\n\n$ARGUMENTS"
     }
   },
   "plugin": [

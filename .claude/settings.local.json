@@ -9,7 +9,9 @@
       "Bash(echo \"EXIT: $?\")",
       "Bash(sed -i 's|node \\\\.claude/scripts/sop-|npx ts-node --transpile-only .claude/scripts/sop-|g' \"SOP测试流程.md\")",
       "Bash(sed -i 's|node \\\\.claude/scripts/sop-|npx ts-node --transpile-only .claude/scripts/sop-|g' \".claude/skills/SOP.md\")",
-      "mcp__plugin_everything-claude-code_sequential-thinking__sequentialthinking"
+      "mcp__plugin_everything-claude-code_sequential-thinking__sequentialthinking",
+      "Bash(npm test *)",
+      "Bash(git add *)"
     ]
   }
 }

@@ -40,13 +40,70 @@ execution:
 
 ## 错误处理
 
-| 错误场景 | 处理方式 |
-|----------|----------|
-| Graphify 未安装 | 提示 `pip install graphifyy`，中止执行 |
-| 图谱文件不存在 | 自动执行 `graphify add .` 构建 |
-| 查询无结果 | 确认目录路径是否正确 |
-| 图谱过期 | 提示执行 `graphify update` 刷新 |
-| 查询超时 | 缩小查询范围，指定子目录 |
+| 错误场景 | 处理方式 | 严重度 |
+|----------|----------|--------|
+| Graphify 未安装 | **软降级**：记录 WARNING，切换到 Grep 文本匹配继续 | WARNING (v2.0.0) |
+| Graphify 命令超时 (>30s) | 软降级到 Grep，记录 WARNING | WARNING |
+| 图谱文件不存在 | 自动执行 `graphify add .` 构建（仅在 Graphify 可用时） | INFO |
+| 查询无结果 | 确认目录路径是否正确 | INFO |
+| 图谱过期 | 提示执行 `graphify update` 刷新 | INFO |
+| 查询超时 | 缩小查询范围，指定子目录 | INFO |
+
+## Graphify 降级策略 (v2.0.0 新增)
+
+> **v2.0.0 之前**：Graphify 不可用 → 中止执行。导致 `sop-dependency-analysis` / `sop-backend-iteration` 等所有依赖 Graphify 的 SOP 在没有 `pip install graphifyy` 的环境中直接失败。
+>
+> **v2.0.0 起**：软降级，workflow 韧性优先。
+
+### 降级流程
+
+```
+graphify <cmd>
+    ↓ exit code 0
+    正常结果
+    ↓ exit code != 0 OR timeout
+    log.warn("Graphify unavailable, fallback to Grep")
+    Grep <pattern> --include=*.{java,ts,vue} -r .
+    ↓
+    结果标注: [fallback-grep]  // 区别于 [graphify-ast]
+    ↓
+    继续后续步骤 (WARNING，不 BLOCK)
+```
+
+### 降级映射表
+
+| Graphify 命令 | Grep 降级方案 |
+|--------------|--------------|
+| `graphify query "REST API 端点"` | `Grep "@(Get\|Post\|Put\|Delete)Mapping" --include=*.java -r .` |
+| `graphify query "JPA Entity 表名"` | `Grep "@Table\|@Entity" --include=*.java -r .` |
+| `graphify query "依赖 X 的模块"` | `Grep "import.*X" --include=*.java -r .` |
+| `graphify path A B` | `Grep "import .*A\|A\." --include=*.java -r .` (粗略) |
+| `graphify update` | 跳过（无图谱可更新） |
+
+### 标记规范
+
+降级结果在产出文件顶部必须标注：
+
+```markdown
+---
+fallback: grep
+graphify_status: unavailable
+generated: 2026-06-10
+note: Graphify CLI 不可用，使用 Grep 文本匹配，结果精度低于 AST 分析
+---
+```
+
+### 状态记录
+
+每次降级写入 state：
+
+```json
+{
+  "graphify_status": "unavailable|available|degraded",
+  "fallback_count": 3,
+  "warnings": ["Step 2: graphify update skipped", "Step 3: grep fallback used"]
+}
+```
 
 ## 与其他 SOP 的集成
 

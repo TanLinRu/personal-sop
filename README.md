@@ -1,5 +1,7 @@
 # Personal SOP - AI 驱动的工作流控制系统
 
+> **v6.0.0 (2026-06-10)**：sop-prd 升级到 LITE 默认（7 章节，≤180 行）· DoD 硬门 · 长度预算自动检查 · 行业锚点（Lean/PDCA/DMAIC/DoD/RACI/BPMN-lite）落地
+
 ## 快速开始
 
 ```bash
@@ -11,6 +13,7 @@ bash setup.sh
 
 # 3. 开始使用 (Claude Code)
 /sop scaffold        # 生成新项目
+/sop prd             # 生成 PRD（LITE 默认，≤180 行）
 /sop code-review     # 代码审查
 /sop bug-fix         # Bug 修复
 /sop verify          # 验证上次 SOP 执行质量
@@ -21,10 +24,10 @@ bash setup.sh
 
 | 依赖 | 必需 | 说明 |
 |------|------|------|
-| Node.js 18+ | 是 | 状态管理 + 验证脚本 |
+| Node.js 18+ | 是 | 状态管理 + 验证脚本 + Vitest |
 | Git | 是 | 版本控制 |
 | JAVA_HOME | 否 | Java/Spring Boot 项目需要 |
-| Graphify | 否 | 代码依赖分析，`pip install graphify` |
+| Graphify | 否 | 代码依赖分析（v2.0.0 起支持 Grep 软降级），`pip install graphify` |
 
 ## 核心理念
 
@@ -52,6 +55,20 @@ SOP Workflow System - 基于 OpenCode 的工作流系统，底层引用 ECC（Ev
 | **流程（Flow）** | 标准化执行步骤 |
 | **约束（Guardrails）** | 防止 AI 偏离预期 |
 | **验证（Verify）** | 确保执行结果符合预期 |
+
+### 行业锚点（v6.0.0 引入）
+
+> v5.1.0 之前 SOP 是"无锚点"的工具集。v6.0.0 引入 6 个行业方法论作为设计依据。
+
+| 锚点 | 适用 | sop-prd 应用 | 其他 SOP 应用 |
+|------|------|------------|--------------|
+| **Lean / Muda** | 消除浪费 | LITE 7 章节默认（FULL = opt-in）| 全 SOP 步骤精简 |
+| **Kaizen** | 一键默认 | 3-way → 2-way tier 选择 | dynamic-input 默认值 |
+| **DoD** | 完成门控 | sop-prd Step 4 DoR 硬门 | sop-scaffold Step 9、sop-code-review Step 3 |
+| **PDCA** | 持续改进 | Plan(knowledge+prd)→Do(iteration)→Check(verify)→Act(improve) | 全 SOP 周期 |
+| **DMAIC** | 流程优化 | sop-verify 5 项评分 | sop-verification 6 类反模式 |
+| **RACI** | 职责清晰 | sop-prd 确认点收敛 | sop-fullstack-iteration RACI 表 |
+| **BPMN-lite** | 流程纪律 | sop-prd STEPS.md 7 步骤 | 5/27 SOPs 有 STEPS.md |
 
 ---
 
@@ -152,6 +169,15 @@ score = steps(30%) + outputs(30%) + params(20%) + state(10%) + quality(10%)
 Pass: ≥90 | Warn: 70–89 | Fail: <70
 ```
 
+**v6.0.0 新增：长度预算检查（sop-prd 专属）**：
+
+```
+LITE 目标 ≤180 行 | WARN 200 | FAIL 250
+FULL 目标 ≤325 行 | WARN 380 | FAIL 450
+```
+
+sop-prd 历史产出（`prd-logistics-20260508.md` 344 行）已在 v6.0.0 LITE 标准下判定为 FAIL（属预期，因其按 v5.1.0 的 12 章节 FULL 模板生成）。
+
 ---
 
 
@@ -182,7 +208,7 @@ git clone https://github.com/affaan-m/everything-claude-code.git ~/.claude/plugi
 
 | SOP | 用途 | 命令 |
 |-----|------|------|
-| sop-prd | PRD 生成（规约流程） | `/sop prd` |
+| sop-prd | PRD 生成（v6.0.0 LITE 默认，≤180 行）| `/sop prd` |
 | sop-scaffold | 脚手架生成（前后端分离） | `/sop scaffold` |
 | sop-backend | 后端迭代 | `/sop backend` |
 | sop-frontend | 前端迭代 | `/sop frontend` |
@@ -244,7 +270,19 @@ public Warehouse createWarehouse(WarehouseDTO dto) {
 
 ---
 
-## 五、未来强化方向
+## 五、v6.0.0 进展（2026-06-10）
+
+| 缺陷 | 状态 | 落地 |
+|------|------|------|
+| sop-prd 12 章节过长 (325 行 avg) | ✅ | LITE 7 章节默认，≤180 行 |
+| 步骤数 10 / 确认点 5 过多 | ✅ | 7 步骤 / 2 确认点 |
+| DoD 装饰未落地 | ✅ | 3 SOP 硬门（prd/scaffold/code-review）|
+| Graphify 中止执行 | ✅ | Grep 软降级（sop-dependency-analysis）|
+| 验证浅 (1/6 SOPs) | ✅ | 6/6 SOPs verify-ready |
+| state 脚本 0 测试 | ✅ | Vitest 20/20 通过 |
+| RACI 缺位 | ✅ | sop-fullstack-iteration RACI 表 |
+
+## 六、未来强化方向
 
 ### 1. Token 优化
 
@@ -253,7 +291,11 @@ public Warehouse createWarehouse(WarehouseDTO dto) {
 - **增量技能加载**：只加载当前步骤需要的 skill，而非全部
 - **参考文档外置**：将大型参考文档移至外部，按需读取
 
-### 2. Java 编码规范强化
+### 2. 验证权重校准（DMAIC Measure）
+
+`sop-verification/references/DSL.md` 已记录 Spearman impact 校准方法，待 10+ 历史样本标注后填入实际权重。
+
+### 3. Java 编码规范强化
 
 | 方向 | 内容 |
 |------|------|
@@ -263,14 +305,14 @@ public Warehouse createWarehouse(WarehouseDTO dto) {
 | **安全基线** | OWASP Top 10 防护，敏感数据加密，API 鉴权 |
 | **异常体系** | 统一异常码，异常分类（业务/系统），日志规范 |
 
-### 3. UI 优化
+### 4. UI 优化
 
 - **样式模板库**：沉淀高质量 Vue 组件模板（列表、表单、详情、图表）
 - **行业 UI 规范**：封装 Naive UI / Element Plus 最佳实践
 - **配色方案**：预定义行业配色（企业后台、物流、医疗、电商）
 - **组件规范**：统一按钮、表单、表格、弹窗的样式模板
 
-### 4. 上下文控制强化
+### 5. 上下文控制强化
 
 - **本地知识库**：Memory 长期记忆系统
 - **上下文压缩**：动态选择加载内容
@@ -278,7 +320,7 @@ public Warehouse createWarehouse(WarehouseDTO dto) {
 
 ---
 
-## 六、快速开始
+## 七、快速开始
 
 ```bash
 # 生成项目脚手架（受控流程）
@@ -301,7 +343,7 @@ public Warehouse createWarehouse(WarehouseDTO dto) {
 
 ---
 
-## 七、SOP 执行状态
+## 八、SOP 执行状态
 
 ### 步骤类型
 
@@ -330,7 +372,7 @@ PENDING → IN_PROGRESS → COMPLETED → VERIFIED (通过验证)
 
 ---
 
-## 八、目录结构
+## 九、目录结构
 
 ```
 .claude/
@@ -382,7 +424,7 @@ PENDING → IN_PROGRESS → COMPLETED → VERIFIED (通过验证)
 
 ---
 
-## 九、使用用例
+## 十、使用用例
 
 ### 用例 1：SOP 执行后自动验证
 
@@ -501,7 +543,7 @@ constraints:
 
 ---
 
-## 十、参考文档
+## 十一、参考文档
 
 - dr-jskill: `.claude/skills/dr-jskill/references/`
 - ECC Agents: `everything-claude-code-main/agents/`

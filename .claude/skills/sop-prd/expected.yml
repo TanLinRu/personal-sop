@@ -1,0 +1,82 @@
+sop: prd
+version: 6.0.0
+metadata:
+  description: PRD generation workflow (LITE default, FULL opt-in) with HTML prototype + DoR hard gate
+  author: SOP Team
+  updated: 2026-06-10
+  anchors: [lean, muda, kaizen, dod]
+
+expected_steps:
+  - id: 0_dependency
+    name: 依赖检查
+    type: auto
+    required: true
+  - id: 1_biz_brief
+    name: 业务识别 + 脑暴
+    type: confirm
+    required: true
+  - id: 2_doc_type_reqs
+    name: 文档类型 + 需求深挖
+    type: confirm
+    required: true
+  - id: 3_scope
+    name: 范围决策
+    type: auto
+    required: true
+  - id: 4_generate
+    name: 生成 PRD (DoR 硬门)
+    type: auto
+    required: true
+    produces: [".sop/output/prd-*.md"]
+  - id: 5_prototype
+    name: 原型生成
+    type: auto
+    required: true
+    produces: [".sop/output/prototype-*.html"]
+  - id: 6_output
+    name: 输出 + 自动验证
+    type: auto
+    required: true
+    produces: [".sop/output/prd-*.summary.md"]
+
+expected_params:
+  - name: project_name
+    description: 项目/模块名称
+    type: string
+    required: true
+    source: dynamic_input
+  - name: tier
+    description: 文档层级
+    type: enum
+    required: true
+    source: dynamic_input
+    options: [lite, full]
+    default: lite
+
+expected_outputs:
+  - path: ".sop/output/prd-*.md"
+    description: PRD 文档 (LITE <=180 行, FULL <=325 行)
+    type: markdown
+    required: true
+    validate: [not_empty, length_budget]
+  - path: ".sop/output/prototype-*.html"
+    description: 可编辑 HTML 原型
+    type: html
+    required: true
+    validate: [not_empty]
+  - path: ".sop/output/prd-*.summary.md"
+    description: 输出摘要
+    type: markdown
+    required: true
+    validate: [not_empty]
+
+constraints:
+  strict_order: true
+  allow_skip: false
+  allow_parallel: false
+  max_lines:
+    lite: 200
+    full: 380
+  fail_threshold:
+    lite: 250
+    full: 450

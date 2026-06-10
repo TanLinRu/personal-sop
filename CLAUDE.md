@@ -38,6 +38,16 @@ npx ts-node --transpile-only .claude/scripts/sop-state-load.ts --all
 npx ts-node --transpile-only .claude/scripts/sop-state-clean.ts
 ```
 
+### Tests (Vitest)
+```bash
+# Run all tests (.claude/scripts/**/*.test.ts)
+cd .opencode && npm test
+
+# Watch mode
+cd .opencode && npm run test:watch
+```
+Test config: `.opencode/vitest.config.ts` (entry), `.claude/scripts/vitest.config.ts` (mirror).
+
 ## Architecture
 
 ### Three-Layer Design
@@ -104,6 +114,9 @@ Key SOPs form a pipeline:
 2. `/sop prd` — generate PRD (references knowledge) + editable HTML prototype → `.sop/output/`
 3. `/sop test-design` — generate test cases from PRD user stories → `.sop/output/`
 4. `/sop regression` — select regression tests from code changes
+5. `/sop verify` — post-execution anti-pattern check (validates against `expected.yml` per skill)
+
+Many skills (sop-scaffold, sop-prd, sop-bug-fix, sop-code-review, sop-testing, sop-deployment, sop-knowledge, sop-backend-iteration, sop-frontend-iteration, sop-fullstack-iteration) carry an `expected.yml` next to `SKILL.md` declaring required steps and outputs — the verification engine consumes these.
 
 ## delivery-staff Application
 
@@ -163,6 +176,8 @@ Key SOPs form a pipeline:
 | `/sop product-analysis` | Product/business analysis |
 | `/sop input` | Dynamic user parameter input (interactive dialogs) |
 | `/sop brainstrom` | Structured brainstorming (SCAMPER / Six Hats / etc.) |
+| `/sop incident-response` | Incident response workflow |
+| `/sop status` | Show status of all SOP tasks |
 | `/sop verify` | SOP execution verification & anti-pattern detection |
 
 ## Cross-Platform Support
@@ -200,8 +215,11 @@ architect: Task(Plan)
 ## References
 
 - Skill definitions: `.claude/skills/*/SKILL.md`
+- Skill expected outputs: `.claude/skills/*/expected.yml`
 - dr-jskill references: `.claude/skills/dr-jskill/references/`
 - Java coding rules: `.claude/rules/common/01_naming.md` through `10_mysql.md`
 - SOP design philosophy: `SOP流程设计思想.md`
 - SOP state spec: `.sop/state-spec.md`
 - SOP output index: `.sop/index.md`
+- System data flow & defects: `docs/sop-data-flow-and-defects.md`
+- Verification results history: `.sop/verification/VERIFICATION_RESULTS.md`

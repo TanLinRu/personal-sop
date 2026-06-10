@@ -1,0 +1,50 @@
+sop: knowledge
+version: 1.0.0
+metadata:
+  description: Domain knowledge management workflow
+  author: SOP Team
+  updated: 2026-06-09
+
+expected_steps:
+  - id: 1_identify
+    name: 知识识别
+    type: confirm
+    required: true
+  - id: 2_research
+    name: 知识调研
+    type: auto
+    required: true
+  - id: 3_structure
+    name: 知识梳理
+    type: auto
+    required: true
+  - id: 4_generate
+    name: 生成文档
+    type: auto
+    required: true
+    produces: [".sop/knowledge/knowledge-*.md"]
+  - id: 5_output
+    name: 输出确认
+    type: confirm
+    required: true
+
+expected_params:
+  - name: domain
+    description: 领域名称
+    type: string
+    required: true
+    source: user_input
+    used_in_steps: [1_identify, 2_research]
+
+expected_outputs:
+  - path: ".sop/knowledge/knowledge-*.md"
+    description: 领域知识文档
+    type: markdown
+    required: true
+    validate: [not_empty]
+    tags: [knowledge]
+
+constraints:
+  strict_order: true
+  allow_skip: false
+  allow_parallel: false

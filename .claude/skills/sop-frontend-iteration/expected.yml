@@ -1,0 +1,72 @@
+sop: frontend-iteration
+version: 1.0.0
+metadata:
+  description: Frontend-only development iteration workflow
+  author: SOP Team
+  updated: 2026-06-09
+
+expected_steps:
+  - id: 1_confirm
+    name: 需求确认
+    type: confirm
+    required: true
+  - id: 2_research
+    name: 技术调研
+    type: auto
+    required: false
+  - id: 3_design
+    name: UI/UX 设计
+    type: auto
+    required: true
+  - id: 4_review
+    name: 设计审核
+    type: confirm
+    required: true
+  - id: 5_dependency
+    name: 依赖分析
+    type: auto
+    required: true
+  - id: 6_implement
+    name: 编码实现
+    type: auto
+    required: true
+    produces: ["src/**/*.vue", "src/**/*.ts", "src/**/*.js"]
+  - id: 7_verify
+    name: 验证
+    type: auto
+    required: true
+  - id: 8_knowledge
+    name: 知识沉淀
+    type: auto
+    required: false
+
+expected_params:
+  - name: feature_description
+    description: 功能描述
+    type: string
+    required: true
+    source: user_input
+    used_in_steps: [1_confirm, 3_design, 6_implement]
+
+expected_outputs:
+  - path: "src/**/*.vue"
+    description: Vue 组件
+    type: code
+    required: true
+    validate: [not_empty]
+    tags: [code]
+  - path: "src/**/*.ts"
+    description: TypeScript 代码
+    type: code
+    required: false
+    tags: [code]
+  - path: "src/**/*.js"
+    description: JavaScript 代码
+    type: code
+    required: false
+    tags: [code]
+
+constraints:
+  strict_order: true
+  allow_skip: false
+  allow_parallel: false

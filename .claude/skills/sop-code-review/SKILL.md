@@ -80,11 +80,28 @@ Agent(
 )
 ```
 
-### Step 3: 运行测试 [AUTO]
+### Step 3: 运行测试 [AUTO] [VERIFY]
 
 ```bash
 mvn test -q
 ```
+
+## DoD 硬门 (v3.0 新增)
+
+> 与 `sop-prd` / `sop-scaffold` 的 DoD 门控一致。
+
+### Step 3 DoD 门控（必查项）
+
+| 检查项 | 阈值 | 失败动作 |
+|--------|------|----------|
+| `mvn test` 退出码 | 0 | BLOCK Step 4 报告输出 |
+| 测试覆盖率 | ≥ 80% (LITE) / ≥ 90% (FULL) | BLOCK Step 4 |
+| HIGH 级问题 | 0 | BLOCK Step 4 |
+| CRITICAL 级问题 | 0 | BLOCK Step 4 |
+
+### 跳过门控
+
+显式 `mode=informational` 时，DoD 仅 WARN 不 BLOCK（仅产出建议清单）。
 
 ### Step 4: 输出审查报告 [CONFIRM_REQUIRED]
 
