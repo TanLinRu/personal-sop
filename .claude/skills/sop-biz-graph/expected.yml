@@ -1,0 +1,60 @@
+sop: biz-graph
+version: 0.1.0
+metadata:
+  description: Business document knowledge graph - SQLite + FTS5 across SOP artifacts
+  author: SOP Team
+  updated: 2026-06-14
+  anchors: [knowledge-graph, traceability, lineage]
+
+expected_steps:
+  - id: 1_build
+    name: 初始化/构建
+    type: auto
+    required: true
+    produces: [".sop/biz-graph/biz.db"]
+  - id: 2_query
+    name: 查询业务实体
+    type: auto
+    required: false
+  - id: 3_trace
+    name: 跨 SOP 追溯
+    type: auto
+    required: false
+  - id: 4_affected
+    name: 影响分析
+    type: auto
+    required: false
+
+expected_params: []
+
+expected_outputs:
+  - path: ".sop/biz-graph/biz.db"
+    description: SQLite 知识图谱数据库
+    type: sqlite
+    required: true
+  - path: ".sop/biz-graph/biz.db-wal"
+    description: WAL 文件（运行时自动）
+    type: binary
+    required: false
+
+constraints:
+  strict_order: false
+  allow_skip: true
+  allow_parallel: true
+
+# 与其他 SOP 的契约
+contracts:
+  consumes:
+    - selector: ".sop/output/prd-*.md"
+      schema: "prd-document-v1"
+      use: "extract user_story, feature, risk, decision nodes"
+    - selector: ".sop/state/*.json"
+      schema: "sop-state-v1"
+      use: "extract sop_run nodes + traces_to edges"
+    - selector: ".sop/knowledge/*.md"
+      schema: "knowledge-doc-v1"
+      use: "extract knowledge nodes"
+  produces:
+    - selector: ".sop/biz-graph/biz.db"
+      schema: "biz-graph-v1"
+      use: "queried by sop-test-design (tc → us edges), sop-regression (affected)"

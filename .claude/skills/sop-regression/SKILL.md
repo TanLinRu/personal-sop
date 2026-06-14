@@ -1,7 +1,7 @@
 ---
 name: sop-regression
-description: 回归测试流程 - 变更分析→影响评估→用例筛选→执行→报告
-version: 1.0.0
+description: 回归测试流程 - 变更分析→影响评估（CodeGraph affected）→用例筛选→执行→报告
+version: 2.0.0
 triggers:
   - "回归测试"
   - "变更测试"
@@ -22,9 +22,11 @@ execution:
 
 # SOP Regression - 回归测试流程
 
+> **v2.0.0 (2026-06-14)**：用 `codegraph affected` 替代手工 grep 影响分析。CodeGraph 通过 import 链追溯，把"改动文件 → 受影响测试"做成 1 条命令。
+
 ## 概述
 
-本 SOP 提供高效的回归测试流程，适用于迭代开发中的持续质量保障。通过分析代码变更、评估影响范围、选择最小测试子集，实现精准回归。
+本 SOP 提供高效的回归测试流程，适用于迭代开发中的持续质量保障。通过 **CodeGraph 知识图谱**分析代码变更、评估影响范围、选择最小测试子集，实现**精准回归**（业内成熟方案：测试影响分析 / Test Impact Analysis）。
 
 ## 使用场景
 
@@ -105,16 +107,59 @@ npx ts-node --transpile-only .claude/scripts/sop-state-save.ts regression 1_chan
 
 ---
 
-## Step 2: 影响评估 [CONFIRM_REQUIRED]
+## Step 2: 影响评估 (CodeGraph Affected) [CONFIRM_REQUIRED]
+
+> **v2.0.0**：直接用 `codegraph affected` 自动得出受影响测试集。Test Impact Analysis (TIA) 业界最佳实践。
 
 **执行内容**：
-1. 映射变更模块到依赖模块
+1. 用 CodeGraph 追溯 import 链，自动得出受影响测试文件
 2. 评估风险等级（高/中/低）
 3. 展示影响摘要供用户确认
 
+**核心命令**：
+
+```bash
+# CodeGraph (一等公民) — 这是 v2.0.0 的核心升级
+git diff --name-only HEAD~1 | codegraph affected --stdin --json > .sop/state/affected.json
+
+# 默认按文件名约定识别测试文件 (*.test.ts / *Test.java / *_test.go / test_*.py)
+# 自定义测试文件 glob：
+git diff --name-only HEAD~1 | codegraph affected --stdin --filter "**/*IntegrationTest.java" --json
+
+# 限制依赖深度（默认 5）：
+git diff --name-only HEAD~1 | codegraph affected --stdin --depth 3 --json
+```
+
+**降级路径**（CodeGraph 不可用时）：
+
+```bash
+# Graphify 兼容
+graphify query "影响测试集" --files $(git diff --name-only HEAD~1)
+
+# Grep 兜底（精度低）
+for f in $(git diff --name-only HEAD~1); do
+  base=$(basename "$f" | sed 's/\.[^.]*$//')
+  grep -rl "import.*$base\|require.*$base" --include='*Test.*' --include='*.test.*' --include='*.spec.*' .
+done | sort -u
+```
+
+**输出 JSON 结构**（codegraph affected --json）：
+
+```json
+{
+  "changed_files": ["src/main/java/.../OrderService.java"],
+  "affected_tests": [
+    "src/test/java/.../OrderServiceTest.java",
+    "src/test/java/.../OrderControllerIntegrationTest.java"
+  ],
+  "depth_max": 3,
+  "test_count": 2
+}
+```
+
 **影响评估矩阵**：
 ```markdown
-## 影响评估
+## 影响评估（codegraph affected）
 
 ### 直接影响
 | 变更模块 | 影响模块 | 影响类型 | 风险等级 |
@@ -122,28 +167,33 @@ npx ts-node --transpile-only .claude/scripts/sop-state-save.ts regression 1_chan
 | UserService | AuthService | 接口调用 | 高 |
 | UserService | UserController | 数据流 | 中 |
 
-### 间接影响
-| 影响链 | 风险等级 | 说明 |
-|--------|----------|------|
-| UserService → AuthService → SecurityFilter | 高 | 认证链路 |
+### 间接影响（CodeGraph 自动追溯）
+| 影响链 | depth | 风险等级 | 说明 |
+|--------|-------|----------|------|
+| UserService → AuthService → SecurityFilter | 2 | 高 | 认证链路 |
+
+### 受影响测试集（精确）
+- src/test/.../UserServiceTest.java (depth=1)
+- src/test/.../AuthServiceTest.java (depth=2)
+- src/test/.../SecurityFilterTest.java (depth=3)
 
 ### 风险等级定义
 | 等级 | 条件 | 回归范围 |
 |------|------|----------|
 | 高 | 核心模块/认证/支付/数据流 | 全量回归 |
-| 中 | 一般业务模块 | 相关功能回归 |
+| 中 | 一般业务模块 | codegraph affected 输出 |
 | 低 | 工具类/配置/文档 | 变更验证 |
 ```
 
 **AskUserQuestion**：
 ```javascript
 AskUserQuestion({
-  question: "影响评估结果确认，回归范围如何？",
+  question: "影响评估完成，回归范围如何？",
   header: "回归范围",
   options: [
-    { label: "全量回归", description: "执行所有测试用例" },
-    { label: "选择性回归", description: "仅执行影响模块的测试用例" },
-    { label: "最小回归", description: "仅执行直接变更的测试用例" }
+    { label: "精准回归（推荐）", description: "执行 codegraph affected 输出的测试集" },
+    { label: "全量回归", description: "执行所有测试用例（高风险变更建议）" },
+    { label: "最小回归", description: "仅执行直接变更的测试" }
   ],
   multiSelect: false
 })
@@ -151,7 +201,8 @@ AskUserQuestion({
 
 **状态更新**：
 ```bash
-npx ts-node --transpile-only .claude/scripts/sop-state-save.ts regression 2_impact_assessment completed
+npx ts-node --transpile-only .claude/scripts/sop-state-save.ts regression 2_impact_assessment completed \
+  affected_count={N} engine={codegraph|graphify|grep}
 ```
 
 ---
@@ -159,16 +210,19 @@ npx ts-node --transpile-only .claude/scripts/sop-state-save.ts regression 2_impa
 ## Step 3: 测试用例筛选 [AUTO]
 
 **执行内容**：
-1. 加载测试用例库存
-2. 根据影响评估选择测试用例
+1. 加载 Step 2 输出的 `affected.json`
+2. 与已有测试用例库存合并去重
 3. 应用风险优先级排序
 
 **测试用例来源**：
 ```bash
-# 查找 sop-test-design 输出
+# Step 2 已输出受影响测试集
+cat .sop/state/affected.json | jq -r '.affected_tests[]'
+
+# 补充：sop-test-design 输出
 Glob(pattern=".sop/output/test-cases-*.md")
 
-# 查找项目已有测试
+# 项目已有测试（与 affected.json 取交集）
 Glob(pattern="**/*Test.java")
 Glob(pattern="**/*.test.ts")
 Glob(pattern="**/*.spec.ts")
@@ -177,9 +231,9 @@ Glob(pattern="**/*.spec.ts")
 **筛选策略**：
 | 回归范围 | 筛选规则 |
 |----------|----------|
+| 精准回归（默认）| `codegraph affected` 输出 + Step 2 高风险标记的额外用例 |
 | 全量回归 | 所有测试用例 |
-| 选择性回归 | 直接影响模块 + 间接影响模块 + 关键路径 |
-| 最小回归 | 直接变更模块的测试用例 |
+| 最小回归 | 直接变更模块的测试用例（depth=1） |
 
 **筛选结果模板**：
 ```markdown
@@ -311,6 +365,8 @@ npx ts-node --transpile-only .claude/scripts/sop-state-save.ts regression 5_repo
 
 | 错误场景 | 处理方式 |
 |----------|----------|
+| **CodeGraph 未安装** | 降级到 Graphify → Grep（详见 sop-dependency-analysis v3.0.0 双层降级）|
+| **`.codegraph/` 未初始化** | 自动 `codegraph init`（首次需要 ~30s） |
 | 无测试用例 | 提示先运行 `/sop test-design` 或 `/sop testing` |
 | 测试框架未安装 | 提示安装命令 |
 | 测试执行超时 | 增加超时限制，记录超时用例 |

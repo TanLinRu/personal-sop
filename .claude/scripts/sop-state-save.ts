@@ -126,6 +126,39 @@ function saveState(sop: string, step: string, status: string, answers?: Record<s
   console.log(`[OK] State saved: ${filePath}`);
   console.log(`[OK] Step: ${step} -> ${status}`);
   console.log(`[OK] current_step: ${state.current_step}`);
+
+  // Phase E2.3: Auto-update biz-graph on completed steps
+  // Only triggers when:
+  //   1. status === "completed" (avoid noise on in-progress)
+  //   2. SOP_BIZ_GRAPH_AUTO != "0" (opt-out for tests/CI)
+  //   3. .sop/biz-graph/biz.db exists (graph initialized)
+  if (status === "completed" && process.env.SOP_BIZ_GRAPH_AUTO !== "0") {
+    const bizDb = path.resolve(process.cwd(), ".sop", "biz-graph", "biz.db");
+    if (fs.existsSync(bizDb)) {
+      try {
+        const { spawnSync } = require("child_process");
+        const script = path.resolve(__dirname, "sop-biz-graph.ts");
+        const result = spawnSync(
+          "npx",
+          ["ts-node", "--transpile-only", script, "sync"],
+          {
+            cwd: process.cwd(),
+            stdio: ["ignore", "pipe", "pipe"],
+            shell: true,
+            timeout: 30000, // 30s ceiling — biz-graph sync is fast
+          },
+        );
+        if (result.status === 0) {
+          console.log("[OK] biz-graph auto-synced");
+        } else {
+          console.warn("[WARN] biz-graph sync failed (non-fatal):", result.stderr?.toString().split("\n")[0]);
+        }
+      } catch (err) {
+        // Never let biz-graph sync break the main state save
+        console.warn("[WARN] biz-graph sync skipped:", (err as Error).message);
+      }
+    }
+  }
 }
 
 function createInitialState(sop: string): any {

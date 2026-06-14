@@ -202,36 +202,39 @@ P0/P1 检查点，用户确认
 
 ## Step 5: 依赖查询 [AUTO]
 
-> 使用 Graphify 查询（替代 Glob/Grep）
+> 使用 CodeGraph 查询（替代 Glob/Grep；详见 sop-dependency-analysis v3.0.0）
 
 ### 5.1 检查图谱
 
-检查图谱是否存在：
-
 ```bash
-Test-Path ".sop/dependency-graph/graph.json"
+codegraph status 2>&1 | grep -q "Indexed" && echo "[OK] codegraph ready"
+[ -d ".sop/dependency-graph" ] && echo "[INFO] graphify legacy graph found"
 ```
 
 ### 5.2 图谱更新确认
 
-> 增量更新已有依赖图
+> CodeGraph 文件监听自动同步（默认 2s 防抖），通常无需手动更新。
 
 ```javascript
 AskUserQuestion({
-  question: "是否需要更新依赖图谱？",
+  question: "是否需要手动同步依赖图谱？",
   header: "图谱确认",
   options: [
-    { label: "更新图谱", description: "增量更新 Graphify 依赖图" },
-    { label: "跳过", description: "跳过本次更新" }
+    { label: "自动同步（推荐）", description: "CodeGraph 已开启文件监听" },
+    { label: "强制同步", description: "运行 codegraph sync" }
   ],
   multiSelect: false
 })
 ```
 
-### 5.3 Graphify 查询
+### 5.3 图谱构建/同步
 
 ```bash
-# ===== 前端图谱（强制分开）=====
+# CodeGraph (推荐)：首次或新项目
+codegraph init                 # 创建 .codegraph/，构建索引
+# 之后完全自动同步
+
+# Graphify 兼容路径
 graphify update ./frontend --out .sop/dependency-graph/{project}/frontend
 ```
 
@@ -243,7 +246,14 @@ graphify update ./frontend --out .sop/dependency-graph/{project}/frontend
 
 **命令**：
 ```bash
-# 查询依赖的 API
+# CodeGraph (一等公民)
+codegraph callers <APIModule> --json
+# Vue Router / Nuxt 文件路由会被自动识别为 route node：
+codegraph search --kind=route --json | grep -i 'vue\|nuxt'
+
+# 通过 MCP（推荐）：codegraph_explore "which Vue components call /api/users"
+
+# Graphify 兼容
 graphify query "{API模块} 相关?" --graph .sop/dependency-graph/graph.json
 ```
 

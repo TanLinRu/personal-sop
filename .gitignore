@@ -20,6 +20,12 @@ Thumbs.db
 # SOP state (ephemeral)
 .sop/state/*.json
 
+# SOP business graph (regenerable from .sop/output + .sop/state)
+.sop/biz-graph/
+
+# CodeGraph index (regenerable, per-machine)
+.codegraph/
+
 # Environment
 .env
 .env.local

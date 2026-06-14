@@ -260,36 +260,41 @@ P0/P1/P2 检查点，用户确认后进入实现
 
 ## Step 6: 依赖查询 [AUTO]
 
-> 使用 Graphify 查询（替代 Glob/Grep）
+> 使用 CodeGraph 查询（替代 Glob/Grep；详见 sop-dependency-analysis v3.0.0）
 
 ### 6.1 检查图谱
 
-检查图谱是否存在：
-
 ```bash
-Test-Path ".sop/dependency-graph/graph.json"
+# CodeGraph 优先
+codegraph status 2>&1 | grep -q "Indexed" && echo "[OK] codegraph ready"
+# 兼容 Graphify
+[ -d ".sop/dependency-graph" ] && echo "[INFO] graphify legacy graph found"
 ```
 
 ### 6.2 图谱更新确认
 
-> 增量更新已有依赖图
+> CodeGraph 文件监听自动同步（默认 2s 防抖），通常无需手动更新。仅在明确知道索引被中断时才需手动 `codegraph sync`。
 
 ```javascript
 AskUserQuestion({
-  question: "是否需要更新依赖图谱？",
+  question: "是否需要手动同步依赖图谱？",
   header: "图谱确认",
   options: [
-    { label: "更新图谱", description: "增量更新 Graphify 依赖图" },
-    { label: "跳过", description: "跳过本次更新" }
+    { label: "自动同步（推荐）", description: "CodeGraph 文件监听已开启，跳过手动同步" },
+    { label: "强制同步", description: "运行 codegraph sync 强制重建" }
   ],
   multiSelect: false
 })
 ```
 
-### 6.3 Graphify 查询
+### 6.3 图谱构建/同步
 
 ```bash
-# ===== 后端图谱（强制分开）=====
+# CodeGraph（推荐）：首次或新项目
+codegraph init                       # 创建 .codegraph/，构建索引
+# 之后完全自动同步，无需手动 update
+
+# Graphify 兼容路径（仅当 CodeGraph 不可用）
 graphify update ./backend --out .sop/dependency-graph/{project}/backend
 ```
 
@@ -305,6 +310,11 @@ graphify update ./backend --out .sop/dependency-graph/{project}/backend
 
 **命令**：
 ```bash
+# CodeGraph (推荐)
+codegraph callers <NewModule> --json
+# 或 MCP: codegraph_callers <NewModule>
+
+# Graphify 兼容
 graphify query "哪些模块依赖 {新模块}?" --graph .sop/dependency-graph/graph.json
 ```
 
@@ -369,6 +379,9 @@ AskUserQuestion({
 
 **命令**：
 ```bash
+# CodeGraph
+codegraph impact A --depth 5 --json | grep -i "cycle\|loop"
+# Graphify 兼容
 graphify query "A 和 B 的循环依赖?" --graph .sop/dependency-graph/graph.json
 ```
 
@@ -380,6 +393,9 @@ graphify query "A 和 B 的循环依赖?" --graph .sop/dependency-graph/graph.js
 
 **命令**：
 ```bash
+# CodeGraph
+codegraph impact A --depth 3 --json
+# Graphify 兼容
 graphify query "A 的完整依赖链?" --graph .sop/dependency-graph/graph.json
 ```
 

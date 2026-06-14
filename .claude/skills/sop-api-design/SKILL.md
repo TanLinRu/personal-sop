@@ -33,15 +33,25 @@ execution:
 - 微服务接口定义
 - OpenAPI规范编写
 
-## Graphify 集成
+## CodeGraph 集成（v3.0.0）
 
-在设计新 API 前，使用 Graphify 检测已有接口冲突：
+> 已从 Graphify 迁移到 CodeGraph。详见 `sop-dependency-analysis` v3.0.0。
+
+在设计新 API 前，使用 CodeGraph 检测已有接口冲突：
 
 ```bash
-# 检查已有 API 端点
-graphify query "搜索所有 REST API 端点及其路径和方法"
+# 一等公民：CodeGraph（自动同步，无需 update）
+codegraph search "@GetMapping" --json
+codegraph search "@PostMapping" --json
+codegraph search "@RequestMapping" --json
+codegraph search --kind=route --json   # 所有框架路由（Spring/Express/FastAPI/...）
 
-# 检查路由冲突
+# MCP 调用（agent 自动）
+# codegraph_explore "all REST routes in this project"
+# codegraph_search "@RequestMapping"
+
+# Graphify 兼容路径（仅当 CodeGraph 不可用）
+graphify query "搜索所有 REST API 端点及其路径和方法"
 graphify query "搜索所有 @RequestMapping 注解及其路径"
 ```
 
@@ -54,12 +64,10 @@ graphify query "搜索所有 @RequestMapping 注解及其路径"
 
 ## 知识更新
 
-API 设计完成后，更新知识图谱：
+API 设计完成后：
 
-```bash
-# 增量更新
-graphify update ./backend --out .sop/dependency-graph/{project}/backend
-```
+- **CodeGraph**：无需手动更新，文件保存后 2 秒内自动同步索引
+- **Graphify 兼容**：`graphify update ./backend --out .sop/dependency-graph/{project}/backend`
 
 ## 流程步骤
 

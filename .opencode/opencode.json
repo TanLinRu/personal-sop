@@ -43,7 +43,8 @@
     "sop-framework": ".claude/skills/sop-framework/SKILL.md",
     "sop-test-design": ".claude/skills/sop-test-design/SKILL.md",
     "sop-regression": ".claude/skills/sop-regression/SKILL.md",
-    "sop-status": ".claude/skills/sop-status/SKILL.md"
+    "sop-status": ".claude/skills/sop-status/SKILL.md",
+    "sop-biz-graph": ".claude/skills/sop-biz-graph/SKILL.md"
   },
   "instructions": [
     "AGENTS.md",
@@ -340,9 +341,20 @@
       "description": "测试用例设计 - 需求分析→测试技术选择→用例设计→追溯→评审",
       "agent": "build",
       "template": "Please execute test design SOP.\n\n$ARGUMENTS"
+    },
+    "sop biz-graph": {
+      "description": "业务文档图谱 - PRD/知识/测试/决策的 SQLite 知识图谱，支持跨 SOP 追溯和影响分析",
+      "agent": "build",
+      "template": "Please execute the sop-biz-graph SOP.\n\n$ARGUMENTS"
     }
   },
-  "plugin": [
-    ".opencode/plugins/graphify.js"
-  ]
+  "mcp": {
+    "codegraph": {
+      "type": "stdio",
+      "command": "codegraph",
+      "args": ["serve", "--mcp"],
+      "comment": "Pre-indexed code knowledge graph (https://github.com/colbymchenry/codegraph). Replaces Graphify since v3.0.0. Run `codegraph install` once globally + `codegraph init` per project."
+    }
+  },
+  "plugin": []
 }

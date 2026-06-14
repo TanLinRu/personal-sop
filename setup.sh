@@ -19,8 +19,8 @@ check_command "git" "Install Git from https://git-scm.com"
 echo ""
 
 # 2. Create SOP directories
-mkdir -p .sop/state .sop/output .sop/knowledge .sop/dependency-graph
-echo "[OK] SOP directories created (.sop/state, .sop/output, .sop/knowledge, .sop/dependency-graph)"
+mkdir -p .sop/state .sop/output .sop/knowledge .sop/dependency-graph .sop/biz-graph
+echo "[OK] SOP directories created (.sop/state, .sop/output, .sop/knowledge, .sop/dependency-graph, .sop/biz-graph)"
 
 # 3. Install frontend dependencies (if delivery-staff-frontend exists)
 if [ -d "delivery-staff-frontend" ] && [ -f "delivery-staff-frontend/package.json" ]; then
@@ -38,11 +38,22 @@ else
   echo "[WARN] Node.js not found - state scripts will not work"
 fi
 
-# 5. Check for Graphify (optional)
-if command -v graphify &> /dev/null; then
-  echo "[OK] Graphify found: $(command -v graphify)"
+# 5. Check for CodeGraph (recommended) / Graphify (legacy)
+if command -v codegraph &> /dev/null; then
+  echo "[OK] CodeGraph found: $(command -v codegraph)"
+  echo "      Run 'codegraph init' in each project to build the index."
+elif command -v graphify &> /dev/null; then
+  echo "[OK] Graphify (legacy) found: $(command -v graphify)"
+  echo "      Recommended upgrade: install CodeGraph"
+  echo "        macOS/Linux: curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh"
+  echo "        Windows:     irm https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.ps1 | iex"
+  echo "        Or via npm:  npm i -g @colbymchenry/codegraph"
 else
-  echo "[SKIP] Graphify not found (optional). Install with: pip install graphify"
+  echo "[SKIP] No graph engine found (optional). Recommended:"
+  echo "        macOS/Linux: curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh"
+  echo "        Windows:     irm https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.ps1 | iex"
+  echo "        Or via npm:  npm i -g @colbymchenry/codegraph"
+  echo "      After install: codegraph install   # wires CodeGraph into Claude Code/OpenCode/Cursor"
 fi
 
 # 6. Check JAVA_HOME (optional, for Java projects)

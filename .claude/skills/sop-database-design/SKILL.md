@@ -79,15 +79,20 @@ EXPLAIN SELECT * FROM orders WHERE user_id = 1 AND status = 'PAID';
 | key | 非 NULL | 确认索引被使用 |
 | Extra | 无 Using filesort | 优化 ORDER BY 字段 |
 
-## Graphify 集成
+## CodeGraph 集成（v3.0.0）
 
-在设计表结构前，使用 Graphify 检测已有实体冲突：
+> 已从 Graphify 迁移到 CodeGraph。详见 `sop-dependency-analysis` v3.0.0。
+
+在设计表结构前，使用 CodeGraph 检测已有实体冲突：
 
 ```bash
-# 检查已有 Entity 及其表名
-graphify query "搜索所有 JPA Entity 及其 @Table 注解的表名"
+# CodeGraph (一等公民)
+codegraph search "@Entity" --json
+codegraph search "@Table" --json
+# 通过 MCP（推荐）：codegraph_explore "all JPA entities and their table names"
 
-# 检查字段命名冲突
+# Graphify 兼容
+graphify query "搜索所有 JPA Entity 及其 @Table 注解的表名"
 graphify query "搜索所有 Entity 的字段名和类型"
 ```
 

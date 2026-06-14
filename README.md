@@ -1,6 +1,8 @@
 # Personal SOP - AI 驱动的工作流控制系统
 
-> **v6.1.0 (2026-06-14)**：黄金测试集 + Trace ID 追溯 + Eval 自动化 + 权重校准（Phase D 度量与回归）
+> **v6.2.0 (2026-06-14)**：迁移到 [CodeGraph](https://github.com/colbymchenry/codegraph)（替换 Graphify）+ 新增 `sop-biz-graph` 业务文档图谱
+>
+> v6.1.0 (2026-06-14)：黄金测试集 + Trace ID 追溯 + Eval 自动化 + 权重校准（Phase D 度量与回归）
 >
 > v6.0.0 (2026-06-10)：sop-prd LITE 默认（7 章节，≤180 行）· DoD 硬门 · 长度预算 · 行业锚点（Lean/PDCA/DMAIC/DoD/RACI/BPMN-lite）落地
 
@@ -29,7 +31,8 @@ bash setup.sh
 | Node.js 18+ | 是 | 状态管理 + 验证脚本 + Vitest |
 | Git | 是 | 版本控制 |
 | JAVA_HOME | 否 | Java/Spring Boot 项目需要 |
-| Graphify | 否 | 代码依赖分析（v2.0.0 起支持 Grep 软降级），`pip install graphify` |
+| **CodeGraph** | 否（强烈推荐）| AI 代码知识图谱（48k stars, MIT, MCP 原生）— 自动同步、Spring/Vue 路由识别、`codegraph affected` 测试影响集 |
+| Graphify | 否（legacy）| 旧版代码依赖分析，已被 CodeGraph 替代但保留兼容性 |
 
 ## 核心理念
 
@@ -76,21 +79,30 @@ SOP Workflow System - 基于 OpenCode 的工作流系统，底层引用 ECC（Ev
 
 ## 一、核心亮点
 
-### 1. Graph 代码依赖风险判断（Graphify）
+### 1. Code Knowledge Graph（CodeGraph，v6.2.0 起替代 Graphify）
 
-使用 Graphify 在业务迭代前进行风险评估：
+使用 [CodeGraph](https://github.com/colbymchenry/codegraph)（48k+ ⭐，MIT，MCP 原生）在业务迭代前做代码层风险评估：
 
 | 场景 | 命令 | 用途 |
 |------|------|------|
-| API冲突检测 | `graphify query "搜索所有 REST API 端点"` | 新增接口前检查路径冲突 |
-| 实体依赖分析 | `graphify query "哪些类依赖 StaffService?"` | 修改实体前评估影响范围 |
-| 循环依赖检测 | `graphify query "A 和 B 的循环依赖?"` | 避免模块间循环引用 |
-| 传递依赖链 | `graphify query "A 的完整依赖链?"` | 分析多层依赖关系 |
+| API 冲突检测 | `codegraph search "@GetMapping" --json` 或 MCP `codegraph_explore "all REST routes"` | 新接口前查路径冲突 |
+| 实体依赖分析 | `codegraph callers StaffService` | 修改实体前评估影响范围 |
+| 影响范围 | `codegraph impact OrderEntity --depth 3` | 改 X 影响哪些代码 |
+| 路径追溯 | `codegraph_explore "how does X reach Y"`（MCP）| X→Y 调用链 |
+| **测试影响集** | `git diff --name-only \| codegraph affected --stdin --json` | 改了什么 → 哪些测试要跑 |
+
+**关键优势 vs 旧 Graphify**：
+- ✅ **自动同步**（FSEvents/inotify 监听），不需要 `update`
+- ✅ **MCP 原生**（Claude Code/OpenCode/Cursor/Codex 一键安装）
+- ✅ **测试影响集**（`codegraph affected`，sop-regression v2.0 核心）
+- ✅ **20+ 语言**（Java/Vue/TS/Python/Go/Rust/...）+ 17 框架路由识别（Spring/Express/FastAPI/Vue/Nuxt/...）
+- ✅ **零配置 + 100% 本地**
 
 **SOP 集成**：
-- `sop-scaffold`：项目生成后自动构建依赖图
-- `sop-backend-iteration`：后端迭代前依赖查询
-- `sop-dependency-analysis`：专用依赖分析 SOP
+- `sop-dependency-analysis` v3.0.0：CodeGraph → Graphify → Grep 三级降级
+- `sop-backend-iteration` / `sop-frontend-iteration`：迭代前依赖查询
+- `sop-api-design` / `sop-database-design`：设计前冲突检测
+- `sop-regression` v2.0.0：`codegraph affected` 精准回归
 
 ### 2. Task State 状态管理设计
 
@@ -190,7 +202,8 @@ sop-prd 历史产出（`prd-logistics-20260508.md` 344 行）已在 v6.0.0 LITE 
 |------|------|------|
 | **dr-jskill** | jdubois/dr-jskill | Spring Boot 项目生成，JDTLS 导航，Docker 支持 |
 | **everything-claude-code** | affaan-m/everything-claude-code | 多 Agent 能力（code-reviewer, java-reviewer, security-reviewer, search-first） |
-| **Graphify** | graphifyy | 代码依赖图谱分析 |
+| **CodeGraph** | colbymchenry/codegraph | 代码知识图谱（48k stars，MCP 原生，自动同步，20+ 语言）— v6.2.0 替代 Graphify |
+| Graphify (legacy) | graphifyy | 旧版依赖图谱（仍兼容） |
 
 ### 技能安装
 
@@ -302,7 +315,7 @@ npx ts-node --transpile-only .claude/scripts/sop-eval.ts prd logistics --against
 | sop-prd 12 章节过长 (325 行 avg) | ✅ | LITE 7 章节默认，≤180 行 |
 | 步骤数 10 / 确认点 5 过多 | ✅ | 7 步骤 / 2 确认点 |
 | DoD 装饰未落地 | ✅ | 3 SOP 硬门（prd/scaffold/code-review）|
-| Graphify 中止执行 | ✅ | Grep 软降级（sop-dependency-analysis）|
+| Graphify 中止执行 | ✅ | CodeGraph 替代（v6.2.0）+ Graphify→Grep 软降级 |
 | 验证浅 (1/6 SOPs) | ✅ | 6/6 SOPs verify-ready |
 | state 脚本 0 测试 | ✅ | Vitest 20/20 通过 |
 | RACI 缺位 | ✅ | sop-fullstack-iteration RACI 表 |
@@ -357,7 +370,7 @@ npx ts-node --transpile-only .claude/scripts/sop-eval.ts prd logistics --against
 # 代码审查（三 Agent 并行）
 /sop code-review
 
-# 依赖分析（Graphify）
+# 依赖分析（CodeGraph）
 /sop dependency-analysis
 
 # SOP 执行验证（反模式检测）

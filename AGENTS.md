@@ -48,7 +48,7 @@ Get-NetTCPConnection -LocalPort 5173 | Stop-Process -Force
 | `/sop code-review` | Code review (parallel agents) |
 | `/sop database-design` | Database schema design (ER → DDL) |
 | `/sop deployment` | Deployment workflow |
-| `/sop dependency-analysis` | Code dependency analysis |
+| `/sop dependency-analysis` | Code dependency analysis (CodeGraph; falls back to Graphify→Grep) |
 | `/sop frontend` | Frontend only iteration |
 | `/sop fullstack` | Backend + frontend iteration |
 | `/sop incident-response` | Incident response workflow |
@@ -64,6 +64,13 @@ Get-NetTCPConnection -LocalPort 5173 | Stop-Process -Force
 | `/sop test-design` | Test case design from PRD user stories |
 | `/sop testing` | Test workflow |
 | `/sop verify` | SOP execution verification & anti-pattern detection |
+
+## Code Knowledge Graph
+
+- **CodeGraph (recommended)** — `codegraph init` per project, auto-syncs on file changes, MCP server registered in `.opencode/opencode.json`. Used by `sop-dependency-analysis`, `sop-regression` (`codegraph affected`), `sop-api-design`, `sop-database-design`, backend/frontend iteration.
+- **Graphify (legacy)** — `graphify update`. Tier-2 fallback only.
+- **Grep** — Tier-3 last-resort fallback.
+- **Business graph** — `.sop/biz-graph/` SQLite, populated by `sop-biz-graph` from `.sop/output/` artifacts. Tracks PRD ↔ tests ↔ knowledge ↔ deploys.
 
 ## SOP State Recovery
 - **检测命令**: `npx ts-node --transpile-only .claude/scripts/sop-state-load.ts --all`

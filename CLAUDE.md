@@ -104,8 +104,11 @@ Step mappings are defined in `.claude/scripts/sop-step-map.json`.
 ├── state/              # Execution state files
 ├── output/             # SOP output documents (PRD, prototypes, test cases)
 ├── knowledge/          # Domain knowledge docs
-└── dependency-graph/   # Graphify code analysis
+├── dependency-graph/   # (Legacy) Graphify graph.json — superseded by .codegraph/ since v3.0.0
+└── biz-graph/          # Business document graph (sop-biz-graph SQLite)
 ```
+
+Code dependency analysis lives at the project root in `.codegraph/codegraph.db` (SQLite, [CodeGraph](https://github.com/colbymchenry/codegraph)). Auto-syncs on file changes; no manual `update` needed. The `sop-dependency-analysis` skill (v3.0.0+) prefers CodeGraph, falls back to Graphify, then Grep.
 
 ### SOP Pipeline: Knowledge → PRD → Prototype → Tests
 
@@ -167,7 +170,7 @@ Many skills (sop-scaffold, sop-prd, sop-bug-fix, sop-code-review, sop-testing, s
 | `/sop regression` | Regression test selection |
 | `/sop testing` | Test workflow |
 | `/sop deployment` | Deployment workflow |
-| `/sop dependency-analysis` | Code dependency analysis (Graphify) |
+| `/sop dependency-analysis` | Code dependency analysis (CodeGraph; falls back to Graphify→Grep) |
 | `/sop onboarding` | Project onboarding |
 | `/sop knowledge` | Domain knowledge learning |
 | `/sop library-research` | Technology evaluation |

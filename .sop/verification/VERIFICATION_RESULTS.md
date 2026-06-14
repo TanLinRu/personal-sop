@@ -7,24 +7,26 @@
 
 ## 总体进度（2026-06-14 更新）
 
-| 指标 | v5.1.0 起点 | Phase A 后 | Phase C 后 | **Phase D 后** | 最终目标 |
-|------|------------|-----------|-----------|---------------|---------|
-| SKILL.md 完成 | 27/27 | 27/27 | 27/27 | 27/27 | 27/27 |
-| STEPS.md 完成 | 1/27 | 5/27 | 5/27 | 5/27 | 5/27 (P0) |
-| expected.yml 完成 | 5/27 | 10/27 | 10/27 | 10/27 | 10/27 (P0) |
-| 命令注册 | 23/23 | 23/23 | 23/23 | 23/23 | 23/23 |
-| 端到端验证通过 | 1/6 | 1/6 + 长度预算 | 6/6 verify-ready | **6/6 + 黄金 eval** | 6/6 (P2) |
-| state 脚本测试 | 17/20 | 17/20 | 20/20 | **23/23 (含 eval)** | 80% |
-| Graphify 韧性 | 中止执行 | 中止 | 软降级 | 软降级 | 软降级 |
-| DoD 硬门 | 装饰 | 装饰 | 三 SOP 落地 | 三 SOP | 三 SOP |
-| sop-prd 平均输出行数 | 325 | ≤180 (LITE 目标) | 同 | **golden eval 验证 145-148 lite / 218 full** | 180 |
-| sop-prd 步骤数 | 10 | 7 | 7 | 7 | 7 |
-| sop-prd 确认点 | 5 | 2 | 2 | 2 | 2 |
-| parallel_tasks 标准 | 1/28 | 1/28 | 3/28 | 3/28 | 7/28 |
-| **黄金测试集** | 无 | 无 | 无 | **3 fixtures (D1)** | 3 fixtures |
-| **Trace ID 追溯** | 无 | 无 | 无 | **state + sop-trace.ts (D2)** | 端到端 |
-| **Eval 自动化** | 无 | 无 | 无 | **vitest + sop-eval.ts (D4)** | CI gated |
-| **权重校准** | 无 | 无 | 方法已定 | **bootstrap report (D3)** | 10+ 样本 |
+| 指标 | v5.1.0 起点 | Phase A 后 | Phase C 后 | Phase D 后 | **Phase E 后** | 最终目标 |
+|------|------------|-----------|-----------|-----------|---------------|---------|
+| SKILL.md 完成 | 27/27 | 27/27 | 27/27 | 27/27 | **28/28** (sop-biz-graph 新增) | 28/28 |
+| STEPS.md 完成 | 1/27 | 5/27 | 5/27 | 5/27 | **6/28** | 6/28 |
+| expected.yml 完成 | 5/27 | 10/27 | 10/27 | 10/27 | **11/28** | 11/28 |
+| 命令注册 | 23/23 | 23/23 | 23/23 | 23/23 | **24/24** (sop biz-graph 新增) | 24/24 |
+| 端到端验证通过 | 1/6 | 1/6 + 长度预算 | 6/6 verify-ready | 6/6 + 黄金 eval | **6/6 + 31 vitest** | 6/6 |
+| state 脚本测试 | 17/20 | 17/20 | 20/20 | 23/23 (含 eval) | **31/31** (+8 biz-graph) | 80% |
+| 代码图谱引擎 | Graphify (中止执行) | 中止 | Graphify+Grep 软降级 | 同 | **CodeGraph (一等公民) + Graphify+Grep 三级降级** | CodeGraph |
+| 业务图谱 | 无 | 无 | 无 | trace_id (Phase D2) | **sop-biz-graph SQLite (14 节点类型, 11 边类型)** | 全 SOP 文档化图谱 |
+| DoD 硬门 | 装饰 | 装饰 | 三 SOP 落地 | 三 SOP | 三 SOP | 三 SOP |
+| sop-prd 平均输出行数 | 325 | ≤180 (LITE 目标) | 同 | golden eval 验证 145-148 lite / 218 full | 同 | 180 |
+| sop-prd 步骤数 | 10 | 7 | 7 | 7 | 7 | 7 |
+| sop-prd 确认点 | 5 | 2 | 2 | 2 | 2 | 2 |
+| parallel_tasks 标准 | 1/28 | 1/28 | 3/28 | 3/28 | 3/28 | 7/28 |
+| 黄金测试集 | 无 | 无 | 无 | 3 fixtures (D1) | 3 fixtures | 3 fixtures |
+| Trace ID 追溯 | 无 | 无 | 无 | state + sop-trace.ts (D2) | + biz-graph trace lineage | 端到端 |
+| Eval 自动化 | 无 | 无 | 无 | vitest + sop-eval.ts (D4) | 同 + biz-graph 测试 | CI gated |
+| 权重校准 | 无 | 无 | 方法已定 | bootstrap report (D3) | 同 | 10+ 样本 |
+| **测试影响集** | **无** | **无** | **无** | **无** | **codegraph affected (sop-regression v2.0.0)** | **TIA 业界最佳实践** |
 
 ---
 
@@ -251,6 +253,104 @@ npx ts-node --transpile-only .claude/scripts/sop-verify-calibrate.ts prd
 # Trace 链路
 cd .opencode && npm run trace
 npx ts-node --transpile-only .claude/scripts/sop-trace.ts <trace_id>
+```
+
+---
+
+## Phase E — CodeGraph 迁移 + sop-biz-graph 业务图谱（2026-06-14 完成）✅
+
+> 把代码层依赖分析从 Graphify（手动 update，frequent break）升级到 CodeGraph（自动同步、MCP 原生、48k stars），同时新增业务文档图谱 sop-biz-graph 解决 PRD/知识/测试跨文档追溯问题。
+
+### E1 — CodeGraph 迁移（替换 Graphify）
+
+| 文件 | 变更 |
+|------|------|
+| `sop-dependency-analysis/SKILL.md` | v2.0.0 → **v3.0.0**：CodeGraph → Graphify → Grep 三级降级 |
+| `sop-backend-iteration/SKILL.md` | 5 处 graphify → codegraph + 兼容回退 |
+| `sop-frontend-iteration/SKILL.md` | 同上 + Vue/Nuxt 路由识别 |
+| `sop-api-design/SKILL.md` | graphify query → codegraph search/explore |
+| `sop-database-design/SKILL.md` | 同上 |
+| **`sop-regression/SKILL.md`** | v1.0.0 → **v2.0.0**：用 `codegraph affected` 替换手工 grep（**业界 TIA 最佳实践**） |
+| `.opencode/plugins/graphify.js` | **删除** |
+| `.opencode/opencode.json` | 注册 CodeGraph MCP server |
+| `setup.sh` | 检测 CodeGraph 优先 / Graphify 降级 |
+| `CLAUDE.md` / `AGENTS.md` / `README.md` | 全文档更新到 v6.2.0 |
+
+**关键升级 — sop-regression v2.0.0**：
+
+```bash
+# 之前（手工 grep，不准）
+git diff --name-only | xargs -I {} grep -rl "import.*{}" tests/
+
+# 现在（CodeGraph TIA，精准）
+git diff --name-only | codegraph affected --stdin --json
+```
+
+### E2 — sop-biz-graph 业务文档图谱（新能力）
+
+**新增文件**：
+
+| 文件 | 内容 |
+|------|------|
+| `.claude/scripts/sop-biz-graph.ts` | 实现：build / sync / status / query / node / trace / affected / reset |
+| `.claude/scripts/sop-biz-graph.test.ts` | 8 个 vitest 用例 |
+| `.claude/skills/sop-biz-graph/SKILL.md` | Skill 定义 |
+| `.claude/skills/sop-biz-graph/STEPS.md` | 4 步骤执行模型 |
+| `.claude/skills/sop-biz-graph/expected.yml` | 跨 SOP 契约 |
+| `.claude/skills/sop-biz-graph/SCHEMA.md` | SQLite schema 设计文档 |
+
+**节点类型（14）**：sop_run / prd / user_story / acceptance_criterion / feature / test_case / knowledge / decision / risk / deployment / incident / verify_report / prototype / code_ref
+
+**边类型（11）**：produces / consumes / traces_to / references / implements / verifies / validates / mitigates / deploys / caused_by / code_ref
+
+**自动同步**：`sop-state-save.ts` 在每个 step 完成时自动触发 `sop-biz-graph sync`（30s 超时，可 opt-out）。
+
+**实测数据（基于现有 .sop/output/ 历史 PRD）**：
+
+```
+sop_runs:    0 (state 文件未含 trace_id)
+knowledge:   2
+prds:        2
+user_stories: 12     ← 自动从 §3/§5 表格提取
+features:    0       ← 历史 PRD 用 §6 编号，已支持
+risks:       0       ← 同
+decisions:   0       ← 同
+nodes:       27
+edges:       24
+```
+
+**与 CodeGraph 的协作**：通过 `code_ref` 节点桥接业务层和代码层。
+
+### E3 — 验证结果（2026-06-14）
+
+| 指标 | 前 | 后 |
+|------|------|------|
+| Vitest 套件数 | 2 (state + eval) | **3** (+ biz-graph) |
+| Vitest 用例数 | 23/23 | **31/31** |
+| 代码图谱引擎 | Graphify (易失败) | **CodeGraph (一等) + Graphify (兼容) + Grep (兜底)** |
+| 业务图谱 | 不存在 | **14 节点类型 / 11 边类型 / 27 节点已索引** |
+| 注册命令数 | 23 | **24** (新增 sop biz-graph) |
+| 注册 skill 数 | 27 | **28** (新增 sop-biz-graph) |
+| 跨 SOP 追溯 | trace_id (Phase D2) | trace_id + biz-graph lineage / affected BFS |
+| 测试影响集 | 不存在 | **codegraph affected (sop-regression v2.0)** |
+
+### E 阶段命令使用
+
+```bash
+# CodeGraph (代码层)
+codegraph init                                       # 项目初始化
+codegraph status                                     # 索引状态
+codegraph search "@GetMapping"                       # 找 Spring 路由
+codegraph callers OrderService                       # 谁调用 OrderService
+codegraph impact UserEntity --depth 3                # blast radius
+git diff --name-only | codegraph affected --stdin    # 受影响测试
+
+# sop-biz-graph (业务层)
+cd .opencode && npm run biz-graph:build              # 全量构建
+cd .opencode && npm run biz-graph                    # 状态
+npx ts-node .claude/scripts/sop-biz-graph.ts query "调度"
+npx ts-node .claude/scripts/sop-biz-graph.ts trace prd-2026-06-10-abc123
+npx ts-node .claude/scripts/sop-biz-graph.ts affected us:prd:logistics-20260508:US-001
 ```
 
 ---
