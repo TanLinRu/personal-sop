@@ -285,7 +285,32 @@ public Warehouse createWarehouse(WarehouseDTO dto) {
 
 ---
 
-## 五、v6.1.0 进展（2026-06-14） — Phase D 度量与回归
+## 五、v6.2.0 进展（2026-06-14） — Phase E CodeGraph 迁移 + 业务图谱
+
+| 能力 | 落地 |
+|------|------|
+| **代码图谱（CodeGraph）** | 替换 Graphify。MCP 原生集成，自动同步，20+ 语言，17 框架路由识别 |
+| **测试影响分析（TIA）** | `git diff \| codegraph affected` 取代手工 grep（sop-regression v2.0.0）|
+| **业务文档图谱** | `sop-biz-graph` 新 SOP — SQLite + 14 节点类型 + 11 边类型 |
+| **跨层追溯** | 业务层 ↔ 代码层桥接（`code_ref` 节点）|
+| **三级降级** | CodeGraph (1st) → Graphify (2nd) → Grep (3rd) |
+| **Vitest 用例数** | 23 → 31（+8 biz-graph）|
+
+### 用法
+
+```bash
+# 代码层（CodeGraph）
+codegraph init                                # 项目初始化
+codegraph search "@GetMapping"                # 找 Spring 路由
+git diff --name-only | codegraph affected --stdin   # 受影响测试
+
+# 业务层（sop-biz-graph）
+cd .opencode && npm run biz-graph:build       # 构建图谱
+npx ts-node --transpile-only .claude/scripts/sop-biz-graph.ts query "调度"
+npx ts-node --transpile-only .claude/scripts/sop-biz-graph.ts trace prd-2026-06-14-abc
+```
+
+## 六、v6.1.0 进展（2026-06-14） — Phase D 度量与回归
 
 | 能力 | 落地 |
 |------|------|
@@ -308,7 +333,7 @@ npx ts-node --transpile-only .claude/scripts/sop-trace.ts <trace_id>
 npx ts-node --transpile-only .claude/scripts/sop-eval.ts prd logistics --against .sop/output/prd-foo.md
 ```
 
-## 六、v6.0.0 进展（2026-06-10）
+## 七、v6.0.0 进展（2026-06-10）
 
 | 缺陷 | 状态 | 落地 |
 |------|------|------|
@@ -320,7 +345,7 @@ npx ts-node --transpile-only .claude/scripts/sop-eval.ts prd logistics --against
 | state 脚本 0 测试 | ✅ | Vitest 20/20 通过 |
 | RACI 缺位 | ✅ | sop-fullstack-iteration RACI 表 |
 
-## 七、未来强化方向
+## 八、未来强化方向
 
 ### 1. Token 优化
 
@@ -358,11 +383,16 @@ npx ts-node --transpile-only .claude/scripts/sop-eval.ts prd logistics --against
 
 ---
 
-## 八、快速开始
+## 九、快速开始
+
+### 8.1 SOP 工作流命令
 
 ```bash
 # 生成项目脚手架（受控流程）
 /sop scaffold
+
+# 生成 PRD（v6.0.0+ LITE 默认 ≤180 行）
+/sop prd
 
 # 需求迭代（规约控制）
 /sop fullstack
@@ -373,15 +403,66 @@ npx ts-node --transpile-only .claude/scripts/sop-eval.ts prd logistics --against
 # 依赖分析（CodeGraph）
 /sop dependency-analysis
 
+# 精准回归测试（v6.2.0 codegraph affected）
+/sop regression
+
+# 业务文档图谱（v6.2.0 新能力）
+/sop biz-graph build
+/sop biz-graph query "调度"
+/sop biz-graph trace prd-2026-06-14-abc123
+
 # SOP 执行验证（反模式检测）
 /sop verify              # 自动检测最近完成的 SOP
 /sop verify code-review  # 指定验证 code-review
 /sop verify all          # 验证所有已完成的 SOP
 ```
 
+### 8.2 工具命令（脚本入口）
+
+```bash
+# 状态管理
+npx ts-node --transpile-only .claude/scripts/sop-state-load.ts --all
+npx ts-node --transpile-only .claude/scripts/sop-resume-check.ts <sop>
+npx ts-node --transpile-only .claude/scripts/sop-state-clean.ts
+
+# 跨 SOP 追溯（Phase D2）
+npx ts-node --transpile-only .claude/scripts/sop-trace.ts <trace_id>
+npx ts-node --transpile-only .claude/scripts/sop-trace.ts --list
+npx ts-node --transpile-only .claude/scripts/sop-trace.ts --link <parent> <child>
+
+# 黄金测试集回归（Phase D4）
+cd .opencode && npm run eval                      # 跑全部 fixture
+cd .opencode && npm run eval:json                 # JSON 输出（CI 用）
+npx ts-node --transpile-only .claude/scripts/sop-eval.ts prd <fixture>
+npx ts-node --transpile-only .claude/scripts/sop-eval.ts prd <fixture> --against <file>
+
+# 验证权重校准（Phase D3）
+npx ts-node --transpile-only .claude/scripts/sop-verify-calibrate.ts prd
+
+# 业务文档图谱（Phase E2）
+cd .opencode && npm run biz-graph                 # status
+cd .opencode && npm run biz-graph:build           # full rebuild
+npx ts-node --transpile-only .claude/scripts/sop-biz-graph.ts query "<text>"
+npx ts-node --transpile-only .claude/scripts/sop-biz-graph.ts node <id>
+npx ts-node --transpile-only .claude/scripts/sop-biz-graph.ts trace <trace_id>
+npx ts-node --transpile-only .claude/scripts/sop-biz-graph.ts affected <id> [depth]
+
+# 代码图谱（CodeGraph，Phase E1）
+codegraph init                                    # 项目初始化（一次）
+codegraph status                                  # 索引状态
+codegraph search "@GetMapping" --json             # 找 Spring 路由
+codegraph callers OrderService.createOrder        # 谁调用 X
+codegraph impact UserEntity --depth 3             # blast radius
+git diff --name-only | codegraph affected --stdin # 受影响测试集
+codegraph explore "how does X reach Y"            # 自然语言路径
+
+# Vitest 全套
+cd .opencode && npm test                          # 31/31 用例（state + eval + biz-graph）
+```
+
 ---
 
-## 九、SOP 执行状态
+## 十、SOP 执行状态
 
 ### 步骤类型
 
@@ -410,67 +491,313 @@ PENDING → IN_PROGRESS → COMPLETED → VERIFIED (通过验证)
 
 ---
 
-## 十、目录结构
+## 十一、目录结构
 
 ```
 .claude/
-├── skills/                           # SOP Skills（Harness 控制层）
-│   ├── SOP.md                       # Skill 规范
-│   ├── sop-prd/                    # PRD 生成
-│   ├── sop-scaffold/               # 脚手架生成
-│   │   └── expected.yml           # 预期产出 DSL
-│   ├── sop-backend-iteration/      # 后端迭代
-│   ├── sop-frontend-iteration/     # 前端迭代
-│   ├── sop-fullstack-iteration/   # 全栈迭代
-│   ├── sop-testing/               # 测试执行
-│   │   └── expected.yml           # 预期产出 DSL
-│   ├── sop-code-review/           # 代码审查
-│   │   └── expected.yml           # 预期产出 DSL
-│   ├── sop-bug-fix/               # Bug 修复
-│   │   └── expected.yml           # 预期产出 DSL
-│   ├── sop-deployment/            # 部署发布
-│   │   └── expected.yml           # 预期产出 DSL
-│   ├── sop-dependency-analysis/    # 依赖分析
-│   ├── sop-onboarding/            # 项目入职
-│   ├── sop-knowledge/             # 领域知识
-│   ├── sop-library-research/      # 技术调研
-│   ├── sop-verification/          # SOP 验证（反模式检测）
-│   │   ├── SKILL.md               # 验证技能
-│   │   ├── STEPS.md               # 5 步验证流程
-│   │   └── references/
-│   │       ├── DSL.md             # expected.yml 完整 Schema
-│   │       └── REVIEWER-AGENTS.md # 8 个审查 Agent 定义
-│   ├── dr-jskill/                # Java 项目工具
-│   └── frontend-design/           # 前端设计工具
-├── rules/                          # 编码规范
+├── skills/                              # SOP Skills（Harness 控制层）
+│   ├── SOP.md                          # Skill 规范
+│   ├── sop-prd/                        # PRD 生成（v6.0.0 LITE 默认）
+│   │   ├── SKILL.md                    # 7 步骤定义
+│   │   ├── STEPS.md                    # 执行模型
+│   │   ├── expected.yml                # 预期产出 + 长度预算
+│   │   ├── golden/                     # 黄金测试集（Phase D1）
+│   │   │   ├── inputs/                 # DYNAMIC_INPUT 答案
+│   │   │   ├── expected/               # 标杆 PRD
+│   │   │   └── eval.config.yaml        # 评估配置
+│   │   └── references/                 # 18 个 PRD 模板（BRD/MRD/...)
+│   ├── sop-biz-graph/                  # 业务文档图谱（v6.2.0 新增）
+│   │   ├── SKILL.md
+│   │   ├── STEPS.md
+│   │   ├── expected.yml
+│   │   └── SCHEMA.md                   # 14 节点类型 + 11 边类型
+│   ├── sop-scaffold/                   # 脚手架生成
+│   ├── sop-backend-iteration/          # 后端迭代
+│   ├── sop-frontend-iteration/         # 前端迭代
+│   ├── sop-fullstack-iteration/        # 全栈迭代（含 RACI）
+│   ├── sop-testing/                    # 测试执行
+│   ├── sop-code-review/                # 代码审查（DoD 硬门）
+│   ├── sop-bug-fix/                    # Bug 修复
+│   ├── sop-deployment/                 # 部署发布
+│   ├── sop-dependency-analysis/        # 依赖分析（v3.0.0 CodeGraph）
+│   ├── sop-regression/                 # 回归测试（v2.0.0 codegraph affected）
+│   ├── sop-test-design/                # 测试用例设计
+│   ├── sop-onboarding/                 # 项目入职
+│   ├── sop-knowledge/                  # 领域知识
+│   ├── sop-library-research/           # 技术调研
+│   ├── sop-incident-response/          # 故障响应
+│   ├── sop-api-design/                 # API 设计（CodeGraph 冲突检测）
+│   ├── sop-database-design/            # 数据库设计（CodeGraph 实体冲突）
+│   ├── sop-product-analysis/           # 产品分析
+│   ├── sop-brainstorming/              # 结构化脑暴
+│   ├── sop-dynamic-input/              # 动态参数收集
+│   ├── sop-status/                     # 状态查看
+│   ├── sop-framework/                  # SOP 框架本身
+│   ├── sop-verification/               # SOP 验证（反模式检测 + 长度预算）
+│   ├── dr-jskill/                      # Java 项目工具
+│   ├── frontend-design/                # 前端设计工具
+│   └── tailwind-design-system/         # Tailwind v4 设计系统
+├── rules/                              # 编码规范
 │   └── common/
-│       ├── coding-style.md        # Java/Spring 规范
-│       └── testing.md             # 测试规范
-├── scripts/                       # 工具脚本
-│   ├── sop-state-save.ts         # 状态保存
-│   ├── sop-state-load.ts         # 状态恢复
-│   └── sop-verify.ts             # 验证上下文收集
-└── agents/                        # 审查 Agent 定义
-    ├── flow-reviewer.md           # 流程合规审查
-    ├── output-reviewer.md         # 产出完整性审查
-    ├── param-reviewer.md          # 参数一致性审查
-    ├── state-reviewer.md          # 状态一致性审查
-    ├── security-reviewer.md       # 安全审查
-    ├── quality-reviewer.md        # 质量审查
-    └── arch-reviewer.md           # 架构审查
+│       ├── 01_naming.md                # 命名规约
+│       ├── 02_oop.md                   # OOP 规约
+│       ├── 03_concurrency.md           # 并发处理
+│       ├── 04_control.md               # 控制语句
+│       ├── 05_exception.md             # 异常处理
+│       ├── 06_logging.md               # 日志规约
+│       ├── 07_testing.md               # 测试规约
+│       ├── 08_security.md              # 安全规约
+│       ├── 09_project.md               # 工程结构
+│       └── 10_mysql.md                 # MySQL 规约
+├── scripts/                            # 工具脚本
+│   ├── sop-state-save.ts               # 状态保存（含 trace_id 生成 + biz-graph 钩子）
+│   ├── sop-state-load.ts               # 状态恢复
+│   ├── sop-state-clean.ts              # 状态清理
+│   ├── sop-resume-check.ts             # 断点检测
+│   ├── sop-step-map.json               # 步骤映射表
+│   ├── sop-verify.ts                   # 验证（含长度预算 + 多 agent 分发）
+│   ├── sop-verify-calibrate.ts         # 权重校准（Phase D3）
+│   ├── sop-trace.ts                    # 跨 SOP 链路（Phase D2）
+│   ├── sop-eval.ts                     # 黄金测试评估（Phase D4）
+│   ├── sop-biz-graph.ts                # 业务文档图谱（Phase E2）
+│   ├── sop-state.test.ts               # 20 vitest 用例
+│   ├── sop-eval.test.ts                # 3 vitest 用例
+│   └── sop-biz-graph.test.ts           # 8 vitest 用例
+└── agents/                             # Sub-agent 定义
+    ├── flow-reviewer.md
+    ├── output-reviewer.md
+    ├── param-reviewer.md
+    ├── state-reviewer.md
+    ├── code-reviewer.md
+    ├── arch-reviewer.md
+    ├── security-reviewer.md
+    ├── java-reviewer.md
+    └── build-error-resolver.md
+
+.sop/                                   # 运行时数据
+├── state/                              # SOP 执行状态（gitignored）
+├── output/                             # SOP 产出文档
+├── knowledge/                          # 领域知识
+├── biz-graph/                          # 业务图谱 SQLite（gitignored）
+└── verification/                       # 验证结果历史
+
+.codegraph/                             # CodeGraph 索引（gitignored, per-machine）
+
+.opencode/
+├── opencode.json                       # OpenCode 配置 + MCP server 注册
+├── plugins/                            # OpenCode 插件（v6.2.0 已删除 graphify.js）
+└── package.json                        # vitest + npm scripts
 ```
 
 ---
 
-## 十一、使用用例
+## 十二、使用用例
 
-### 用例 1：SOP 执行后自动验证
+### 用例 1：生成 LITE PRD（v6.0.0+，默认 ≤180 行）
+
+```bash
+# 启动 PRD 生成
+/sop prd 物流配送系统
+
+# 7 步骤流程（仅 2 个确认点）：
+# Step 0: 依赖检查 [AUTO]              → 自动搜索 .sop/knowledge/
+# Step 1: 业务识别 + 脑暴 [CONFIRM]    → DYNAMIC_INPUT 弹窗
+#          { business_type: 物流配送, brainstorm: false }
+# Step 2: 文档类型 + 需求深挖 [CONFIRM] → DYNAMIC_INPUT 弹窗
+#          { tier: lite }   ← 默认 LITE，按需 opt-in FULL
+# Step 3-6: AUTO
+
+# 产出：
+#   .sop/output/prd-logistics-20260614.md          (146 lines, 7 sections)
+#   .sop/output/prototype-logistics-20260614.html  (可编辑 HTML 原型)
+#   .sop/output/prd-logistics-20260614.summary.md  (DoR 状态 + 长度预算)
+#   .sop/output/verify-prd-20260614.md             (sop-verify 自动报告)
+
+# DoR 硬门：未通过 4 项检查（故事≤8、AC=GWT、INVEST、无孤章）
+# 写入 prd-*.DRAFT.md 而不是 prd-*.md
+```
+
+### 用例 2：黄金测试集回归（v6.1.0 Phase D）
+
+```bash
+# 修改 sop-prd/SKILL.md 后必跑
+cd .opencode && npm run eval
+
+# 输出示例：
+# ## Fixture: delivery-staff (tier=lite)
+# | Dimension | Score |
+# |-----------|-------|
+# | structure | 1.000 |   ← 7/7 章节齐全
+# | length    | 1.000 |   ← 146 行 ≤ 180 预算
+# | dor       | 1.000 |   ← 7 stories, 6 GWT, 8 INVEST 标记
+# | coverage  | 1.000 |   ← 关键词全覆盖
+# | **total** | **1.000** |
+# | **verdict** | **PASS** |
+#
+# Overall: 3/3 PASS, 0 WARN, 0 FAIL
+
+# 单独跑某个 fixture：
+npx ts-node --transpile-only .claude/scripts/sop-eval.ts prd delivery-staff
+
+# 评估某个真实 PRD 文件（如历史 343 行 PRD）：
+npx ts-node --transpile-only .claude/scripts/sop-eval.ts prd logistics \
+  --against .sop/output/prd-logistics-20260508.md
+# → FAIL (0.393)：length 0、structure 0.176（12 sections，超 LITE 7）
+```
+
+### 用例 3：跨 SOP 全链路追溯（v6.1.0 Phase D2）
+
+```bash
+# 每次 SOP 启动自动生成 trace_id
+/sop prd 配送系统
+# → state.trace_id = "prd-2026-06-14-abc123"
+
+/sop test-design                                 # 下游 SOP
+# → state.trace_id = "test-design-2026-06-14-xyz789"
+
+# 关联两个 SOP
+npx ts-node --transpile-only .claude/scripts/sop-trace.ts \
+  --link prd-2026-06-14-abc123 test-design-2026-06-14-xyz789
+
+# 查全链路
+npx ts-node --transpile-only .claude/scripts/sop-trace.ts prd-2026-06-14-abc123
+# 输出：
+#   - SOP / 状态 / 时间 / 当前步骤 / 父子链
+#   - 关联的输出文件（PRD, prototype, summary）
+#   - 关联的 git 提交（如 commit message 含 [trace: xxx]）
+#   - Parent / Child SOP 列表
+
+# 列出所有 trace
+npx ts-node --transpile-only .claude/scripts/sop-trace.ts --list
+```
+
+### 用例 4：CodeGraph 代码层依赖分析（v6.2.0）
+
+```bash
+# 一次性安装（项目级别）
+codegraph init                                # 创建 .codegraph/，索引 + 文件监听
+
+# 检测 API 路径冲突（设计新接口前）
+codegraph search "@GetMapping" --json
+# 或更智能：让 agent 通过 MCP 调用 codegraph_explore "all REST routes"
+
+# 改动 OrderService 影响哪些代码（blast radius）
+codegraph impact OrderService --depth 3 --json
+
+# 谁调用了 UserController.list
+codegraph callers UserController.list --json
+
+# 改动 → 受影响测试集（业界 TIA = Test Impact Analysis）
+git diff --name-only | codegraph affected --stdin --json
+# {
+#   "changed_files": ["src/main/java/.../OrderService.java"],
+#   "affected_tests": [
+#     "src/test/.../OrderServiceTest.java",
+#     "src/test/.../OrderControllerIntegrationTest.java"
+#   ],
+#   "test_count": 2
+# }
+
+# 自然语言查询（最强武器）
+# 通过 MCP：codegraph_explore "how does AuthController.login reach UserRepository"
+# 一次返回所有相关符号源码 + 调用路径
+```
+
+### 用例 5：sop-regression 精准回归（v6.2.0 升级）
+
+```bash
+# v1.0.0：手工 grep 影响（不准）
+# v2.0.0：codegraph affected 精准（业界 TIA）
+
+/sop regression
+
+# Step 1: 变更分析（git diff）
+# Step 2: 影响评估（codegraph affected → JSON 输出受影响测试集）
+# Step 3: 用例筛选（与已有测试合并）
+# Step 4: 执行（自动检测框架：mvn test / npx vitest / pytest 等）
+# Step 5: 报告
+
+# 实际命令：
+git diff --name-only HEAD~1 | codegraph affected --stdin --json > .sop/state/affected.json
+# 然后只跑这个文件里列出的测试 → 测试时间从 5 分钟缩短到 30 秒
+```
+
+### 用例 6：业务文档图谱 sop-biz-graph（v6.2.0 新能力）
+
+```bash
+# 全量构建（首次或重建）
+cd .opencode && npm run biz-graph:build
+# [OK] Build complete:
+#   sop_runs:    0
+#   knowledge:   2
+#   prds:        2
+#   user_stories: 12   ← 自动从 §3/§5 表格提取
+#   acceptance_criterion: 11
+#   nodes: 27 / edges: 24
+
+# 状态查看
+cd .opencode && npm run biz-graph
+
+# 模糊搜索（兼容中文）
+npx ts-node --transpile-only .claude/scripts/sop-biz-graph.ts query "调度"
+# | Type        | ID                                | Name              |
+# |-------------|-----------------------------------|-------------------|
+# | user_story  | us:prd:logistics-...:US-001      | US-001: 收到调度推送 |
+# | user_story  | us:prd:logistics-...:US-004      | US-004: 调整调度策略 |
+
+# 查单个节点（详情 + 入边出边）
+npx ts-node --transpile-only .claude/scripts/sop-biz-graph.ts \
+  node us:prd:logistics-20260508:US-001
+# - Type: user_story
+# - Source: .sop/output/prd-logistics-20260508.md
+# - Metadata: { us_id, role, priority: Must, invest: ✅, ac: "Given..." }
+# - Incoming edges:
+#   - prd:logistics-20260508 -[produces]-> us:...:US-001
+#   - ac:us:...:US-001 -[validates]-> us:...:US-001
+
+# 跨 SOP 追溯（按 trace_id 查全链路）
+npx ts-node --transpile-only .claude/scripts/sop-biz-graph.ts \
+  trace prd-2026-06-14-abc123
+
+# 影响分析（BFS 下游，默认 depth=3）
+npx ts-node --transpile-only .claude/scripts/sop-biz-graph.ts \
+  affected prd:logistics-20260508 3
+# | Depth | Type        | ID                                  |
+# | 1     | user_story  | us:prd:...:US-001                  |
+# | 1     | user_story  | us:prd:...:US-002                  |
+# | 1     | knowledge   | kn:logistics-20260508              |
+```
+
+### 用例 7：业务图谱 + 代码图谱联合查询（v6.2.0 双层）
+
+> **跨层追溯**：业务层（biz-graph）"改了 US-003 影响哪些代码？"+ 代码层（CodeGraph）反查
+
+```bash
+# 场景：PM 要改 US-003，开发想知道动哪些代码 + 哪些测试
+
+# Step 1: 业务层 — 找 US-003 关联的 feature
+npx ts-node --transpile-only .claude/scripts/sop-biz-graph.ts \
+  affected us:prd:logistics-20260508:US-003 2
+# → feat:prd:...:F-03 实现该 US
+
+# Step 2: 业务层 → 代码层桥接（code_ref 节点存 FQN）
+npx ts-node --transpile-only .claude/scripts/sop-biz-graph.ts \
+  node feat:prd:logistics-20260508:F-03
+# → code_ref: src/.../OrderService.java::createOrder
+
+# Step 3: 代码层 — 找 createOrder 的 caller + 测试
+codegraph callers OrderService.createOrder --json
+codegraph affected src/main/java/.../OrderService.java --json
+# → 受影响测试集（精确）
+```
+
+### 用例 8：SOP 执行后自动验证
 
 ```bash
 # 执行 code-review SOP
 /sop code-review
 
-# 执行后验证（自动检测最近完成的 SOP）
+# 自动验证（含 v6.0.0 长度预算 + v6.1.0 多 agent 分发）
 /sop verify
 
 # 输出示例：
@@ -480,112 +807,93 @@ PENDING → IN_PROGRESS → COMPLETED → VERIFIED (通过验证)
 #   ✓ code-review-2026-05-21-scope.md
 #   ✓ code-review-2026-05-21-review.md
 #   ✓ code-review-2026-05-21-report.md
-# Anti-pattern checks:
-#   ✓ status=done
-#   ✓ all 4 steps completed
-#   ✓ all outputs present
-#   ✓ report contains required fields
-# === VERDICT: PASS ===
-```
-
-### 用例 2：检测反模式（故意跳过步骤）
-
-```bash
-# 执行 Bug Fix SOP 但跳过 reproduce 步骤
-/sop bug-fix
-
-# 验证发现反模式
-/sop verify bug-fix
-
-# 输出示例：
-# === SOP Verify: bug-fix ===
-# Anti-pattern checks:
-#   ✗ step 1_reproduce skipped (required)
-#   ✗ reproduce-*.md output missing
-#   ✗ state inconsistency: step 3_fix marked completed but step 1 skipped
-# === VERDICT: FAIL ===
-# Detected: 1 CRITICAL (空跑风险), 2 HIGH (步骤跳过)
-```
-
-### 用例 3：指定预期产出（expected.yml）
-
-```yaml
-# .claude/skills/sop-scaffold/expected.yml
-sop: scaffold
-expected_steps:
-  - id: 1_confirm
-    name: 需求确认
-    type: confirm
-    required: true
-  - id: 2_generate
-    name: 代码生成
-    type: auto
-    required: true
-    produces: [".sop/output/scaffold-*-generated.md"]
-  - id: 3_verify
-    name: 启动验证
-    type: auto
-    required: true
-
-expected_outputs:
-  - path: ".sop/output/scaffold-*-generated.md"
-    description: 生成的项目结构
-    type: markdown
-    required: true
-    validate: [not_empty, contains: "项目结构"]
-  - path: "delivery-staff/pom.xml"
-    description: 后端项目配置
-    type: code
-    required: true
-    validate: [not_empty]
-
-constraints:
-  strict_order: true
-  allow_skip: false
-```
-
-### 用例 4：多 Agent 深度审查
-
-```bash
-# 验证完成，发现产出完整性警告
-/sop verify code-review
-
-# 基础验证完成后，自动分发 subAgent：
-#   flow-reviewer    → 检查步骤顺序
-#   output-reviewer  → 检查缺失的文件
-#   security-reviewer → 扫描敏感信息
-#   quality-reviewer  → 评估产出质量
-
-# 最终生成总报告：
-# .sop/output/verify-code-review-2026-05-21.md
 #
-# 反模式汇总：
-# | # | 类型 | 严重度 | 描述 |
-# |---|------|--------|------|
-# | 1 | 产出缺失 | LOW | api-docs.md 未生成 |
-# | 2 | 参数未生效 | LOW | db_url 参数未被使用 |
+# Length Budget Check (sop-prd 仅):
+#   tier=lite, actual=146 lines, budget=200, status=PASS
+#
+# Multi-agent dispatch (v6.1.0):
+#   ✓ flow-reviewer (priority: optional)
+#   ✓ output-reviewer (priority: required)
+#   ✓ code-reviewer (priority: recommended)
+#   ✓ security-reviewer (priority: required)
+#
+# === VERDICT: PASS (score: 92) ===
 ```
 
-### 用例 5：验证状态生命周期
+### 用例 9：检测反模式（DoR 硬门 v6.0.0）
+
+```bash
+# 故意写一个超过 8 个故事的 PRD（违反 LITE DoR）
+/sop prd 复杂系统
+# Step 4: 生成时检测到 12 个 user stories（>8）
+# → DoR 检查 FAIL，写入 prd-complex-system-20260614.DRAFT.md
+# → state.dor_status = "failed"
+# → WARN 提示：split stories or upgrade to FULL tier
+
+# 验证
+/sop verify prd
+# === VERDICT: WARN (score: 75) ===
+# Anti-patterns:
+#   - dor_status=failed
+#   - line_count=312 > LITE budget 200
+# 建议：改用 tier=full，或拆分故事
+```
+
+### 用例 10：状态生命周期
 
 ```
-# 正常流程
-/sop scaffold           # PENDING → IN_PROGRESS → COMPLETED
-/sop verify scaffold    # COMPLETED → VERIFIED (评分≥90)
+# 正常流程（v6.2.0）
+/sop scaffold              # PENDING → IN_PROGRESS → COMPLETED
+                           # 自动写 trace_id, biz-graph 自动 sync
+/sop verify scaffold       # COMPLETED → VERIFIED (评分≥90)
+
+# 跨 SOP 链路
+/sop prd                   # 产出 prd:my-system-20260614
+/sop test-design           # 自动 link 到上游 prd（parent_trace）
+/sop scaffold              # 同
+# → biz-graph trace prd-2026-06-14-xxx 一键看全链路
 
 # 反模式流程
-/sop bug-fix            # 执行中跳过了 reproduce 步骤
-/sop verify bug-fix     # COMPLETED → REJECTED (评分<70)
-# 建议修复：补充 reproduce 步骤后重新验证
+/sop bug-fix               # 跳过 reproduce 步骤
+/sop verify bug-fix        # COMPLETED → REJECTED (评分<70)
+# 建议：补充 reproduce 步骤后重新验证
 ```
 
 ---
 
-## 十二、参考文档
+## 十三、参考文档
 
-- dr-jskill: `.claude/skills/dr-jskill/references/`
-- ECC Agents: `everything-claude-code-main/agents/`
-- ECC Commands: `everything-claude-code-main/commands/`
-- SOP 验证 DSL: `.claude/skills/sop-verification/references/DSL.md`
-- 审查 Agent 定义: `.claude/skills/sop-verification/references/REVIEWER-AGENTS.md`
-- 验证执行步骤: `.claude/skills/sop-verification/STEPS.md`
+### 业内对照
+
+- [CodeGraph](https://github.com/colbymchenry/codegraph) — 代码知识图谱（48k stars，MCP 原生），v6.2.0 起替代 Graphify
+- [Anthropic MCP](https://modelcontextprotocol.io/) — Model Context Protocol，本项目通过此协议接入 Claude Code/OpenCode/Cursor
+- [Test Impact Analysis (TIA)](https://martinfowler.com/articles/rise-test-impact-analysis.html) — Martin Fowler 论 TIA，sop-regression v2.0 实现
+
+### 设计文档
+
+- SOP 设计哲学：`SOP流程设计思想.md`（1459 行）
+- 系统数据流与缺陷分析：`docs/sop-data-flow-and-defects.md`（524 行，11 章节）
+- 验证结果历史：`.sop/verification/VERIFICATION_RESULTS.md`
+- 业务图谱 schema：`.claude/skills/sop-biz-graph/SCHEMA.md`
+- 验证 DSL：`.claude/skills/sop-verification/references/DSL.md`
+- 验证执行步骤：`.claude/skills/sop-verification/STEPS.md`
+- PRD 模板（18 个）：`.claude/skills/sop-prd/references/`
+
+### 技术参考
+
+- dr-jskill：`.claude/skills/dr-jskill/references/`（Spring Boot / MyBatis-Plus / Vue / React / Docker / GraalVM）
+- 阿里 P3C 编码规范：`.claude/rules/common/01_naming.md` 至 `10_mysql.md`
+
+### 行业方法论锚点（v6.0.0+ 引入）
+
+| 锚点 | 应用 |
+|------|------|
+| **Lean / Muda** | LITE 7-section PRD（消除 12-section 浪费） |
+| **Kaizen** | 2-way 默认（取代 3-way 选择） |
+| **DoD** | sop-prd Step 4 / sop-scaffold Step 9 / sop-code-review Step 3 硬门 |
+| **PDCA** | knowledge → prd → scaffold → verify 循环 |
+| **DMAIC** | sop-verify-calibrate.ts Pearson correlation Measure 阶段 |
+| **RACI** | sop-fullstack-iteration parallel_tasks 角色矩阵 |
+| **BPMN-lite** | STEPS.md 作为可执行流程模型（5/28 SOPs） |
+| **TIA** | sop-regression v2.0.0 codegraph affected |
+| **Knowledge Graph** | sop-biz-graph SQLite 14 节点 + 11 边 |
