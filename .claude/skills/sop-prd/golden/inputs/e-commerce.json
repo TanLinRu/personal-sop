@@ -1,0 +1,45 @@
+{
+  "fixture": "e-commerce",
+  "description": "中小型 B2C 电商后台 — 测试 FULL 模式（应允许 ≤325 行）",
+  "answers": {
+    "0_dependency": {
+      "knowledge_id": null
+    },
+    "1_biz_brief": {
+      "business_type": "电商平台",
+      "core_problem": "新创电商团队需要完整 PRD 给投资方看，含市场研究和 NFR",
+      "target_users": "买家,卖家,运营",
+      "brainstorm": false
+    },
+    "2_doc_type_reqs": {
+      "tier": "full"
+    }
+  },
+  "expected_metrics": {
+    "tier": "full",
+    "max_lines": 325,
+    "max_user_stories": 30,
+    "required_sections": [
+      "0. 执行摘要",
+      "1. 业务背景",
+      "2. 产品概述",
+      "3. 市场研究",
+      "4. 产品设计",
+      "5. 用户故事",
+      "6. 功能规划",
+      "7. 技术方案",
+      "8. 非功能需求",
+      "9. 风险评估",
+      "10. 决策日志",
+      "11. 附录"
+    ],
+    "required_keywords": [
+      "买家",
+      "卖家",
+      "运营",
+      "INVEST",
+      "Given",
+      "竞品"
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "fixture": "delivery-staff",
+  "description": "物流配送员管理系统 — 已有真实历史 PRD 作参考",
+  "answers": {
+    "0_dependency": {
+      "knowledge_id": null
+    },
+    "1_biz_brief": {
+      "business_type": "物流配送",
+      "core_problem": "配送员调度依赖人工经验，旺季高峰期单量翻倍时无法响应",
+      "target_users": "调度员,配送员,运营管理",
+      "brainstorm": false
+    },
+    "2_doc_type_reqs": {
+      "tier": "lite"
+    }
+  },
+  "expected_metrics": {
+    "tier": "lite",
+    "max_lines": 180,
+    "max_user_stories": 8,
+    "required_sections": [
+      "0. 执行摘要",
+      "1. 业务背景",
+      "2. 产品概述",
+      "3. 用户故事",
+      "4. 功能规划",
+      "5. 技术方案",
+      "6. 风险 + 决策",
+      "7. 附录"
+    ],
+    "required_keywords": [
+      "调度",
+      "配送员",
+      "INVEST",
+      "Given",
+      "Must"
+    ]
+  }
+}

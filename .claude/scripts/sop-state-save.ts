@@ -129,8 +129,15 @@ function saveState(sop: string, step: string, status: string, answers?: Record<s
 }
 
 function createInitialState(sop: string): any {
+  // Phase D2: trace_id format = {sop}-{YYYYMMDD}-{shortHash}
+  // Allows linking PRD → tests → code → deploy across SOPs.
+  const date = new Date().toISOString().slice(0, 10);
+  const shortHash = Math.random().toString(36).slice(2, 8);
+  const traceId = `${sop}-${date}-${shortHash}`;
+
   return {
     task_id: `${sop}-${Date.now()}`,
+    trace_id: traceId,
     sop,
     status: "in_progress",
     started_at: new Date().toISOString(),
@@ -139,6 +146,8 @@ function createInitialState(sop: string): any {
     answers: {},
     constraints: {}, // v1.1.0 新增：约束验证
     validation: {}, // v1.1.0 新增：验证结果
+    parent_trace: null, // Phase D2: 上游 SOP 的 trace_id（如 prd → scaffold 时）
+    children: [], // Phase D2: 下游 SOP 的 trace_id 列表
   };
 }
 

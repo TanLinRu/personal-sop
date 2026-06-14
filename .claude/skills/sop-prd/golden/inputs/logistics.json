@@ -1,0 +1,41 @@
+{
+  "fixture": "logistics",
+  "description": "中型物流公司订单调度系统 — 历史 PRD 343 行，v6.0.0 LITE 应 ≤180",
+  "answers": {
+    "0_dependency": {
+      "knowledge_id": "knowledge-logistics-20260508"
+    },
+    "1_biz_brief": {
+      "business_type": "物流配送",
+      "core_problem": "中型物流公司订单调度全靠 Excel，跨仓库无法实时调拨",
+      "target_users": "调度员,仓库管理,司机",
+      "brainstorm": true
+    },
+    "2_doc_type_reqs": {
+      "tier": "lite"
+    }
+  },
+  "expected_metrics": {
+    "tier": "lite",
+    "max_lines": 180,
+    "max_user_stories": 8,
+    "required_sections": [
+      "0. 执行摘要",
+      "1. 业务背景",
+      "2. 产品概述",
+      "3. 用户故事",
+      "4. 功能规划",
+      "5. 技术方案",
+      "6. 风险 + 决策",
+      "7. 附录"
+    ],
+    "required_keywords": [
+      "调度",
+      "仓库",
+      "司机",
+      "INVEST",
+      "Given"
+    ],
+    "should_produce_brainstorm": true
+  }
+}

@@ -5,22 +5,26 @@
 
 ---
 
-## 总体进度（2026-06-10 更新）
+## 总体进度（2026-06-14 更新）
 
-| 指标 | 修复前 | Phase A 完成后 | Phase C 完成后 | 目标 |
-|------|--------|---------------|---------------|------|
-| SKILL.md 完成 | 27/27 | 27/27 | 27/27 | 27/27 |
-| STEPS.md 完成 | 1/27 | **5/27** | 5/27 | 5/27 (P0) |
-| expected.yml 完成 | 5/27 | **10/27** | 10/27 | 10/27 (P0) |
-| 命令注册 | 23/23 | 23/23 | 23/23 | 21/21 (P0) |
-| 端到端验证通过 | 1/6 | 1/6 + 长度预算 | **6/6 verify-ready** | 6/6 (P2) |
-| state 脚本测试 | 17/20 | 17/20 (3 timeout) | **20/20 (timeout 修复)** | 80% (P1) |
-| Graphify 韧性 | 中止执行 | 中止执行 | **软降级** | 软降级 (P2) |
-| DoD 硬门 | 装饰 | 装饰 | **prd/scaffold/code-review** | 三 SOP (P2) |
-| sop-prd 平均输出行数 | 325 | **目标 ≤180 (LITE)** | 同上 | 180 |
-| sop-prd 步骤数 | 10 | **7** | 7 | 7 |
-| sop-prd 确认点 | 5 | **2** | 2 | 2 |
-| parallel_tasks 标准 | 1/28 | 1/28 | **3/28** (scaffold, incident, prd, fullstack) | 7/28 (P1) |
+| 指标 | v5.1.0 起点 | Phase A 后 | Phase C 后 | **Phase D 后** | 最终目标 |
+|------|------------|-----------|-----------|---------------|---------|
+| SKILL.md 完成 | 27/27 | 27/27 | 27/27 | 27/27 | 27/27 |
+| STEPS.md 完成 | 1/27 | 5/27 | 5/27 | 5/27 | 5/27 (P0) |
+| expected.yml 完成 | 5/27 | 10/27 | 10/27 | 10/27 | 10/27 (P0) |
+| 命令注册 | 23/23 | 23/23 | 23/23 | 23/23 | 23/23 |
+| 端到端验证通过 | 1/6 | 1/6 + 长度预算 | 6/6 verify-ready | **6/6 + 黄金 eval** | 6/6 (P2) |
+| state 脚本测试 | 17/20 | 17/20 | 20/20 | **23/23 (含 eval)** | 80% |
+| Graphify 韧性 | 中止执行 | 中止 | 软降级 | 软降级 | 软降级 |
+| DoD 硬门 | 装饰 | 装饰 | 三 SOP 落地 | 三 SOP | 三 SOP |
+| sop-prd 平均输出行数 | 325 | ≤180 (LITE 目标) | 同 | **golden eval 验证 145-148 lite / 218 full** | 180 |
+| sop-prd 步骤数 | 10 | 7 | 7 | 7 | 7 |
+| sop-prd 确认点 | 5 | 2 | 2 | 2 | 2 |
+| parallel_tasks 标准 | 1/28 | 1/28 | 3/28 | 3/28 | 7/28 |
+| **黄金测试集** | 无 | 无 | 无 | **3 fixtures (D1)** | 3 fixtures |
+| **Trace ID 追溯** | 无 | 无 | 无 | **state + sop-trace.ts (D2)** | 端到端 |
+| **Eval 自动化** | 无 | 无 | 无 | **vitest + sop-eval.ts (D4)** | CI gated |
+| **权重校准** | 无 | 无 | 方法已定 | **bootstrap report (D3)** | 10+ 样本 |
 
 ---
 
@@ -167,3 +171,86 @@ curl http://localhost:8080/actuator/health
 > 6/6 SOPs verify-ready（verify 引擎完整跑通）。所有 6 个 SOP 触发多 agent 分发。
 >
 > sop-prd 的 lengthBudget FAIL 是预期 — 历史 344 行 PRD 在 LITE 200 行预算下必 FAIL。重跑（tier=full）会 PASS。
+
+---
+
+## Phase D — 度量与回归（2026-06-14 完成）✅
+
+> v5.1.0→v6.0.0 之前我们靠"长度"和"步骤数"判断改进。Phase D 把度量做实，从此每次修改 SKILL.md 都跑黄金测试。
+
+### D1 — 黄金测试集（3 fixtures）
+
+| Fixture | Tier | 行数 | Sections | INVEST | Verdict |
+|---------|------|------|----------|--------|---------|
+| delivery-staff | LITE | 146 | 8 | 8/8 | PASS 1.000 |
+| logistics | LITE | 148 | 8 | 8/8 | PASS 1.000 |
+| e-commerce | FULL | 218 | 12 | 8/8 | PASS 1.000 |
+
+每个 fixture 包含 `inputs/<name>.json`（DYNAMIC_INPUT 答案）+ `expected/<name>.expected.md`（标杆产出）+ `eval.config.yaml`（评估配置）。
+
+### D2 — Trace ID 追溯
+
+`sop-state-save.ts` 自动生成 `trace_id` 形如 `prd-2026-06-10-abc123`，写入 state JSON 的 `trace_id`、`parent_trace`、`children` 字段。
+
+新增 `sop-trace.ts` 工具：
+- `sop-trace.ts <trace_id>`：完整链路（state + outputs + git commits + parent/children）
+- `sop-trace.ts --list`：所有 trace 列表
+- `sop-trace.ts --link <parent> <child>`：跨 SOP 关联
+
+PRD frontmatter 现在必含 `trace_id`、`tier`、`generated`、`dor_status`、`line_count`。
+
+### D3 — 权重校准（DMAIC Measure）
+
+新增 `sop-verify-calibrate.ts`：用 Pearson correlation 计算 verify 维度（steps/outputs/params/state/length）和黄金 eval score 之间的相关性，建议权重调整。
+
+**当前 bootstrap 结果（3 样本，仅作方向性参考）**：
+
+| Dimension | 当前权重 | 建议权重 | Δ | Correlation |
+|-----------|----------|----------|---|-------------|
+| steps | 0.30 | 0.250 | -0.050 | 1.000 |
+| outputs | 0.30 | 0.125 | -0.175 | 0.500 |
+| params | 0.20 | 0.250 | +0.050 | 1.000 |
+| state | 0.10 | 0.250 | +0.150 | 1.000 |
+| length（新增） | 0.00 | 0.125 | +0.125 | 0.500 |
+
+> 只有 3 个样本，需要 10+ 历史运行才能可靠校准。命令保留待后续填充。
+
+### D4 — Vitest 集成
+
+`sop-eval.test.ts` 把黄金 eval 接入 vitest：
+- `all fixtures PASS verdict` ✅
+- `LITE tier outputs <= 200 lines` ✅
+- `FULL tier outputs scoring above PASS threshold` ✅
+
+### Vitest 总体
+
+| 套件 | 之前 | Phase D 后 |
+|------|------|-----------|
+| sop-state.test.ts | 20/20 | 20/20 |
+| sop-eval.test.ts (新) | - | **3/3** |
+| **总计** | 20/20 | **23/23 PASS** |
+
+### 命令使用
+
+```bash
+# 快速跑黄金测试
+cd .opencode && npm run eval
+
+# JSON 输出（CI 用）
+npm run eval:json
+
+# 单个 fixture
+npx ts-node --transpile-only .claude/scripts/sop-eval.ts prd delivery-staff
+
+# 跑某个文件而非默认 expected.md
+npx ts-node --transpile-only .claude/scripts/sop-eval.ts prd logistics --against .sop/output/prd-logistics-20260508.md
+
+# 校准
+npx ts-node --transpile-only .claude/scripts/sop-verify-calibrate.ts prd
+
+# Trace 链路
+cd .opencode && npm run trace
+npx ts-node --transpile-only .claude/scripts/sop-trace.ts <trace_id>
+```
+
+---

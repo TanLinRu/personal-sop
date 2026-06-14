@@ -261,6 +261,7 @@ npx ts-node --transpile-only .claude/scripts/sop-state-save.ts prd 3_scope compl
 ## Step 4: 生成 PRD 文档 (GENERATE) [AUTO] [VERIFY]
 
 > **v6.0.0 优化**：DoD 硬门控嵌入生成流程，**未通过 DoR 检查的 PRD 不写入磁盘**。
+> **v6.1.0 (Phase D2)**：PRD frontmatter 必含 `trace_id`，用于跨 SOP 追溯。
 
 ### DoR 检查清单（门控，必填）
 
@@ -286,10 +287,13 @@ npx ts-node --transpile-only .claude/scripts/sop-state-save.ts prd 3_scope compl
 ### DoD 门控执行
 
 ```agent
-# 1. 生成 PRD 内容
-prd_content = generate_prd(state)
+# 1. 读取 trace_id（state.trace_id）
+trace_id = state.trace_id  # 自 sop-state-save.ts 自动生成
 
-# 2. DoR 检查
+# 2. 生成 PRD 内容（frontmatter 必含 trace_id）
+prd_content = generate_prd(state, trace_id=trace_id)
+
+# 3. DoR 检查
 dor_check = validate_dor(prd_content, tier=state.tier)
 if not dor_check.passed:
     # 修复循环（最多 2 次重试）
@@ -298,7 +302,7 @@ if not dor_check.passed:
         dor_check = validate_dor(prd_content, tier=state.tier)
         if dor_check.passed: break
 
-# 3. 通过则写入；不通过则写入草稿并 WARN
+# 4. 通过则写入；不通过则写入草稿并 WARN
 if dor_check.passed:
     Write(file_path=".sop/output/prd-{kebab-name}-{date}.md")
     state['dor_status'] = 'passed'
@@ -306,6 +310,29 @@ else:
     Write(file_path=".sop/output/prd-{kebab-name}-{date}.DRAFT.md")
     state['dor_status'] = 'failed'
     log.warn("DoR 未通过，已生成草稿")
+```
+
+### 必含 frontmatter 字段（v6.1.0）
+
+```yaml
+---
+sop: prd
+trace_id: prd-2026-06-10-abc123        # 自动从 state.trace_id 注入
+tier: lite                             # 或 full
+version: 6.1.0
+generated: 2026-06-10T10:00:00Z
+dor_status: passed                     # 或 failed
+line_count: 145
+---
+```
+
+下游 SOP（test-design / scaffold）通过 `parent_trace` 字段关联：
+
+```bash
+# Phase D2: 在 sop-test-design 启动时
+npx ts-node --transpile-only .claude/scripts/sop-trace.ts --link \
+  prd-2026-06-10-abc123 \
+  test-design-2026-06-10-xyz789
 ```
 
 ### 状态持久化

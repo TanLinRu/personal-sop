@@ -1,0 +1,59 @@
+# Golden Eval Configuration for sop-prd
+# 修改此文件后请相应调整 sop-eval.ts
+
+sop: prd
+version: 6.0.0
+
+# 评估维度权重（总和 = 1.0）
+weights:
+  structure: 0.30   # 章节数 + 标题集合 Jaccard
+  length: 0.30     # 实际行数 vs 预算
+  dor: 0.25        # DoR 检查通过率
+  coverage: 0.15   # 期望关键词覆盖率
+
+# 判定阈值
+thresholds:
+  pass: 0.85
+  warn: 0.70
+
+# 长度预算（与 expected.yml 对齐）
+length_budget:
+  lite:
+    target: 180
+    warn: 200
+    fail: 250
+  full:
+    target: 325
+    warn: 380
+    fail: 450
+
+# DoR 必查项（LITE / FULL 共享）
+dor_checks:
+  lite:
+    - max_user_stories: 8
+    - given_when_then_format: true
+    - no_orphan_sections: true
+    - invest_mark_present: true
+  full:
+    - max_user_stories: 30
+    - given_when_then_format: true
+    - market_research_complete: true
+    - nfr_complete: true
+    - risk_decision_separated: true
+
+# 评分映射（lin scale）
+score_mapping:
+  structure:
+    perfect_jaccard: 1.0      # 章节标题完全一致
+    missing_per_section: -0.15
+  length:
+    within_target: 1.0
+    within_warn: 0.7
+    within_fail: 0.3
+    over_fail: 0.0
+  dor:
+    all_passed: 1.0
+    per_failure: -0.25
+  coverage:
+    all_keywords: 1.0
+    per_missing: -0.20

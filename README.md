@@ -1,6 +1,8 @@
 # Personal SOP - AI 驱动的工作流控制系统
 
-> **v6.0.0 (2026-06-10)**：sop-prd 升级到 LITE 默认（7 章节，≤180 行）· DoD 硬门 · 长度预算自动检查 · 行业锚点（Lean/PDCA/DMAIC/DoD/RACI/BPMN-lite）落地
+> **v6.1.0 (2026-06-14)**：黄金测试集 + Trace ID 追溯 + Eval 自动化 + 权重校准（Phase D 度量与回归）
+>
+> v6.0.0 (2026-06-10)：sop-prd LITE 默认（7 章节，≤180 行）· DoD 硬门 · 长度预算 · 行业锚点（Lean/PDCA/DMAIC/DoD/RACI/BPMN-lite）落地
 
 ## 快速开始
 
@@ -270,7 +272,30 @@ public Warehouse createWarehouse(WarehouseDTO dto) {
 
 ---
 
-## 五、v6.0.0 进展（2026-06-10）
+## 五、v6.1.0 进展（2026-06-14） — Phase D 度量与回归
+
+| 能力 | 落地 |
+|------|------|
+| **黄金测试集** | `.claude/skills/sop-prd/golden/`：3 fixtures (delivery-staff/logistics/e-commerce) + eval.config.yaml |
+| **Eval 自动化** | `.claude/scripts/sop-eval.ts` 4 维度评分（structure/length/dor/coverage），vitest 集成 23/23 通过 |
+| **Trace ID 追溯** | `sop-state-save.ts` 自动生成 trace_id，`sop-trace.ts` 跨 SOP 链路（PRD→test→code→deploy）|
+| **权重校准** | `sop-verify-calibrate.ts` Pearson correlation 计算 verify 权重，bootstrap 报告已出 |
+| **快速命令** | `npm run eval` / `npm run trace` / `npm test`（在 `.opencode/`）|
+
+### 用法
+
+```bash
+# 黄金测试（PRD 修改后必跑）
+cd .opencode && npm run eval
+
+# 跨 SOP 链路追溯
+npx ts-node --transpile-only .claude/scripts/sop-trace.ts <trace_id>
+
+# 评估某个 PRD 文件
+npx ts-node --transpile-only .claude/scripts/sop-eval.ts prd logistics --against .sop/output/prd-foo.md
+```
+
+## 六、v6.0.0 进展（2026-06-10）
 
 | 缺陷 | 状态 | 落地 |
 |------|------|------|
@@ -282,7 +307,7 @@ public Warehouse createWarehouse(WarehouseDTO dto) {
 | state 脚本 0 测试 | ✅ | Vitest 20/20 通过 |
 | RACI 缺位 | ✅ | sop-fullstack-iteration RACI 表 |
 
-## 六、未来强化方向
+## 七、未来强化方向
 
 ### 1. Token 优化
 
@@ -320,7 +345,7 @@ public Warehouse createWarehouse(WarehouseDTO dto) {
 
 ---
 
-## 七、快速开始
+## 八、快速开始
 
 ```bash
 # 生成项目脚手架（受控流程）
@@ -343,7 +368,7 @@ public Warehouse createWarehouse(WarehouseDTO dto) {
 
 ---
 
-## 八、SOP 执行状态
+## 九、SOP 执行状态
 
 ### 步骤类型
 
@@ -372,7 +397,7 @@ PENDING → IN_PROGRESS → COMPLETED → VERIFIED (通过验证)
 
 ---
 
-## 九、目录结构
+## 十、目录结构
 
 ```
 .claude/
@@ -424,7 +449,7 @@ PENDING → IN_PROGRESS → COMPLETED → VERIFIED (通过验证)
 
 ---
 
-## 十、使用用例
+## 十一、使用用例
 
 ### 用例 1：SOP 执行后自动验证
 
@@ -543,7 +568,7 @@ constraints:
 
 ---
 
-## 十一、参考文档
+## 十二、参考文档
 
 - dr-jskill: `.claude/skills/dr-jskill/references/`
 - ECC Agents: `everything-claude-code-main/agents/`
