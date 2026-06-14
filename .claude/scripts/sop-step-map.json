@@ -1,24 +1,165 @@
 {
-  "scaffold": ["1_confirm", "2_config", "3_research", "4_prd", "5_arch", "6_review", "7_dependency", "8_generate", "9_verify", "10_knowledge"],
-  "bug-fix": ["1_reproduce", "2_locate", "3_fix", "4_verify", "5_test"],
-  "code-review": ["1_scope", "2_review", "3_test", "4_report"],
-  "knowledge": ["1_identify", "2_research", "3_structure", "4_generate", "5_output"],
-  "prd": ["0_dependency", "1_biz_brief", "2_doc_type_reqs", "3_scope", "4_generate", "5_prototype", "6_output"],
-  "incident-response": ["1_collect", "2_reproduce", "3_locate", "4_fix", "5_verify", "6_report"],
-  "testing": ["0_setup", "1_unit", "2_integration", "3_e2e", "4_api", "5_security", "6_performance"],
-  "deployment": ["1_build", "2_verify", "3_staging", "4_production", "5_monitor"],
-  "onboarding": ["1_setup", "2_clone", "3_test", "4_explore", "5_task"],
-  "library-research": ["0_business", "1_search", "2_verify", "3_compatible", "4_risk", "5_summary"],
-  "product-analysis": ["1_business", "2_competitor", "3_journey", "4_module", "5_architecture", "6_output"],
-  "backend-iteration": ["1_confirm", "2_research", "3_prd", "4_arch", "5_review", "6_dependency", "7_implement", "8_verify", "9_knowledge"],
-  "frontend-iteration": ["1_confirm", "2_research", "3_design", "4_review", "5_dependency", "6_implement", "7_verify", "8_knowledge"],
-  "fullstack-iteration": ["1_confirm", "2_research", "3_prd", "4_arch", "5_review", "6_dependency", "7_generate", "8_verify", "9_knowledge"],
-  "api-design": ["1_resource", "2_method", "3_response", "4_version", "5_security", "6_documentation"],
-  "database-design": ["1_requirement", "2_er", "3_schema", "4_index", "5_normalization", "6_ddl"],
-  "dependency-analysis": ["1_env", "2_build", "3_conflict", "4_analysis"],
-  "test-design": ["1_requirement_analysis", "2_test_techniques", "3_test_case_design", "4_traceability", "5_review", "6_output"],
-  "regression": ["1_change_analysis", "2_impact_assessment", "3_test_selection", "4_execution", "5_report"],
-  "input": ["1_get_params", "2_collect", "3_confirm"],
-  "brainstrom": ["1_confirm_topic", "2_choose_method", "3_diverge", "4_converge", "5_output"],
-  "verify": ["1_collect_context", "2_load_expected", "3_basic_check", "4_deep_review", "5_report"]
+  "sop-api-design": [
+    "需求分析",
+    "HTTP方法设计",
+    "响应格式设计",
+    "版本管理",
+    "安全设计",
+    "文档编写"
+  ],
+  "sop-backend-iteration": [
+    "需求确认",
+    "需求调研",
+    "生成PRD",
+    "架构设计",
+    "架构审核",
+    "依赖查询",
+    "依赖影响分析",
+    "边界场景分析",
+    "后端实现",
+    "启动验证",
+    "知识更新"
+  ],
+  "sop-brainstorming": [
+    "确定议题",
+    "选择方法",
+    "发散阶段",
+    "收敛阶段",
+    "输出结果"
+  ],
+  "sop-bug-fix": [
+    "复现",
+    "定位",
+    "修复",
+    "验证",
+    "测试"
+  ],
+  "sop-code-review": [
+    "确认审查范围",
+    "执行代码审查",
+    "运行测试",
+    "输出审查报告"
+  ],
+  "sop-database-design": [
+    "需求分析",
+    "ER建模",
+    "表结构设计",
+    "索引设计",
+    "范式化检查",
+    "DDL生成"
+  ],
+  "sop-deployment": [
+    "构建",
+    "验证",
+    "预发布",
+    "正式发布",
+    "监控与回滚"
+  ],
+  "sop-frontend-iteration": [
+    "需求确认",
+    "UIUX调研",
+    "组件设计",
+    "设计审核",
+    "依赖查询",
+    "依赖影响分析",
+    "前端实现",
+    "启动验证",
+    "知识更新"
+  ],
+  "sop-fullstack-iteration": [
+    "需求确认",
+    "需求调研",
+    "生成PRD",
+    "架构设计",
+    "架构审核",
+    "依赖查询",
+    "业务依赖分析",
+    "边界场景分析",
+    "并行生成",
+    "联调验证",
+    "知识更新"
+  ],
+  "sop-incident-response": [
+    "收集信息",
+    "复现问题",
+    "定位根因",
+    "制定修复",
+    "验证修复",
+    "编写报告"
+  ],
+  "sop-knowledge": [
+    "识别知识需求",
+    "知识收集",
+    "知识结构化",
+    "生成配套规范",
+    "输出与衔接"
+  ],
+  "sop-library-research": [
+    "业务分析",
+    "搜索文档",
+    "示例验证",
+    "评估兼容性",
+    "风险评估",
+    "总结"
+  ],
+  "sop-onboarding": [
+    "环境配置",
+    "代码拉取",
+    "运行测试",
+    "理解架构",
+    "小任务"
+  ],
+  "sop-prd": [
+    "依赖检查",
+    "业务识别",
+    "需求深挖",
+    "范围确认",
+    "生成PRD文档",
+    "原型生成",
+    "输出"
+  ],
+  "sop-product-analysis": [
+    "业务理解",
+    "竞品分析",
+    "用户旅程",
+    "模块划分",
+    "架构设计",
+    "输出文档"
+  ],
+  "sop-regression": [
+    "变更分析",
+    "影响评估",
+    "测试用例筛选",
+    "执行",
+    "报告"
+  ],
+  "sop-scaffold": [
+    "需求确认",
+    "配置确认",
+    "需求调研",
+    "生成PRD",
+    "架构设计",
+    "架构审核",
+    "依赖查询",
+    "并行生成",
+    "启动验证",
+    "图谱构建"
+  ],
+  "sop-test-design": [
+    "需求分析",
+    "测试技术选择",
+    "测试用例设计",
+    "追溯矩阵",
+    "评审",
+    "输出"
+  ],
+  "sop-testing": [
+    "环境搭建",
+    "单元测试",
+    "集成测试",
+    "端到端测试",
+    "API测试",
+    "安全测试",
+    "性能测试"
+  ]
 }

@@ -44,6 +44,7 @@ execution:
   ---
 
   ## Step 1: 识别知识需求 (IDENTIFY) [CONFIRM_REQUIRED]
+  > **auto_default**: 默认 all
 
   ### 执行指令
 
@@ -357,7 +358,7 @@ execution:
 
   ---
 
-  ## Step 5: 输出与衔接 (OUTPUT) [AUTO]
+  ## Step 5: 输出与衔接 (OUTPUT) [AUTO] [VERIFY]
 
   ### 执行指令
 

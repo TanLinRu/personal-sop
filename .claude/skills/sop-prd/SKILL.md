@@ -97,6 +97,7 @@ npx ts-node --transpile-only .claude/scripts/sop-state-save.ts prd 0_dependency 
 ---
 
 ## Step 1: 业务识别 + 脑暴 (BIZ + BRAINSTORM) [CONFIRM_REQUIRED] [DYNAMIC_INPUT]
+> **auto_default**: SKIP — 需要业务上下文
 
 > v6.0.0 优化：合并 Step 1 + Step 1.2（业务识别 + 脑暴），单次确认。脑暴为 OPTIONAL，可一键跳过。
 
@@ -176,6 +177,7 @@ npx ts-node --transpile-only .claude/scripts/sop-state-save.ts prd 1_biz_brief c
 ---
 
 ## Step 2: 文档类型 + 需求深挖 (DOC_TYPE + REQUIREMENTS) [CONFIRM_REQUIRED] [DYNAMIC_INPUT]
+> **auto_default**: LITE（推荐）
 
 > v6.0.0 优化：合并 Step 1.5 + Step 1.75 + Step 2，2-way 文档类型选择（LITE 默认 / FULL 可选）+ 需求深挖。
 

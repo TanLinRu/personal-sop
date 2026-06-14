@@ -1,6 +1,8 @@
 # Personal SOP - AI 驱动的工作流控制系统
 
-> **v6.2.0 (2026-06-14)**：迁移到 [CodeGraph](https://github.com/colbymchenry/codegraph)（替换 Graphify）+ 新增 `sop-biz-graph` 业务文档图谱
+> **v6.3.0 (2026-06-14)**：Loop Engineering — `--auto` 无头模式 + 自动验证 + SOP 链式触发
+>
+> v6.2.0 (2026-06-14)：迁移到 [CodeGraph](https://github.com/colbymchenry/codegraph)（替换 Graphify）+ 新增 `sop-biz-graph` 业务文档图谱
 >
 > v6.1.0 (2026-06-14)：黄金测试集 + Trace ID 追溯 + Eval 自动化 + 权重校准（Phase D 度量与回归）
 >
@@ -74,6 +76,64 @@ SOP Workflow System - 基于 OpenCode 的工作流系统，底层引用 ECC（Ev
 | **DMAIC** | 流程优化 | sop-verify 5 项评分 | sop-verification 6 类反模式 |
 | **RACI** | 职责清晰 | sop-prd 确认点收敛 | sop-fullstack-iteration RACI 表 |
 | **BPMN-lite** | 流程纪律 | sop-prd STEPS.md 7 步骤 | 5/27 SOPs 有 STEPS.md |
+
+---
+
+### 四层执行架构（v6.3.0）
+
+```
+┌────────────────────────────────────────────────────┐
+│  Layer 4: SOP 链（自动触发下游）                    │
+│  bug-fix→code-review→deployment                    │
+│  prd→test-design→testing→regression→bug-fix        │
+├────────────────────────────────────────────────────┤
+│  Layer 3: 自动验证（Post-Execution）                │
+│  sop-verify.ts --save → 写入 verification 字段     │
+│  └─ 每步 [VERIFY] 标记：产出完整性 + 反模式检查     │
+├────────────────────────────────────────────────────┤
+│  Layer 2: --auto 无头模式（自动执行）               │
+│  ┌─ [AUTO] → 直接执行                              │
+│  ├─ [CONFIRM_REQUIRED] + auto_default → 自动使用    │
+│  ├─ auto_default: SKIP → 跳过，记录 skipped_reason │
+│  ├─ auto_default: BLOCK → 即使 --auto 也需人批    │
+│  └─ [VERIFY] → 执行后运行 sop-verify.ts            │
+├────────────────────────────────────────────────────┤
+│  Layer 1: 步骤引擎（逐步执行）                      │
+│  步骤标记解析 → 状态保存 → 进度可视化 → 断点恢复   │
+└────────────────────────────────────────────────────┘
+```
+
+**执行流程**（`--auto` 模式下）：
+
+```
+用户: /sop bug-fix --auto
+  ↓
+Agent 解析步骤标记：
+  Step 1: 复现 [CONFIRM_REQUIRED]  auto_default: 从错误日志自动提取
+  Step 2: 定位 [AUTO]
+  Step 3: 修复 [CONFIRM_REQUIRED]  auto_default: 自动修复
+  Step 4: 验证 [AUTO]
+  Step 5: 测试 [AUTO] [VERIFY]
+  ↓
+逐行执行（不暂停，不询问）：
+  Step 1 → 读取日志 → auto 完成
+  Step 2 → 代码搜索 → auto 完成
+  Step 3 → 应用修复 → auto 完成
+  Step 4 → 运行测试 → auto 完成
+  Step 5 → 运行测试 + sop-verify.ts --save → auto 完成
+  ↓
+完成 → 触发 SOP 链（如需）
+  SOP 状态: completed → sop-chain.ts 检查规则
+  bug-fix completed → 触发 code-review
+```
+
+**三种执行模式**：
+
+| 模式 | 命令 | 行为 |
+|------|------|------|
+| 手动（默认） | `/sop xxx` | 每步 [CONFIRM_REQUIRED] 暂停等待确认 |
+| 自动 | `/sop xxx --auto` | 所有步骤自动执行（BLOCK 除外） |
+| 混合 | 执行中输入 `> 后续步骤全部自动执行` | 从当前步开始切换 |
 
 ---
 
@@ -310,7 +370,54 @@ npx ts-node --transpile-only .claude/scripts/sop-biz-graph.ts query "调度"
 npx ts-node --transpile-only .claude/scripts/sop-biz-graph.ts trace prd-2026-06-14-abc
 ```
 
-## 六、v6.1.0 进展（2026-06-14） — Phase D 度量与回归
+## 六、v6.3.0 进展（2026-06-14） — Loop Engineering
+
+> **核心目标**：SOP 从"半自动写提示"进化到"全自动流水线"。
+
+| 能力 | 落地 |
+|------|------|
+| **`--auto` 无头模式** | 18 个 SOP 共 45 条 `auto_default` 标记，自动跳过/使用默认值/BLOCK 关键步骤 |
+| **自动验证钩子** | `sop-verify.ts --save` 写入状态文件 `verification` 字段，框架强制后置执行 |
+| **SOP 链触发** | 6 条链规则（bug-fix→code-review→deployment, prd→test-design→testing→regression, regression→bug-fix），状态保存时自动检测触发 |
+| **Agent 执行检查清单** | sop-framework/SKILL.md 新增 MUST 执行流程，含步骤标记解析→auto_default 判断→状态保存→进入下一步 |
+| **步骤映射表** | `sop-step-map.json` 记录 19 个 SOP 的步骤顺序，被 verify/resume/state-save 统一读取 |
+
+### 用法
+
+```bash
+# --auto 无头模式：全自动执行，无需人工干预
+/sop bug-fix --auto
+/sop code-review --auto
+/sop deployment --auto
+
+# 查看 auto_default 配置
+grep "auto_default" .claude/skills/*/SKILL.md | wc -l    # 45 entries
+
+# SOP 链触发（自动）
+/sop bug-fix          # 完成后 → 自动触发 code-review（若 verification passed）
+/sop prd              # 完成后 → 自动触发 test-design
+/sop regression       # 完成后 → 自动触发 bug-fix（若发现失败）
+
+# 验证状态查看
+/sop status
+# → 显示 verification 字段：passed / needs_review / failed
+
+# 手动验证
+npx ts-node --transpile-only .claude/scripts/sop-verify.ts bug-fix --save
+```
+
+### 链规则
+
+| 触发 SOP | 触发条件 | 下游 SOP |
+|----------|---------|----------|
+| bug-fix | completed + verification_passed | code-review |
+| code-review | completed + verification_passed | deployment |
+| regression | completed + has_failures | bug-fix |
+| prd | completed | test-design |
+| test-design | completed | testing |
+| testing | completed + verification_passed | regression |
+
+## 七、v6.1.0 进展（2026-06-14） — Phase D 度量与回归
 
 | 能力 | 落地 |
 |------|------|
@@ -466,18 +573,27 @@ cd .opencode && npm test                          # 31/31 用例（state + eval 
 
 ### 步骤类型
 
-| 类型 | 说明 |
-|------|------|
-| `[CONFIRM_REQUIRED]` | 需用户确认，阻塞执行 |
-| `[AUTO]` | 自动执行，无需确认 |
-| `[OPTIONAL]` | 可选步骤，用户决定 |
+| 类型 | 自动模式行为 | `--auto` 下动作 |
+|------|-------------|----------------|
+| `[AUTO]` | 直接执行 | 自动执行 |
+| `[CONFIRM_REQUIRED]` | 依 `auto_default` | 有值→自动用值 / SKIP→跳过 / BLOCK→暂停 |
+| `[VERIFY]` | 执行后运行 `sop-verify.ts --save` | 静默验证 |
+| `[INFO]` | 显示信息，不阻塞 | 自动显示 |
+
+**`auto_default` 取值**（每个 CONFIRM_REQUIRED 步骤可标注）：
+
+| auto_default | `--auto` 下行为 |
+|-------------|----------------|
+| `<具体值>` | 自动使用该值，不询问 |
+| `SKIP` | 跳过该步骤，记录 `skipped_reason` |
+| `BLOCK` | **永久阻塞** — 即使 `--auto` 也需人确认 |
 
 ### SOP 生命周期
 
 ```
-PENDING → IN_PROGRESS → COMPLETED → VERIFIED (通过验证)
-                                        ↓
-                                     REJECTED (反模式检测失败)
+PENDING → IN_PROGRESS → COMPLETED → VERIFIED (通过验证) → CHAIN_TRIGGER
+                                        ↓                    ↓ 匹配链规则
+                                     REJECTED → 修复后重试    X 自动执行下游 SOP
 ```
 
 | 状态 | 说明 |
@@ -554,6 +670,7 @@ PENDING → IN_PROGRESS → COMPLETED → VERIFIED (通过验证)
 │   ├── sop-state-load.ts               # 状态恢复
 │   ├── sop-state-clean.ts              # 状态清理
 │   ├── sop-resume-check.ts             # 断点检测
+│   ├── sop-chain.ts                    # SOP 链触发（v6.3.0）
 │   ├── sop-step-map.json               # 步骤映射表
 │   ├── sop-verify.ts                   # 验证（含长度预算 + 多 agent 分发）
 │   ├── sop-verify-calibrate.ts         # 权重校准（Phase D3）
@@ -593,7 +710,60 @@ PENDING → IN_PROGRESS → COMPLETED → VERIFIED (通过验证)
 
 ## 十二、使用用例
 
-### 用例 1：生成 LITE PRD（v6.0.0+，默认 ≤180 行）
+### 用例 1：`--auto` 无头模式（v6.3.0 新能力）
+
+```bash
+# 全自动 Bug 修复：无需任何人工确认
+/sop bug-fix --auto
+
+# 实际流程：
+# Step 1: 复现 [AUTO] auto_default=从错误日志自动提取
+#   → 自动读取前端报错 → 提取关键信息 → 完成
+# Step 2: 定位 [AUTO]
+#   → 自动搜索代码 → 找到根因 → 完成
+# Step 3: 修复 [AUTO] auto_default=自动修复
+#   → 自动应用修复补丁 → 完成
+# Step 4: 验证 [AUTO]
+#   → 自动运行测试 → 完成
+# Step 5: 测试 [AUTO] [VERIFY]
+#   → 运行完整测试 + sop-verify.ts --save → 完成
+
+# 完成后自动触发链：
+# → bug-fix completed → code-review → deployment（若 verification_passed）
+
+# 强制关键步骤暂停（无论是否 --auto）：
+# deployment 步骤四：正式发布 [auto_default: BLOCK]
+# → 即使 --auto 依然暂停等待人批准
+```
+
+### 用例 2：SOP 链全自动流水线（v6.3.0 新能力）
+
+```bash
+# 输入：Bug 修复
+# 输出：自动完成修复→审查→预发布→触发回归
+
+/sop bug-fix --auto
+# → completed + verification_passed
+# ↓ 自动触发 sop-chain.ts
+/sop code-review --auto
+# → completed + verification_passed
+# ↓ 自动触发
+/sop deployment --auto
+# → 步骤三：预发布（auto_default=自动推 staging）
+# → 步骤四：正式发布（auto_default=BLOCK → 暂停等人批）
+# → 步骤五：监控与回滚 [AUTO] [VERIFY]
+
+# PRD → 测试设计 → 测试 → 回归
+/sop prd --auto
+# ↓ 自动触发
+/sop test-design --auto
+# ↓ 自动触发
+/sop testing --auto
+# ↓ 自动触发（验证通过）
+/sop regression --auto
+```
+
+### 用例 3：生成 LITE PRD（v6.0.0+，默认 ≤180 行）
 
 ```bash
 # 启动 PRD 生成
@@ -617,7 +787,7 @@ PENDING → IN_PROGRESS → COMPLETED → VERIFIED (通过验证)
 # 写入 prd-*.DRAFT.md 而不是 prd-*.md
 ```
 
-### 用例 2：黄金测试集回归（v6.1.0 Phase D）
+### 用例 4：黄金测试集回归（v6.1.0 Phase D）
 
 ```bash
 # 修改 sop-prd/SKILL.md 后必跑
@@ -645,7 +815,7 @@ npx ts-node --transpile-only .claude/scripts/sop-eval.ts prd logistics \
 # → FAIL (0.393)：length 0、structure 0.176（12 sections，超 LITE 7）
 ```
 
-### 用例 3：跨 SOP 全链路追溯（v6.1.0 Phase D2）
+### 用例 5：跨 SOP 全链路追溯（v6.1.0 Phase D2）
 
 ```bash
 # 每次 SOP 启动自动生成 trace_id
@@ -671,7 +841,7 @@ npx ts-node --transpile-only .claude/scripts/sop-trace.ts prd-2026-06-14-abc123
 npx ts-node --transpile-only .claude/scripts/sop-trace.ts --list
 ```
 
-### 用例 4：CodeGraph 代码层依赖分析（v6.2.0）
+### 用例 6：CodeGraph 代码层依赖分析（v6.2.0）
 
 ```bash
 # 一次性安装（项目级别）
@@ -703,7 +873,7 @@ git diff --name-only | codegraph affected --stdin --json
 # 一次返回所有相关符号源码 + 调用路径
 ```
 
-### 用例 5：sop-regression 精准回归（v6.2.0 升级）
+### 用例 7：sop-regression 精准回归（v6.2.0 升级）
 
 ```bash
 # v1.0.0：手工 grep 影响（不准）
@@ -722,7 +892,7 @@ git diff --name-only HEAD~1 | codegraph affected --stdin --json > .sop/state/aff
 # 然后只跑这个文件里列出的测试 → 测试时间从 5 分钟缩短到 30 秒
 ```
 
-### 用例 6：业务文档图谱 sop-biz-graph（v6.2.0 新能力）
+### 用例 8：业务文档图谱 sop-biz-graph（v6.2.0 新能力）
 
 ```bash
 # 全量构建（首次或重建）
@@ -768,7 +938,7 @@ npx ts-node --transpile-only .claude/scripts/sop-biz-graph.ts \
 # | 1     | knowledge   | kn:logistics-20260508              |
 ```
 
-### 用例 7：业务图谱 + 代码图谱联合查询（v6.2.0 双层）
+### 用例 9：业务图谱 + 代码图谱联合查询（v6.2.0 双层）
 
 > **跨层追溯**：业务层（biz-graph）"改了 US-003 影响哪些代码？"+ 代码层（CodeGraph）反查
 
@@ -791,7 +961,7 @@ codegraph affected src/main/java/.../OrderService.java --json
 # → 受影响测试集（精确）
 ```
 
-### 用例 8：SOP 执行后自动验证
+### 用例 10：SOP 执行后自动验证
 
 ```bash
 # 执行 code-review SOP
@@ -820,7 +990,7 @@ codegraph affected src/main/java/.../OrderService.java --json
 # === VERDICT: PASS (score: 92) ===
 ```
 
-### 用例 9：检测反模式（DoR 硬门 v6.0.0）
+### 用例 11：检测反模式（DoR 硬门 v6.0.0）
 
 ```bash
 # 故意写一个超过 8 个故事的 PRD（违反 LITE DoR）
@@ -839,7 +1009,7 @@ codegraph affected src/main/java/.../OrderService.java --json
 # 建议：改用 tier=full，或拆分故事
 ```
 
-### 用例 10：状态生命周期
+### 用例 12：状态生命周期
 
 ```
 # 正常流程（v6.2.0）

@@ -173,6 +173,7 @@ status: in_progress
 ---
 
 ### 步骤三：预发布（Staging）⭐ [CONFIRM_REQUIRED]
+> **auto_default**: 测试通过则部署 staging
 
 **目标**：在预发环境验证
 
@@ -210,6 +211,7 @@ status: in_progress
 ---
 
 ### 步骤四：正式发布（Production）⭐ [CONFIRM_REQUIRED]
+> **auto_default**: BLOCK — 永远需要人批准
 
 **目标**：发布到生产环境
 
@@ -245,7 +247,7 @@ status: in_progress
 ```
 ---
 
-### 步骤五：监控与回滚（Monitor & Rollback） [AUTO]
+### 步骤五：监控与回滚（Monitor & Rollback） [AUTO] [VERIFY]
 
 **目标**：监控发布后状态
 

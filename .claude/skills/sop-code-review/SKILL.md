@@ -39,6 +39,7 @@ permissions:
 ## 执行流程
 
 ### Step 1: 确认审查范围 [CONFIRM_REQUIRED]
+> **auto_default**: 增量审查
 
 使用 AskUserQuestion 确认审查范围：
 ```javascript
@@ -104,6 +105,7 @@ mvn test -q
 显式 `mode=informational` 时，DoD 仅 WARN 不 BLOCK（仅产出建议清单）。
 
 ### Step 4: 输出审查报告 [CONFIRM_REQUIRED]
+> **auto_default**: 自动接受报告
 
 ```markdown
 ---

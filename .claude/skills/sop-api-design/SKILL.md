@@ -72,6 +72,7 @@ API 设计完成后：
 ## 流程步骤
 
 ### 步骤一：资源建模（Resource Modeling） [CONFIRM_REQUIRED]
+> **auto_default**: 从 PRD/代码库自动提取实体
 
 **目标**：定义业务资源和关系
 
@@ -285,7 +286,7 @@ status: in_progress
 ```
 ---
 
-### 步骤六：文档编写 [AUTO]
+### 步骤六：文档编写 [AUTO] [VERIFY]
 
 **目标**：生成可维护文档
 

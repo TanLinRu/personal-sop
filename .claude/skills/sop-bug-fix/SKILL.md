@@ -38,6 +38,7 @@ execution:
 ## 流程步骤
 
 ### 步骤一：复现（Reproduce） [CONFIRM_REQUIRED]
+> **auto_default**: 从错误日志自动复现
 
 **目标**：收集复现步骤和环境信息，确认 Bug 可复现
 
@@ -142,6 +143,7 @@ mvn test -Dtest=ClassName#methodName
 ---
 
 ### 步骤三：修复（Fix） [CONFIRM_REQUIRED]
+> **auto_default**: code-review agent 通过则继续
 
 **目标**：实现修复方案
 
@@ -249,7 +251,7 @@ mvn package -DskipTests
 
 ---
 
-### 步骤五：测试（Test） [AUTO]
+### 步骤五：测试（Test） [AUTO] [VERIFY]
 
 **目标**：编写或更新测试用例，防止回归
 

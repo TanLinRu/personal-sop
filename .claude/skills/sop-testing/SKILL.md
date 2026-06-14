@@ -361,7 +361,7 @@ npx ts-node --transpile-only .claude/scripts/sop-state-save.ts testing 5_securit
 
 ---
 
-### 步骤六：性能测试（Performance Test） [AUTO]
+### 步骤六：性能测试（Performance Test） [AUTO] [VERIFY]
 
 **目标**：验证系统的性能指标
 

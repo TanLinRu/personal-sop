@@ -108,6 +108,7 @@ npx ts-node --transpile-only .claude/scripts/sop-state-save.ts regression 1_chan
 ---
 
 ## Step 2: 影响评估 (CodeGraph Affected) [CONFIRM_REQUIRED]
+> **auto_default**: precise
 
 > **v2.0.0**：直接用 `codegraph affected` 自动得出受影响测试集。Test Impact Analysis (TIA) 业界最佳实践。
 
@@ -304,7 +305,7 @@ npx ts-node --transpile-only .claude/scripts/sop-state-save.ts regression 4_exec
 
 ---
 
-## Step 5: 报告 [AUTO]
+## Step 5: 报告 [AUTO] [VERIFY]
 
 **执行内容**：
 1. 生成回归测试报告

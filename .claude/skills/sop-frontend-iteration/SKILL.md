@@ -88,6 +88,7 @@ aggregation:
 ```
 
 ## Step 1: 需求确认 [CONFIRM_REQUIRED]
+> **auto_default**: 从 PRD 提取需求
 
 > 状态管理通过 `.claude/scripts/sop-state-*.ts` 脚本执行，详见 [sop-framework](../skills/sop-framework/SKILL.md)
 
@@ -186,6 +187,7 @@ status: in_progress
 ---
 
 ## Step 4: 设计审核 [CONFIRM_REQUIRED]
+> **auto_default**: P0 检查通过则通过
 
 **执行内容**：
 P0/P1 检查点，用户确认
@@ -391,7 +393,7 @@ status: in_progress
 
 ---
 
-## Step 8: 知识更新 [AUTO]
+## Step 8: 知识更新 [AUTO] [VERIFY]
 
 **执行内容**：
 - 增量更新组件树

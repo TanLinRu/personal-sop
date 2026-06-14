@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-import { readFileSync, existsSync, readdirSync, statSync } from "fs";
+import { readFileSync, existsSync, readdirSync, statSync, writeFileSync } from "fs";
 import { resolve, basename } from "path";
 
 interface SOPState {
@@ -12,6 +12,18 @@ interface SOPState {
   current_step: number;
   steps: Record<string, { status: string; timestamp?: string }>;
   answers: Record<string, Record<string, unknown>>;
+  verification?: {
+    status: "passed" | "failed" | "needs_review";
+    score: number;
+    timestamp: string;
+    issues: number;
+    details: {
+      allStepsCompleted: boolean;
+      outputsPresent: boolean;
+      lengthBudgetOk?: boolean;
+      antiPatterns: number;
+    };
+  };
 }
 
 interface BasicValidation {
@@ -577,20 +589,90 @@ function printContext(sop: string): void {
 
 const args = process.argv.slice(2);
 if (args.length === 0) {
-  console.log("Usage: ts-node sop-verify.ts <sop-name> [--deep-review]");
+  console.log("Usage: ts-node sop-verify.ts <sop-name> [--deep-review] [--save]");
   console.log("");
   console.log("Examples:");
   console.log("  ts-node sop-verify.ts code-review            # Print context");
   console.log("  ts-node sop-verify.ts code-review --deep-review  # Auto-dispatch plan");
+  console.log("  ts-node sop-verify.ts code-review --save     # Print context + save to state file");
   process.exit(1);
 }
 
 const sop = args[0];
 const deepReviewMode = args.includes("--deep-review");
+const saveMode = args.includes("--save");
 
 if (deepReviewMode) {
   const plan = runDeepReview(sop);
   console.log(JSON.stringify(plan, null, 2));
 } else {
   printContext(sop);
+  if (saveMode) {
+    const result = saveVerification(sop);
+    console.log(`\n[VERIFY] Verification saved: status=${result.status}, score=${result.score}, issues=${result.issues}`);
+  }
+}
+
+function saveVerification(sop: string): { status: string; score: number; issues: number } {
+  const state = loadState(sop);
+  if (!state) {
+    console.log(`\n[VERIFY] No state file found for ${sop}, skipping save`);
+    return { status: "needs_review", score: 0, issues: 0 };
+  }
+
+  const outputs = listOutputs(sop);
+  const expected = loadExpected(sop);
+  const allCompleted = Object.values(state.steps).every((s) => s.status === "completed");
+  const hasOutputs = outputs.length > 0;
+  const lengthBudget = checkLengthBudget(sop, expected ? loadExpectedYaml(sop) : null, outputs);
+
+  let score = 0;
+  if (allCompleted) score += 40;
+  if (hasOutputs) score += 30;
+  if (lengthBudget && lengthBudget.status === "pass") score += 15;
+  else if (lengthBudget && lengthBudget.status === "warn") score += 8;
+  if (state.status === "completed") score += 15;
+
+  let issues = 0;
+  if (!allCompleted) issues++;
+  if (!hasOutputs) issues++;
+  if (lengthBudget && lengthBudget.status === "fail") issues++;
+
+  const vStatus = score >= 70 ? "passed" : score >= 40 ? "needs_review" : "failed";
+
+  const verification = {
+    status: vStatus,
+    score,
+    timestamp: new Date().toISOString(),
+    issues,
+    details: {
+      allStepsCompleted: allCompleted,
+      outputsPresent: hasOutputs,
+      lengthBudgetOk: lengthBudget ? lengthBudget.status === "pass" : undefined,
+      antiPatterns: issues,
+    },
+  };
+
+  const stateDir = getStateDir();
+  if (!existsSync(stateDir)) {
+    console.log(`\n[VERIFY] State directory missing, cannot save`);
+    return { status: vStatus, score, issues };
+  }
+
+  const files = readdirSync(stateDir)
+    .filter((f) => f.startsWith(sop) && f.endsWith(".json"))
+    .sort()
+    .reverse();
+
+  if (files.length === 0) {
+    console.log(`\n[VERIFY] No state files found for ${sop}`);
+    return { status: vStatus, score, issues };
+  }
+
+  const filePath = resolve(stateDir, files[0]);
+  const currentState = JSON.parse(readFileSync(filePath, "utf-8"));
+  currentState.verification = verification;
+  writeFileSync(filePath, JSON.stringify(currentState, null, 2), "utf-8");
+
+  return { status: vStatus, score, issues };
 }

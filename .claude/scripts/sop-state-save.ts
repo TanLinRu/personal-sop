@@ -159,6 +159,35 @@ function saveState(sop: string, step: string, status: string, answers?: Record<s
       }
     }
   }
+
+  // Phase E2.4: Auto-trigger SOP chain on completion
+  // Triggers when:
+  //   1. status === "completed" or status === "failed" (SOP finished)
+  //   2. SOP_CHAIN_AUTO != "0" (opt-out for tests/CI)
+  if ((status === "completed" || status === "failed") && process.env.SOP_CHAIN_AUTO !== "0") {
+    try {
+      const { spawnSync } = require("child_process");
+      const chainScript = path.resolve(__dirname, "sop-chain.ts");
+      const verificationStatus = state.verification?.status || "";
+      const chainArgs = ["ts-node", "--transpile-only", chainScript, sop, status];
+      if (verificationStatus) chainArgs.push(verificationStatus);
+      const result = spawnSync("npx", chainArgs, {
+        cwd: process.cwd(),
+        stdio: ["ignore", "pipe", "pipe"],
+        shell: true,
+        timeout: 60000, // 60s ceiling — chain trigger should be fast
+      });
+      if (result.status === 0) {
+        const output = result.stdout?.toString().trim();
+        if (output) console.log(output);
+      } else {
+        console.warn("[WARN] chain trigger failed (non-fatal):", result.stderr?.toString().split("\n")[0]);
+      }
+    } catch (err) {
+      // Never let chain trigger break the main state save
+      console.warn("[WARN] chain trigger skipped:", (err as Error).message);
+    }
+  }
 }
 
 function createInitialState(sop: string): any {

@@ -63,6 +63,7 @@ execution:
 ## 流程步骤
 
 ### 步骤一：业务理解（Business Understanding）⭐ [CONFIRM_REQUIRED]
+> **auto_default**: SKIP — 需要业务上下文
 
 **目标**：明确业务背景、目标和约束
 
@@ -192,6 +193,7 @@ radar
 ---
 
 ### 步骤三：用户旅程（User Journey） [CONFIRM_REQUIRED]
+> **auto_default**: 自动生成
 
 **目标**：梳理用户角色和核心业务流程
 
@@ -262,6 +264,7 @@ status: in_progress
 ---
 
 ### 步骤四：模块划分（Module Design） [CONFIRM_REQUIRED]
+> **auto_default**: 自动生成
 
 **目标**：基于业务用例划分模块边界
 
@@ -325,6 +328,7 @@ status: in_progress
 ---
 
 ### 步骤五：架构设计（Architecture Design） [CONFIRM_REQUIRED]
+> **auto_default**: 用项目现有技术栈
 
 **目标**：设计支撑业务的技术架构
 
@@ -396,7 +400,8 @@ status: in_progress
 
 ---
 
-### 步骤六：输出文档（Output Documents） [CONFIRM_REQUIRED]
+### 步骤六：输出文档（Output Documents） [CONFIRM_REQUIRED] [VERIFY]
+> **auto_default**: 自动保存
 
 **目标**：生成可执行的文档产物
 

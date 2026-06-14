@@ -122,6 +122,7 @@ graphify query "搜索所有 Entity 的字段名和类型"
 ## 流程步骤
 
 ### 步骤一：需求分析 [CONFIRM_REQUIRED]
+> **auto_default**: 从 PRD 自动提取实体
 
 **目标**：理解业务数据需求
 
@@ -294,7 +295,7 @@ status: in_progress
 ```
 ---
 
-### 步骤六：DDL生成 [AUTO]
+### 步骤六：DDL生成 [AUTO] [VERIFY]
 
 **目标**：生成可执行脚本
 

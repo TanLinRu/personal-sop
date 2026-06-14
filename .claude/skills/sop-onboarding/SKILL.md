@@ -38,6 +38,7 @@ execution:
 ## 流程步骤
 
 ### 步骤一：环境配置（Setup）⭐ [CONFIRM_REQUIRED]
+> **auto_default**: 自动检测环境并安装
 
 **目标**：搭建开发环境，安装依赖
 
@@ -169,7 +170,7 @@ cat src/main/resources/application.properties
 
 ---
 
-### 步骤三：运行测试（Test） [AUTO]
+### 步骤三：运行测试（Test） [AUTO] [VERIFY]
 
 **目标**：确保项目可正常运行
 
@@ -348,6 +349,7 @@ ls src/main/resources/
 ---
 
 ### 步骤五：小任务（Task）⭐ [CONFIRM_REQUIRED]
+> **auto_default**: SKIP — 需要人选任务
 
 **目标**：通过小任务上手项目
 

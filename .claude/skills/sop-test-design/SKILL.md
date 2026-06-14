@@ -92,6 +92,7 @@ npx ts-node --transpile-only .claude/scripts/sop-state-save.ts test-design 1_req
 ---
 
 ## Step 2: 测试技术选择 [CONFIRM_REQUIRED]
+> **auto_default**: auto_recommend
 
 **执行内容**：
 1. 展示可用测试设计技术
@@ -218,6 +219,7 @@ npx ts-node --transpile-only .claude/scripts/sop-state-save.ts test-design 4_tra
 ---
 
 ## Step 5: 评审 [CONFIRM_REQUIRED]
+> **auto_default**: 覆盖率 ≥80% 则自动通过
 
 **执行内容**：
 1. 展示测试用例摘要
@@ -256,7 +258,7 @@ npx ts-node --transpile-only .claude/scripts/sop-state-save.ts test-design 5_rev
 
 ---
 
-## Step 6: 输出 [AUTO]
+## Step 6: 输出 [AUTO] [VERIFY]
 
 **执行内容**：
 1. 生成测试计划文档

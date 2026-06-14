@@ -116,6 +116,7 @@ Agent(
 ## 流程步骤
 
 ### 步骤零：业务分析 ⭐ [CONFIRM_REQUIRED]
+> **auto_default**: 从 PRD 提取
 
 **目标**：理解业务背景，确保技术选型服务于业务目标
 
@@ -423,7 +424,8 @@ mvn org.owasp:dependency-check-maven:check
 
 ---
 
-### 步骤五：总结（Summary）⭐ [CONFIRM_REQUIRED]
+### 步骤五：总结（Summary）⭐ [CONFIRM_REQUIRED] [VERIFY]
+> **auto_default**: 自动接受结论
 
 **目标**：汇总调研结果，给出决策建议
 

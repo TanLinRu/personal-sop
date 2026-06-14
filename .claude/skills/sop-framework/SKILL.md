@@ -183,6 +183,86 @@ execution:
 > 后续步骤需要确认
 ```
 
+### auto_default 安全默认值
+
+每个 `[CONFIRM_REQUIRED]` 步骤应通过 `**auto_default**: <value>` 指定安全默认值，用于自动模式决策：
+
+| auto_default | 行为 |
+|-------------|------|
+| `<具体值>` | 自动使用该值 |
+| `SKIP` | 跳过该步骤，记录 `skipped_reason` 到状态文件 |
+| `BLOCK` | 永久阻塞，即使 `--auto` 也需人确认 |
+
+**Agent 自动执行检查清单**（`--auto` 模式下 MUST 按以下顺序执行每一步）：
+
+**前置动作**：解析 `--auto` 标志 → 设置全局变量 `EXECUTION_MODE = auto`
+
+**每步执行流程**（必须按序执行）：
+
+```
+第 1 步：读取步骤标记
+  └─ 从步骤标题获取 [AUTO] / [CONFIRM_REQUIRED] / [VERIFY]
+  └─ 读取 **auto_default**: <value>（如果有）
+
+第 2 步：根据标记和模式判断动作
+
+  [AUTO] 步骤 → 直接执行，不暂停，不询问用户
+
+  [CONFIRM_REQUIRED] 步骤 + --auto 模式：
+    ├─ 有 auto_default 且非 SKIP/BLOCK → 使用该值，不暂停
+    │   记录: `state.steps[step].auto_value = <value>`
+    ├─ auto_default: SKIP → 跳过步骤，不执行
+    │   记录: `state.steps[step].status = "skipped", state.steps[step].skipped_reason = "<reason>"`
+    │   注意: SKIP 的步骤不会生成输出，不会执行任何动作
+    ├─ auto_default: BLOCK → 忽略 --auto，暂停等待用户确认
+    │   即使 --auto 也必须等待用户输入
+    └─ 无 auto_default → 跳过，记录
+       记录: `state.steps[step].status = "skipped", state.steps[step].skipped_reason = "no_default_available"`
+
+  [VERIFY] 步骤 → 执行后运行 `sop-verify.ts`
+    └─ 执行步骤内容
+    └─ 运行: npx ts-node --transpile-only .claude/scripts/sop-verify.ts <sop> --save
+    └─ 根据验证结果决定继续或暂停
+
+第 3 步：保存状态
+  └─ 每次执行/跳过步骤后调用 sop-state-save.ts
+  └─ 命令: npx ts-node --transpile-only .claude/scripts/sop-state-save.ts <sop> <step-id> <status>
+
+第 4 步：进入下一步
+  └─ completed → 进入下一步
+  └─ skipped → 进入下一步
+  └─ blocked (BLOCK) → 等待用户输入后继续
+```
+
+**重要规则**：
+- `--auto` 模式下**不得**询问用户"是否继续"或"确认执行"
+- 只有 `auto_default: BLOCK` 的步骤可以暂停等待
+- 每一步完成后必须通过 `sop-state-save.ts` 保存状态
+- 最终完成后调用 `sop-verify.ts --save` 进行验证
+
+**标注位置**：在 CONFIRM_REQUIRED 标题后、步骤目标前添加：
+
+```markdown
+### 步骤一：资源建模 [CONFIRM_REQUIRED]
+> **auto_default**: 从 PRD/代码库自动提取实体
+
+**目标**：定义业务资源和关系
+```
+
+```markdown
+### 步骤一：确定议题 ⭐ [CONFIRM_REQUIRED]
+> **auto_default**: SKIP — 需要人定主题
+
+**目标**：明确脑暴的主题、目标和约束边界
+```
+
+```markdown
+### 步骤四：正式发布（Production）⭐ [CONFIRM_REQUIRED]
+> **auto_default**: BLOCK — 永远需要人批准
+
+**目标**：发布到生产环境
+```
+
 ## 步骤标注规范
 
 在每个步骤的 **执行内容** 部分使用标注：
@@ -428,6 +508,47 @@ SOP: [自动执行]
 - 步骤六：验证运行 [自动验证]
 完成！
 ```
+
+## Post-Execution Verification (auto)
+
+每个 SOP 执行完成后，自动执行验证：
+
+```bash
+# 自动验证
+npx ts-node --transpile-only .claude/scripts/sop-verify.ts <sop-name> --save
+```
+
+### 验证结果
+
+验证结果写入状态文件的 `verification` 字段：
+
+```json
+{
+  "verification": {
+    "status": "passed",
+    "score": 85,
+    "timestamp": "2026-06-14T10:00:00.000Z",
+    "issues": 0,
+    "details": {
+      "allStepsCompleted": true,
+      "outputsPresent": true,
+      "antiPatterns": 0
+    }
+  }
+}
+```
+
+| status | 含义 |
+|--------|------|
+| `passed` | 得分 ≥70，验证通过 |
+| `needs_review` | 得分 40-69，需要人工审查 |
+| `failed` | 得分 <40，验证不通过 |
+
+### 自动触发
+
+- SOP 执行完成后**必须**运行一次验证
+- 使用 `--save` 标志写入状态文件
+- 结果可通过 `/sop status` 查看
 
 ## 实施建议
 

@@ -230,6 +230,7 @@ df -h
 ---
 
 ### 步骤二：复现问题（Reproduce）⭐ [CONFIRM_REQUIRED]
+> **auto_default**: 自动尝试复现
 
 **目标**：尝试在测试环境复现问题
 
@@ -356,6 +357,7 @@ jstack pid
 ---
 
 ### 步骤四：制定修复（Fix） [CONFIRM_REQUIRED]
+> **auto_default**: BLOCK — P0 事件修复必须人确认
 
 **目标**：制定临时修复和永久方案
 
@@ -420,7 +422,7 @@ kubectl rollout restart deployment/app
 
 ---
 
-### 步骤五：验证修复（Verify） [AUTO]
+### 步骤五：验证修复（Verify） [AUTO] [VERIFY]
 
 **目标**：验证修复有效，系统恢复正常
 

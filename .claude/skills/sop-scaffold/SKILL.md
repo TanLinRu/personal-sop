@@ -128,6 +128,7 @@ Test-Path "{project}/src/main/java" # 应为 false
 ```
 
 ## Step 1: 需求确认 [CONFIRM_REQUIRED]
+> **auto_default**: 用目录名作为项目名
 
 > 状态管理通过 `.claude/scripts/sop-state-*.ts` 脚本执行，详见 [sop-framework](../skills/sop-framework/SKILL.md)
 
@@ -169,6 +170,7 @@ status: in_progress
 ---
 
 ## Step 2: 配置确认 [CONFIRM_REQUIRED]
+> **auto_default**: 默认配置(H2+Vue3)
 
 > **关键**：配置确认是生成项目的必要前置步骤
 
@@ -266,6 +268,7 @@ Agent 评估后生成完整/简化 PRD
 ---
 
 ## Step 6: 架构审核 [CONFIRM_REQUIRED]
+> **auto_default**: P0 检查通过则通过
 
 P0/P1/P2 检查点，用户确认
 
@@ -352,7 +355,7 @@ npm create vite@latest {project-name}/frontend -- --template vue
 
 ---
 
-## Step 9: 启动验证 [AUTO]
+## Step 9: 启动验证 [AUTO] [VERIFY]
 
 > **关键**：生成后必须验证项目能否正常启动
 > **验证方式**：使用 TypeScript 脚本启动 + 父 Agent 10秒后检查
